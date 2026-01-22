@@ -1,49 +1,19 @@
-# VIRALIS
+# Viralis 🚀
+**AI-Powered Voice-to-Business Automation Platform**
 
-## Frontend Task
-
-## Backend Task
-
-## n8n Task
-
-## AI Task
+Viralis transforms voice calls into actionable business intelligence, orchestrating workflows, generating content, and managing leads automatically.
 
 ---
 
-## 🚀 Getting Started
+## � Frontend Logs
+*   **Auth & Session**: Implemented strict redirects for Login/Register (redirects to dashboard if logged in) and enforced Onboarding completion.
+*   **Settings Page**: Added new `/dashboard/settings` page to edit Industry, Location, and Brand Voice.
+*   **Sidebar**: Made navigation scrollable while keeping Brand and Footer static. Added "Viralis Pro" subscription widget.
+*   **Header**: Moved User Profile dropdown to the top navigation bar for better UX.
+*   **Visuals**: Added custom 3D "AI Studio" fallback image and updated "Total Reach" chart to multi-line step style.
+*   **State**: Connected Sidebar and Header to real `authStore` data (Name, Industry Mode).
 
-### Prerequisites
-- Node.js (v18+)
-- Docker & Docker Compose
-
-### 1. Infrastructure Setup
-Start the support services (Redis, PostgreSQL, n8n):
-```bash
-cd n8n-setup
-docker-compose up -d
-```
-*   **n8n** will run on [http://localhost:5678](http://localhost:5678)
-*   **Redis** will run on port `6379`
-
-### 2. Backend Setup
-The backend is an Express server running in TypeScript.
-```bash
-cd Backend
-npm install
-npm run dev
-```
-*   **API Server**: [http://localhost:5000](http://localhost:5000)
-
-### 3. Frontend Setup
-The frontend is a Next.js application.
-```bash
-cd frontend
-npm install
-npm run dev
-```
-*   **Web App**: [http://localhost:3000](http://localhost:3000)
-
-## Project Structure
-- `frontend/`: Next.js 15 Application
-- `Backend/`: Express API (TypeScript)
-- `n8n-setup/`: Docker configuration for workflow automation
+## 🛠️ Backend Logs
+*   **Auth API**: Updated `/auth/me` to populate full `businessId` details (Onboarding Step, Industry Mode).
+*   **Profile**: Enabled profile updates via `BusinessController` for the new Settings page.
+*   **Validation**: Ensured proper state synchronization between user session and business data.

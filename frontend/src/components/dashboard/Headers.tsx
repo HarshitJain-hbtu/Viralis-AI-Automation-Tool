@@ -1,6 +1,6 @@
 'use client';
 
-import { Search, SlidersHorizontal, Share2, Plus, LogOut, Setting, User, CreditCard, Settings, Sparkles } from "lucide-react";
+import { Search, SlidersHorizontal, Share2, Plus, LogOut, User, CreditCard, Settings, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/lib/store/authStore";
 import { useRouter } from "next/navigation";
