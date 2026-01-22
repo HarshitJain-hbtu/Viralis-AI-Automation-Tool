@@ -28,29 +28,26 @@ export function StatsCard({ title, value, change, trend, color, index }: StatsCa
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
-      className="p-6 rounded-2xl bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-sm hover:shadow-md transition-all group"
+      className="p-6 rounded-xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
     >
       <div className="flex justify-between items-start mb-4">
         <div className={cn(
-          "w-12 h-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110",
-          color === "purple" && "bg-emerald-500/10 text-emerald-600",
-          color === "green" && "bg-green-500/10 text-green-600",
-          color === "blue" && "bg-teal-500/10 text-teal-600",
-          color === "pink" && "bg-lime-500/10 text-lime-600"
+          "w-10 h-10 rounded-lg flex items-center justify-center",
+          "bg-blue-50 text-blue-600"
         )}>
           <Icon className="w-6 h-6" />
         </div>
         {trend === "up" && (
-          <div className="flex items-center gap-1 text-emerald-600 text-xs font-bold">
+          <div className="flex items-center gap-1 text-emerald-600 text-xs font-semibold bg-emerald-50 px-2 py-1 rounded-full">
             <TrendingUp className="w-3 h-3" />
             {change}
           </div>
         )}
         {trend === "pulse" && (
-          <div className="flex items-center gap-2 text-emerald-600 text-xs font-bold">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          <div className="flex items-center gap-1 text-blue-600 text-xs font-semibold bg-blue-50 px-2 py-1 rounded-full">
+            <span className="relative flex h-2 w-2 mr-1">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
             </span>
             {change}
           </div>
@@ -58,13 +55,10 @@ export function StatsCard({ title, value, change, trend, color, index }: StatsCa
       </div>
 
       <div>
-        <h3 className="text-zinc-500 dark:text-zinc-400 text-sm font-medium">{title}</h3>
-        <p className="text-2xl font-bold mt-1 tracking-tight">{value}</p>
-        {trend === "neutral" && (
-          <p className="text-zinc-400 text-[10px] mt-1 font-medium">{change}</p>
-        )}
-        {title === "Est. Ad Value" && (
-          <p className="text-zinc-400 text-[10px] mt-1 font-medium">{change}</p>
+        <h3 className="text-gray-500 text-sm font-medium">{title}</h3>
+        <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
+        {(trend === "neutral" || title === "Est. Ad Value") && (
+          <p className="text-gray-400 text-xs mt-1">{change}</p>
         )}
       </div>
     </motion.div>

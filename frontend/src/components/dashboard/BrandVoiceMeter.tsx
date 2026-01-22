@@ -12,9 +12,9 @@ export function BrandVoiceMeter() {
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="p-6 rounded-2xl bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-sm flex flex-col items-center justify-center text-center"
+      className="p-4 h-full flex flex-col items-center justify-center text-center"
     >
-      <div className="w-full flex justify-between items-center mb-6">
+      <div className="w-full flex justify-between items-center mb-4">
         <h3 className="text-sm font-bold flex items-center gap-2">
           <Mic className="w-4 h-4 text-emerald-500" />
           Brand Voice Alignment
@@ -33,7 +33,7 @@ export function BrandVoiceMeter() {
             stroke="currentColor"
             strokeWidth="8"
             fill="transparent"
-            className="text-zinc-100 dark:text-zinc-800"
+            className="text-gray-100"
           />
           <motion.circle
             cx="64"
@@ -61,7 +61,7 @@ export function BrandVoiceMeter() {
         </div>
       </div>
 
-      <p className="text-xs text-zinc-500 font-medium px-4 leading-relaxed">
+      <p className="text-xs text-gray-500 font-medium px-4 leading-relaxed mt-2">
         Your AI content is currently <span className="text-emerald-600 font-bold">92%</span> aligned with your "Expert Surgeon" persona.
       </p>
     </motion.div>

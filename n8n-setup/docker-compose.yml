@@ -23,6 +23,17 @@ services:
     networks:
       - n8n-network
 
+  redis:
+    image: redis:7.2-alpine
+    container_name: n8n-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - n8n-network
+
   postgres:
     image: postgres:15
     container_name: n8n-postgres
@@ -38,6 +49,8 @@ services:
 volumes:
   n8n_data:
   postgres_data:
+  redis_data:
+
 
 networks:
   n8n-network:

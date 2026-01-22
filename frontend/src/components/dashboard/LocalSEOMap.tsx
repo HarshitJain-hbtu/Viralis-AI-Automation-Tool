@@ -16,7 +16,7 @@ export function LocalSEOMap() {
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="p-6 rounded-2xl bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-sm overflow-hidden"
+      className="p-6 h-full"
     >
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-sm font-bold flex items-center gap-2">
@@ -28,10 +28,10 @@ export function LocalSEOMap() {
         </span>
       </div>
 
-      <div className="relative aspect-video rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 overflow-hidden group">
+      <div className="relative aspect-video rounded-xl bg-gray-50 border border-gray-100 overflow-hidden group">
         {/* Simple stylized map grid */}
         <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#888_1px,transparent_1px)] [background-size:20px_20px]" />
-        
+
         {/* Heatmap points */}
         {points.map((point, i) => (
           <motion.div
@@ -56,8 +56,8 @@ export function LocalSEOMap() {
 
         {/* Floating Stats */}
         <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
-          <div className="p-2 rounded-lg bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-white/20 text-[10px] font-bold">
-            <p className="text-zinc-400">RANKING #1 IN</p>
+          <div className="p-2 rounded-lg bg-white/90 backdrop-blur-sm border border-gray-200 text-[10px] font-bold shadow-sm">
+            <p className="text-gray-500">RANKING #1 IN</p>
             <p className="text-blue-600">8 LOCATIONS</p>
           </div>
           <button className="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-lg">
