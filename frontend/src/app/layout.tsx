@@ -10,6 +10,10 @@ export const metadata: Metadata = {
   description: "AI Social Growth CRM Dashboard",
 };
 
+import { Plus_Jakarta_Sans } from "next/font/google";
+
+const font = Plus_Jakarta_Sans({ subsets: ["latin"] });
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -17,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="antialiased">
+      <body className={`${font.className} antialiased`}>
         <Providers>
           <Script
             id="orchids-browser-logs"
