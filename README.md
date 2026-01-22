@@ -1,1 +1,1 @@
-# viralis
+# virals
