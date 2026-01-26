@@ -10,6 +10,8 @@ import { connectMongoDB } from './config/mongodb';
 import { connectRedis } from './config/redis';
 import authRoutes from './routes/auth.routes';
 import businessRoutes from './routes/business.routes';
+import aiContentRoutes from './routes/aiContentRoutes';
+
 
 // Initialize App
 const app = express();
@@ -47,6 +49,8 @@ app.use('/api/business', businessRoutes);
 app.get('/', (_req, res) => {
     res.send('🚀 VIRALIS Backend is Running (TypeScript)!');
 });
+app.use('/api', aiContentRoutes);
+
 
 // Start Server
 server.listen(env.PORT, () => {
