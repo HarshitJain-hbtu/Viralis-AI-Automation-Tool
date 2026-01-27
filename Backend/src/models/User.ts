@@ -8,6 +8,20 @@ export interface IUser extends Document {
     name: string;
     role: 'admin' | 'user';
     businessId: mongoose.Types.ObjectId;
+    socialAccounts?: {
+        youtube?: {
+            accessToken: string;
+            refreshToken?: string;
+            channelId?: string;
+            stats?: any;
+        };
+        facebook?: {
+            accessToken: string;
+            userId?: string;
+            pageId?: string;
+            stats?: any;
+        };
+    };
     comparePassword(candidate: string): Promise<boolean>;
     createdAt: Date;
     updatedAt: Date;
@@ -21,6 +35,20 @@ const userSchema = new Schema<IUser>(
         name: { type: String, required: true },
         role: { type: String, enum: ['admin', 'user'], default: 'user' },
         businessId: { type: Schema.Types.ObjectId, ref: 'Business', required: true },
+        socialAccounts: {
+            youtube: {
+                accessToken: String,
+                refreshToken: String,
+                channelId: String,
+                stats: Schema.Types.Mixed
+            },
+            facebook: {
+                accessToken: String,
+                userId: String,
+                pageId: String,
+                stats: Schema.Types.Mixed
+            }
+        }
     },
     { timestamps: true }
 );

@@ -44,16 +44,17 @@ const navItems = [
   { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
   { icon: Calendar, label: "Growth Plan", href: "/calendar" },
   { icon: Layers, label: "Content Board", href: "/board" },
+  { icon: Sparkles, label: "Content Studio", href: "/dashboard/content" },
 ];
 
 const toolItems = [
-  { icon: Video, label: "Reels Studio", href: "/studio" },
+  { icon: Video, label: "Reels Studio", href: "/dashboard/studio" },
   { icon: Mic, label: "Voice Lab", href: "/voice" },
   { icon: Search, label: "Competitor Spy", href: "/spy" },
 ];
 
 const secondaryItems = [
-  { icon: MessageSquare, label: "Inbox", href: "/inbox", badge: 7 },
+  { icon: MessageSquare, label: "Inbox", href: "/dashboard/inbox", badge: 7 },
   { icon: BarChart3, label: "Reporting", href: "/reporting" },
 ];
 

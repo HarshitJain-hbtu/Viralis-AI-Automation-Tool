@@ -3,46 +3,68 @@ import { ArrowRight, Sparkles } from 'lucide-react';
 
 export default function CTA() {
     return (
-        <section className="py-24 px-6">
-            <div className="max-w-5xl mx-auto">
-                <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-[2.5rem] p-12 lg:p-20 overflow-hidden shadow-2xl shadow-blue-900/30">
+        <section className="py-24 px-6 bg-white overflow-hidden relative border-t border-gray-50">
+            {/* Soft Ambient Background */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(240,240,255,0.8),transparent_70%)] opacity-60 pointer-events-none" />
 
-                    {/* Decorative Elements */}
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+            <div className="max-w-4xl mx-auto relative z-10 text-center">
 
-                    {/* Floating Icons */}
-                    <div className="absolute top-10 right-10 hidden lg:block animate-float">
-                        <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20">
-                            <Sparkles className="w-8 h-8 text-white" />
-                        </div>
+                {/* Badge */}
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-xs font-bold uppercase tracking-wide mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <Sparkles className="w-3 h-3" />
+                    <span>Start your journey</span>
+                </div>
+
+                {/* Main Headline - Serif & Editorial */}
+                <h2 className="text-6xl md:text-7xl font-serif text-gray-900 mb-8 leading-[1.1] tracking-tight">
+                    Ready to turn content <br />
+                    <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+                        into currency?&nbsp;&nbsp;
+                    </span>
+                </h2>
+
+                <p className="text-xl text-gray-500 mb-12 max-w-2xl mx-auto leading-relaxed">
+                    Join the creators and brands who are automating their growth with Viralis.
+                    No credit card required.
+                </p>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    <Link
+                        href="/register"
+                        className="group relative inline-flex items-center justify-center px-10 py-5 bg-black text-white rounded-full text-lg font-medium hover:bg-gray-900 transition-all hover:scale-105 duration-300 shadow-xl shadow-gray-200"
+                    >
+                        Start for Free <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                    <Link
+                        href="/demo"
+                        className="inline-flex items-center justify-center px-10 py-5 bg-white border border-gray-200 text-gray-900 rounded-full text-lg font-medium hover:bg-gray-50 transition-all hover:border-gray-300"
+                    >
+                        Book a Demo
+                    </Link>
+                </div>
+                <div className="mt-12 pt-8 border-t border-gray-100 flex flex-col items-center animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
+                    <div className="flex -space-x-3 mb-4">
+                        {[1, 2, 3, 4, 5].map((i) => (
+                            <img
+                                key={i}
+                                src={`https://i.pravatar.cc/100?u=viralis${i}`}
+                                alt="User"
+                                className="w-10 h-10 rounded-full border-2 border-white"
+                            />
+                        ))}
                     </div>
-
-                    <div className="relative z-10 text-center">
-                        <h2 className="text-3xl lg:text-5xl font-bold text-white mb-6 leading-tight">
-                            Ready to transform <br className="hidden md:block" />
-                            your business?
-                        </h2>
-                        <p className="text-blue-100 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
-                            Join thousands of forward-thinking companies automating their growth with Viralis. No credit card required.
-                        </p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                            <Link
-                                href="/register"
-                                className="inline-flex items-center justify-center px-8 py-4 bg-white text-blue-700 rounded-full text-lg font-bold hover:bg-blue-50 transition-all shadow-xl shadow-blue-900/20 hover:scale-105 duration-300"
-                            >
-                                Get Started for Free <ArrowRight className="ml-2 w-5 h-5" />
-                            </Link>
-                            <Link
-                                href="#pricing"
-                                className="inline-flex items-center justify-center px-6 py-3 text-white/90 rounded-full text-sm font-medium hover:text-white hover:bg-white/10 transition-all"
-                            >
-                                View Pricing
-                            </Link>
-                        </div>
-                    </div>
+                    <p className="text-sm text-gray-500 font-medium">
+                        Trusted by <span className="text-gray-900 font-bold">10,000+</span> creators and brands
+                    </p>
                 </div>
             </div>
+
+            {/* Connecting Visual Element to Footer */}
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-px h-16 bg-gradient-to-b from-transparent to-gray-200" />
+
+            {/* Subtle Grain Texture Overlay */}
+            <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}></div>
         </section>
     );
 }

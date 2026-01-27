@@ -7,6 +7,8 @@ import { LocalSEOMap } from "@/components/dashboard/LocalSEOMap";
 import { CompetitorWidget } from "@/components/dashboard/CompetitorWidget";
 import { BrandVoiceMeter } from "@/components/dashboard/BrandVoiceMeter";
 import { ActionCenter } from "@/components/dashboard/ActionCenter";
+import { SocialConnect } from "@/components/SocialConnect";
+import { SocialStats } from "@/components/SocialStats";
 import { Filter, LayoutGrid, Plus, MoreVertical, Phone, MessageSquare, User, Calendar, Video } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
 import { useState } from "react";
@@ -23,7 +25,7 @@ export default function Dashboard() {
                 <div className="mb-8 flex justify-between items-end">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">Business Overview</h1>
-                        <p className="text-gray-500 mt-1">AI CRM & Content Engine</p>
+                        <p className="text-gray-500 mt-1">Gemini 3 Powered CRM & Content Engine</p>
                     </div>
                     <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
                         <button
@@ -44,8 +46,18 @@ export default function Dashboard() {
                 {/* Top Actions: AI Advisor */}
                 <div className="mb-8">
                     <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-[0_2px_4px_rgba(0,0,0,0.02)]">
-                        <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Daily AI Actions</h3>
+                        <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Daily Gemini 3 Actions</h3>
                         <ActionCenter />
+                    </div>
+                </div>
+
+                {/* Social Integration */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <div className="lg:col-span-1">
+                        <SocialConnect />
+                    </div>
+                    <div className="lg:col-span-2">
+                        <SocialStats />
                     </div>
                 </div>
 
