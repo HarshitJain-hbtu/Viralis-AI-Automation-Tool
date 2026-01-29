@@ -12,6 +12,9 @@ import authRoutes from './routes/auth.routes';
 import businessRoutes from './routes/business.routes';
 import aiContentRoutes from './routes/aiContentRoutes';
 
+import socialRoutes from './routes/socialRoutes';
+import aiRoutes from './routes/aiRoutes';
+import './config/passport'; // Initialize Passport Config
 
 // Initialize App
 const app = express();
@@ -45,7 +48,10 @@ io.on('connection', (socket) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api', socialRoutes); // /api/auth/youtube, /api/auth/facebook, /api/stats
 app.use('/api/business', businessRoutes);
+app.use('/api/ai', aiRoutes);
+
 app.get('/', (_req, res) => {
     res.send('🚀 VIRALIS Backend is Running (TypeScript)!');
 });

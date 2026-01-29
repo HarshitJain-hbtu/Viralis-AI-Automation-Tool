@@ -1,10 +1,10 @@
 "use client";
 import Link from 'next/link';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Zap, IndianRupee } from 'lucide-react';
 
 export default function Pricing() {
     return (
-        <section id="pricing" className="py-32 bg-white">
+        <section id="pricing" className="py-24 bg-white">
             <div className="max-w-7xl mx-auto px-6">
 
                 {/* Header */}
@@ -12,86 +12,116 @@ export default function Pricing() {
                     <div className="inline-flex items-center justify-center px-6 py-2 rounded-full bg-white border border-gray-100 shadow-sm text-gray-400 font-medium text-sm mb-8">
                         Pricing
                     </div>
-                    <h2 className="text-5xl font-bold text-gray-900 mb-4 tracking-tight">Simple pricing plans</h2>
-                    <p className="text-gray-400 text-lg">Detailed plans for every stage of your growth.</p>
+                    <h2 className="text-5xl font-serif text-gray-900 mb-4 tracking-tight italic">Built for Indian SMBs</h2>
+                    <p className="text-gray-400 text-lg">Affordable CRM & growth tools for your business.</p>
                 </div>
 
                 <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto items-start">
 
-                    {/* Basic Plan */}
+                    {/* Free Plan */}
                     <div className="bg-white p-10 rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-100/50 hover:shadow-2xl hover:shadow-gray-200/50 transition-all duration-300 group h-full flex flex-col">
-                        <h3 className="text-xl font-medium text-gray-900 mb-1">Basic plan</h3>
-                        <p className="text-gray-400 text-sm mb-8">Perfect for individuals.</p>
+                        <div className="mb-4">
+                            <h3 className="text-xl font-bold text-gray-900">Free Forever</h3>
+                            <p className="text-gray-400 text-sm">For solo entrepreneurs starting out.</p>
+                        </div>
 
                         <div className="flex items-baseline gap-1 mb-8">
-                            <span className="text-5xl font-bold text-gray-900 tracking-tight">$5</span>
+                            <span className="text-5xl font-bold text-gray-900 tracking-tight">$0</span>
                             <span className="text-gray-400 font-medium">/mo</span>
                         </div>
 
-                        <Link href="/register" className="block w-full py-4 px-6 bg-blue-600 text-white font-bold rounded-xl text-center hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 mb-10 group-hover:scale-[1.02] duration-200">
-                            Get started
+                        <Link href="/register" className="block w-full py-4 px-6 bg-gray-50 text-gray-900 font-bold rounded-xl text-center hover:bg-gray-100 transition-all mb-10 group-hover:scale-[1.02] duration-200">
+                            Start for Free
                         </Link>
 
                         <div className="space-y-4 mt-auto">
-                            {['All product features', 'Unlimited lists & tasks', 'Priority support', 'Unlimited tasks', 'Unlimited file storage', 'Unlimited projects'].map((feat) => (
+                            {[
+                                '1 Social Account (Instagram)',
+                                'Basic Comment Inbox',
+                                'Manual Lead Tagging',
+                                '5 AI Repurposed Videos/mo',
+                                '3 Days Data Retention'
+                            ].map((feat) => (
                                 <div key={feat} className="flex items-center gap-3 text-sm text-gray-600 font-medium">
-                                    <CheckCircle2 className="w-4 h-4 text-gray-900 flex-shrink-0" />
+                                    <CheckCircle2 className="w-5 h-5 text-gray-300 flex-shrink-0" />
                                     {feat}
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    {/* Pro Plan - Blue Highlight + Floating 3D Icon */}
+                    {/* Starter Plan - highlighted */}
                     <div className="bg-blue-600 p-10 rounded-[2rem] shadow-2xl shadow-blue-600/30 relative transform lg:-translate-y-4 lg:scale-105 z-10 h-full flex flex-col">
 
-                        {/* Floating 3D Icon (Calendar as requested) */}
-                        <div className="absolute -top-10 right-8 w-32 h-32 rotate-12 animate-float">
-                            <img src="/bell.png" alt="Pro Feature" className="w-full h-full object-contain drop-shadow-2xl" />
+                        {/* Floating 3D Icon */}
+                        <div className="absolute -top-12 right-6 w-32 h-32 animate-float">
+                            <img src="/rocket.png" alt="Growth" className="w-full h-full object-contain drop-shadow-2xl" />
                         </div>
 
-                        <h3 className="text-xl font-medium text-white/90 mb-1">Pro plan</h3>
-                        <p className="text-blue-100 text-sm mb-8">Ideal for small teams.</p>
+                        <div className="mb-4 relative z-10">
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-white text-xs font-bold uppercase tracking-wider mb-3 border border-white/20">
+                                <Zap className="w-3 h-3 text-yellow-400 fill-current" />
+                                Best for Growth
+                            </div>
+                            <h3 className="text-xl font-bold text-white">Starter</h3>
+                            <p className="text-blue-100 text-sm">Automate your business social presence.</p>
+                        </div>
 
-                        <div className="flex items-baseline gap-1 mb-8">
+                        <div className="flex items-baseline gap-1 mb-8 relative z-10">
                             <span className="text-6xl font-bold text-white tracking-tight">$9</span>
-                            <span className="text-blue-200 font-medium">/mo</span>
+                            <span className="text-blue-200 font-medium pb-2">/mo</span>
                         </div>
 
-                        <p className="text-sm text-white font-medium mb-4">Best choice</p>
-
-                        <Link href="/register" className="block w-full py-4 px-6 bg-white text-blue-600 font-bold rounded-xl text-center hover:bg-blue-50 transition-all shadow-lg mb-10 hover:scale-[1.02] duration-200">
-                            Get started
+                        <Link href="/register" className="block w-full py-4 px-6 bg-white text-blue-600 font-bold rounded-xl text-center hover:bg-blue-50 transition-all shadow-lg mb-10 hover:scale-[1.02] duration-200 relative z-10">
+                            Start Free Trial
                         </Link>
 
-                        <div className="space-y-4 mt-auto">
-                            {['All product features', 'Unlimited lists & tasks', 'Priority support', 'Unlimited tasks', 'Unlimited file storage', 'Unlimited projects'].map((feat) => (
+                        <div className="space-y-4 mt-auto relative z-10">
+                            {[
+                                'Unified Inbox (Insta, YT, LinkedIn)',
+                                'Auto-Reply AI Agents',
+                                'Capture Leads from Comments',
+                                'Unlimited Repurposing',
+                                'WhatsApp Integration (Beta)',
+                                'Competitor Tracking'
+                            ].map((feat) => (
                                 <div key={feat} className="flex items-center gap-3 text-sm text-white font-medium">
-                                    <CheckCircle2 className="w-4 h-4 text-white flex-shrink-0" />
+                                    <div className="p-0.5 bg-blue-500 rounded-full">
+                                        <CheckCircle2 className="w-4 h-4 text-white flex-shrink-0" />
+                                    </div>
                                     {feat}
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    {/* Advanced Plan */}
+                    {/* Business Plan */}
                     <div className="bg-white p-10 rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-100/50 hover:shadow-2xl hover:shadow-gray-200/50 transition-all duration-300 group h-full flex flex-col">
-                        <h3 className="text-xl font-medium text-gray-900 mb-1">Advanced plan</h3>
-                        <p className="text-gray-400 text-sm mb-8">Best for large organizations.</p>
+                        <div className="mb-4">
+                            <h3 className="text-xl font-bold text-gray-900">Business</h3>
+                            <p className="text-gray-400 text-sm">For scaling teams & agencies.</p>
+                        </div>
 
                         <div className="flex items-baseline gap-1 mb-8">
-                            <span className="text-5xl font-bold text-gray-900 tracking-tight">$15</span>
+                            <span className="text-5xl font-bold text-gray-900 tracking-tight">$29</span>
                             <span className="text-gray-400 font-medium">/mo</span>
                         </div>
 
-                        <Link href="/register" className="block w-full py-4 px-6 bg-blue-600 text-white font-bold rounded-xl text-center hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 mb-10 group-hover:scale-[1.02] duration-200">
-                            Get started
+                        <Link href="/contact" className="block w-full py-4 px-6 bg-white border-2 border-gray-100 text-gray-900 font-bold rounded-xl text-center hover:border-gray-300 transition-all mb-10 group-hover:scale-[1.02] duration-200">
+                            Contact Sales
                         </Link>
 
                         <div className="space-y-4 mt-auto">
-                            {['All product features', 'Unlimited lists & tasks', 'Priority support', 'Unlimited tasks', 'Unlimited file storage', 'Unlimited projects'].map((feat) => (
+                            {[
+                                'Everything in Starter',
+                                '5 Team Members',
+                                'CRM Integrations (HubSpot/Zoho)',
+                                'White-label Reports',
+                                'Dedicated Account Manager',
+                                'Priority Support'
+                            ].map((feat) => (
                                 <div key={feat} className="flex items-center gap-3 text-sm text-gray-600 font-medium">
-                                    <CheckCircle2 className="w-4 h-4 text-gray-900 flex-shrink-0" />
+                                    <CheckCircle2 className="w-5 h-5 text-gray-900 flex-shrink-0" />
                                     {feat}
                                 </div>
                             ))}

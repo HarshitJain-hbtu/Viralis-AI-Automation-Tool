@@ -25,6 +25,9 @@ interface AuthState {
     register: (name: string, email: string, password: string) => Promise<void>;
     logout: () => void;
     checkAuth: () => Promise<void>;
+    socialStats: { youtube: any; facebook: any } | null;
+    fetchSocialStats: () => Promise<void>;
+    replyToComment: (commentId: string, text: string) => Promise<any>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -82,6 +85,28 @@ export const useAuthStore = create<AuthState>((set) => ({
         } catch (error) {
             localStorage.removeItem('token');
             set({ user: null, token: null });
+        }
+    },
+
+    socialStats: null,
+
+    fetchSocialStats: async () => {
+        try {
+            const response = await api.get('/stats');
+            set({ socialStats: response.data });
+        } catch (error) {
+            console.error('Failed to fetch social stats', error);
+            set({ socialStats: null });
+        }
+    },
+
+    replyToComment: async (commentId: string, text: string) => {
+        try {
+            const response = await api.post('/social/youtube/reply', { commentId, text });
+            return response.data.comment;
+        } catch (error) {
+            console.error('Failed to reply to comment', error);
+            throw error;
         }
     },
 }));
