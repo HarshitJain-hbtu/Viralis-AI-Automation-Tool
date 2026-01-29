@@ -15,7 +15,11 @@ const mongodb_1 = require("./config/mongodb");
 const redis_1 = require("./config/redis");
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const business_routes_1 = __importDefault(require("./routes/business.routes"));
+const business_controller_1 = require("./controllers/business.controller");
 const aiContentRoutes_1 = __importDefault(require("./routes/aiContentRoutes"));
+const socialRoutes_1 = __importDefault(require("./routes/socialRoutes"));
+const aiRoutes_1 = __importDefault(require("./routes/aiRoutes"));
+require("./config/passport"); // Initialize Passport Config
 // Initialize App
 const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
@@ -40,12 +44,18 @@ io.on('connection', (socket) => {
         logger_1.default.info(`Client disconnected: ${socket.id}`);
     });
 });
+const public_routes_1 = __importDefault(require("./routes/public.routes"));
 // Routes
 app.use('/api/auth', auth_routes_1.default);
+app.use('/api/public', public_routes_1.default); // Public Routes
+app.use('/api', socialRoutes_1.default); // /api/auth/youtube, /api/auth/facebook, /api/stats
 app.use('/api/business', business_routes_1.default);
+app.use('/api/ai', aiRoutes_1.default);
 app.get('/', (_req, res) => {
     res.send('🚀 VIRALIS Backend is Running (TypeScript)!');
 });
+// Temporary Seed Route
+app.get('/api/seed-db', business_controller_1.BusinessController.seedDatabase);
 app.use('/api', aiContentRoutes_1.default);
 // Start Server
 server.listen(env_1.env.PORT, () => {

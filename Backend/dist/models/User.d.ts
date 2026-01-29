@@ -6,6 +6,23 @@ export interface IUser extends Document {
     name: string;
     role: 'admin' | 'user';
     businessId: mongoose.Types.ObjectId;
+    socialAccounts?: {
+        youtube?: {
+            accessToken: string;
+            refreshToken?: string;
+            channelId?: string;
+            stats?: any;
+        };
+        facebook?: {
+            accessToken: string;
+            userId?: string;
+            pageId?: string;
+            stats?: any;
+        };
+        instagram?: {
+            stats?: any;
+        };
+    };
     comparePassword(candidate: string): Promise<boolean>;
     createdAt: Date;
     updatedAt: Date;

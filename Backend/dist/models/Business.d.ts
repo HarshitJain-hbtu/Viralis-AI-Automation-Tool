@@ -58,12 +58,23 @@ export interface IBusiness extends Document {
         deepgram?: string;
         twilio?: string;
     };
+    knowledgeBase?: {
+        businessHours?: string;
+        contactPhone?: string;
+        address?: string;
+        services?: Array<{
+            name: string;
+            price: string;
+        }>;
+        customInstructions?: string;
+    };
     createdAt: Date;
     updatedAt: Date;
 }
-export declare const Business: mongoose.Model<IBusiness, {}, {}, {}, mongoose.Document<unknown, {}, IBusiness, {}, {}> & IBusiness & Required<{
+declare const Business: mongoose.Model<IBusiness, {}, {}, {}, mongoose.Document<unknown, {}, IBusiness, {}, {}> & IBusiness & Required<{
     _id: mongoose.Types.ObjectId;
 }> & {
     __v: number;
 }, any>;
+export { Business };
 //# sourceMappingURL=Business.d.ts.map

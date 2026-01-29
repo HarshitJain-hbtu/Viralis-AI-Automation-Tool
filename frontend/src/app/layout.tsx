@@ -4,6 +4,7 @@ import VisualEditsMessenger from "../visual-edits/VisualEditsMessenger";
 import ErrorReporter from "@/components/ErrorReporter";
 import Script from "next/script";
 import { Providers } from "@/components/Provider";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "VIRALIS - AI Social Growth CRM",
@@ -47,6 +48,7 @@ export default function RootLayout({
           />
           {children}
           <VisualEditsMessenger />
+          <Toaster />
         </Providers>
       </body>
     </html>

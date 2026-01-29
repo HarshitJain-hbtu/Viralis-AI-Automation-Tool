@@ -46,6 +46,23 @@ const userSchema = new mongoose_1.Schema({
     name: { type: String, required: true },
     role: { type: String, enum: ['admin', 'user'], default: 'user' },
     businessId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Business', required: true },
+    socialAccounts: {
+        youtube: {
+            accessToken: String,
+            refreshToken: String,
+            channelId: String,
+            stats: mongoose_1.Schema.Types.Mixed
+        },
+        facebook: {
+            accessToken: String,
+            userId: String,
+            pageId: String,
+            stats: mongoose_1.Schema.Types.Mixed
+        },
+        instagram: {
+            stats: mongoose_1.Schema.Types.Mixed
+        }
+    }
 }, { timestamps: true });
 // Hash password before saving
 userSchema.pre('save', async function (next) {

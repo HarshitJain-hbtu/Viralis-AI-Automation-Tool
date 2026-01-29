@@ -71,6 +71,15 @@ export interface IBusiness extends Document {
         twilio?: string;
     };
 
+    // AI Knowledge Base
+    knowledgeBase?: {
+        businessHours?: string;
+        contactPhone?: string;
+        address?: string;
+        services?: Array<{ name: string; price: string }>;
+        customInstructions?: string;
+    };
+
     createdAt: Date;
     updatedAt: Date;
 }
@@ -145,8 +154,17 @@ const businessSchema = new Schema<IBusiness>(
             deepgram: String,
             twilio: String,
         },
+
+        knowledgeBase: {
+            businessHours: String,
+            contactPhone: String,
+            address: String,
+            services: [{ name: String, price: String }],
+            customInstructions: String
+        },
     },
     { timestamps: true }
 );
 
-export const Business = mongoose.model<IBusiness>('Business', businessSchema);
+const Business = mongoose.model<IBusiness>('Business', businessSchema);
+export { Business };
