@@ -24,18 +24,18 @@ export async function generateCalendar(req: Request, res: Response) {
 
     // Generate unique ID for this calendar
     const calendarId = `cal_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     // Store calendar for later image generation
     calendarStore.set(calendarId, calendar);
 
-    res.json({
+    return res.json({
       calendarId,
       calendar,
       message: "30-day calendar generated. Click 'Generate Image' on any day to create the visual."
     });
   } catch (error) {
     console.error("Calendar generation error:", error);
-    res.status(500).json({ error: "Failed to generate calendar" });
+    return res.status(500).json({ error: "Failed to generate calendar" });
   }
 }
 
@@ -43,7 +43,7 @@ export async function generateCalendar(req: Request, res: Response) {
 export async function generateDayImage(req: Request, res: Response) {
   try {
     const { calendarId, day } = req.params;
-    
+
     const calendar = calendarStore.get(calendarId);
     if (!calendar) {
       return res.status(404).json({ error: "Calendar not found. Generate a new one." });
@@ -68,20 +68,20 @@ export async function generateDayImage(req: Request, res: Response) {
       throw new Error("n8n image generation failed");
     }
 
-    const imageData = await n8nResponse.json();
+    const imageData = await n8nResponse.json() as { image_url: string };
 
     // Update calendar with generated image
     dayData.image_url = imageData.image_url;
     dayData.image_generated = true;
 
-    res.json({
+    return res.json({
       day: dayData.day,
       image_url: imageData.image_url,
       visual_prompt: dayData.visual_prompt,
     });
   } catch (error) {
     console.error("Image generation error:", error);
-    res.status(500).json({ error: "Failed to generate image. Try again in a few seconds." });
+    return res.status(500).json({ error: "Failed to generate image. Try again in a few seconds." });
   }
 }
 
@@ -89,10 +89,10 @@ export async function generateDayImage(req: Request, res: Response) {
 export async function getCalendar(req: Request, res: Response) {
   const { calendarId } = req.params;
   const calendar = calendarStore.get(calendarId);
-  
+
   if (!calendar) {
     return res.status(404).json({ error: "Calendar not found" });
   }
-  
-  res.json({ calendarId, calendar });
+
+  return res.json({ calendarId, calendar });
 }

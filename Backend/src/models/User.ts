@@ -21,6 +21,9 @@ export interface IUser extends Document {
             pageId?: string;
             stats?: any;
         };
+        instagram?: {
+            stats?: any;
+        };
     };
     comparePassword(candidate: string): Promise<boolean>;
     createdAt: Date;
@@ -46,6 +49,9 @@ const userSchema = new Schema<IUser>(
                 accessToken: String,
                 userId: String,
                 pageId: String,
+                stats: Schema.Types.Mixed
+            },
+            instagram: {
                 stats: Schema.Types.Mixed
             }
         }

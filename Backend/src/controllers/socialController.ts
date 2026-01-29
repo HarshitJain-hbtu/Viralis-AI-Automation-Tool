@@ -117,6 +117,7 @@ export const mockFacebookAuth = async (req: Request, res: Response) => {
     }
 };
 
+import axios from 'axios';
 import { google } from 'googleapis';
 
 export const getSocialStats = async (req: Request, res: Response) => {
@@ -228,19 +229,136 @@ export const getSocialStats = async (req: Request, res: Response) => {
                         recentVideos: recentVideos,
                         recentComments: recentComments
                     };
-                    await user.markModified('socialAccounts'); // Tell Mongoose mixed type changed
-                    await user.save();
+                    user.markModified('socialAccounts');
                 }
             } catch (ytError: any) {
                 console.error('Failed to fetch YouTube stats:', ytError.message);
-                // Continue, return stale stats if any
-                // If token expired, we should handle refresh here.
             }
         }
 
+        // Live Fetch for Facebook (and Instagram)
+        if (user.socialAccounts?.facebook?.accessToken) {
+            try {
+                const fbAccessToken = user.socialAccounts.facebook.accessToken;
+
+                // 1. Get Accounts (Pages)
+                const accountsResponse = await axios.get(`https://graph.facebook.com/v19.0/me/accounts`, {
+                    params: { access_token: fbAccessToken }
+                });
+
+                if (accountsResponse.data.data && accountsResponse.data.data.length > 0) {
+                    // Use the first page for now
+                    const page = accountsResponse.data.data[0];
+                    const pageId = page.id;
+                    const pageAccessToken = page.access_token;
+
+                    // --- FACEBOOK STATS ---
+                    // 2. Get Page Stats
+                    const pageStatsResponse = await axios.get(`https://graph.facebook.com/v19.0/${pageId}`, {
+                        params: {
+                            fields: 'followers_count,fan_count,rating_count,talking_about_count,name,picture{url},instagram_business_account',
+                            access_token: pageAccessToken
+                        }
+                    });
+
+                    const pageData = pageStatsResponse.data;
+
+                    // 3. Get Page Feed (posts)
+                    const feedResponse = await axios.get(`https://graph.facebook.com/v19.0/${pageId}/feed`, {
+                        params: {
+                            fields: 'id,message,created_time,full_picture,likes.summary(true).limit(0),comments.summary(true).limit(0)',
+                            limit: 5,
+                            access_token: pageAccessToken
+                        }
+                    });
+
+                    const recentPosts = feedResponse.data.data.map((post: any) => ({
+                        id: post.id,
+                        message: post.message,
+                        created_time: post.created_time,
+                        full_picture: post.full_picture,
+                        likes_count: post.likes?.summary?.total_count || 0,
+                        comments_count: post.comments?.summary?.total_count || 0
+                    }));
+
+                    // Update DB - Facebook
+                    user.socialAccounts.facebook.stats = {
+                        followers_count: pageData.followers_count,
+                        rating_count: pageData.rating_count,
+                        engagement: 'Medium',
+                        pageName: pageData.name,
+                        avatarUrl: pageData.picture?.data?.url,
+                        recentPosts: recentPosts
+                    };
+
+                    // --- INSTAGRAM STATS ---
+                    if (pageData.instagram_business_account && pageData.instagram_business_account.id) {
+                        try {
+                            const igUserId = pageData.instagram_business_account.id;
+
+                            // 1. Get IG Account Stats
+                            const igAccountResponse = await axios.get(`https://graph.facebook.com/v19.0/${igUserId}`, {
+                                params: {
+                                    fields: 'biography,followers_count,media_count,name,profile_picture_url,username',
+                                    access_token: pageAccessToken
+                                }
+                            });
+                            const igData = igAccountResponse.data;
+
+                            // 2. Get IG Media
+                            const igMediaResponse = await axios.get(`https://graph.facebook.com/v19.0/${igUserId}/media`, {
+                                params: {
+                                    fields: 'id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,like_count,comments_count',
+                                    limit: 5,
+                                    access_token: pageAccessToken
+                                }
+                            });
+
+                            const recentMedia = igMediaResponse.data.data.map((media: any) => ({
+                                id: media.id,
+                                caption: media.caption,
+                                media_type: media.media_type,
+                                media_url: media.media_type === 'VIDEO' ? media.thumbnail_url : media.media_url, // Use thumbnail for videos
+                                permalink: media.permalink,
+                                timestamp: media.timestamp,
+                                like_count: media.like_count || 0,
+                                comments_count: media.comments_count || 0
+                            }));
+
+                            // Initialize instagram object if missing
+                            if (!user.socialAccounts.instagram) {
+                                user.socialAccounts.instagram = { stats: {} };
+                            }
+
+                            // Update DB - Instagram
+                            user.socialAccounts.instagram.stats = {
+                                username: igData.username,
+                                followers_count: igData.followers_count,
+                                media_count: igData.media_count,
+                                profile_picture_url: igData.profile_picture_url,
+                                recentMedia: recentMedia
+                            };
+
+                        } catch (igError: any) {
+                            console.error('Failed to fetch Instagram stats:', igError.response?.data || igError.message);
+                        }
+                    } else {
+                        // console.log('No Instagram Business Account linked to this Page.');
+                    }
+
+                    user.markModified('socialAccounts');
+                }
+            } catch (fbError: any) {
+                console.error('Failed to fetch Facebook stats:', fbError.response?.data || fbError.message);
+            }
+        }
+
+        await user.save();
+
         return res.json({
             youtube: user.socialAccounts?.youtube?.stats || null,
-            facebook: user.socialAccounts?.facebook?.stats || null
+            facebook: user.socialAccounts?.facebook?.stats || null,
+            instagram: user.socialAccounts?.instagram?.stats || null
         });
 
     } catch (error) {
