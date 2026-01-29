@@ -1,15 +1,17 @@
 import { Router } from "express";
-import { generateCalendar, generateDayImage, getCalendar } from "../controllers/aiCalendarController";
+import { generateCalendar, getCalendar } from "../controllers/aiCalendarController";
+import { authMiddleware } from "../middleware/auth.middleware";
 
 const router = Router();
 
-// Generate 30-day text calendar
-router.post("/calendar", generateCalendar);
+// POST /api/ai-content/calendar
+// Generates a new 30-day content calendar
+// Protected route, user must be logged in
+router.post("/calendar", authMiddleware, generateCalendar);
 
-// Get existing calendar
-router.get("/calendar/:calendarId", getCalendar);
-
-// Generate image for specific day (on-demand)
-router.post("/calendar/:calendarId/day/:day/image", generateDayImage);
+// GET /api/ai-content/calendar/:calendarId
+// Retrieves a generated calendar by its ID
+// Also protected
+router.get("/calendar/:calendarId", authMiddleware, getCalendar);
 
 export default router;
