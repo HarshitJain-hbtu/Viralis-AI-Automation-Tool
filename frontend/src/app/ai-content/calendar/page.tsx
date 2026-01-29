@@ -1,5 +1,14 @@
 'use client';
-import { useState } from 'react';
+import { useState, FormEvent } from 'react';
+
+interface CalendarItem {
+  day: number;
+  hook: string;
+  caption: string;
+  hashtags: string[];
+  visual_prompt: string;
+  image_url?: string;
+}
 
 export default function CalendarPage() {
   const [formData, setFormData] = useState({
@@ -9,13 +18,13 @@ export default function CalendarPage() {
     description: '',
     brand: { name: 'Chai Junction', colors: ['#F97316', '#1D4ED8'] }
   });
-  const [calendar, setCalendar] = useState([]);
+  const [calendar, setCalendar] = useState<CalendarItem[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Your n8n webhook
   const N8N_IMAGE_URL = 'https://your-n8n.com/webhook/image';
 
-  const generateCalendar = async (e) => {
+  const generateCalendar = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
@@ -35,7 +44,7 @@ export default function CalendarPage() {
     }
   };
 
-  const generateImageForDay = async (dayIndex) => {
+  const generateImageForDay = async (dayIndex: number) => {
     const item = calendar[dayIndex];
     if (!item) return;
 
@@ -105,7 +114,7 @@ export default function CalendarPage() {
 
                 {/* Hashtags */}
                 <div className="flex flex-wrap gap-1 mb-4">
-                  {item.hashtags.slice(0, 6).map((tag, i) => (
+                  {item.hashtags.slice(0, 6).map((tag: string, i: number) => (
                     <span key={i} className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">
                       {tag}
                     </span>

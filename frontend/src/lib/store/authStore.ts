@@ -25,7 +25,7 @@ interface AuthState {
     register: (name: string, email: string, password: string) => Promise<void>;
     logout: () => void;
     checkAuth: () => Promise<void>;
-    socialStats: { youtube: any; facebook: any } | null;
+    socialStats: { youtube: any; facebook: any; instagram: any } | null;
     fetchSocialStats: () => Promise<void>;
     replyToComment: (commentId: string, text: string) => Promise<any>;
 }

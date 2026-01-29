@@ -1,6 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, FormEvent } from 'react';
+
+interface ContentResult {
+  caption: string;
+  hook: string;
+  hashtags: string[];
+  visual_prompt: string;
+}
 
 export default function AIContentPage() {
   const [formData, setFormData] = useState({
@@ -8,10 +15,10 @@ export default function AIContentPage() {
     city: 'Indore',
     platform: 'Instagram Reels'
   });
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<ContentResult | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
