@@ -413,3 +413,38 @@ export const postYouTubeReply = async (req: Request, res: Response) => {
         return res.status(500).json({ error: 'Failed to post reply to YouTube', details: error.message });
     }
 };
+
+export const disconnectSocial = async (req: Request, res: Response) => {
+    try {
+        const userId = (req as any).user.userId;
+        const { provider } = req.params;
+
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        if (!user.socialAccounts) {
+            return res.json({ message: 'No accounts connected' });
+        }
+
+        if (provider === 'youtube') {
+            user.socialAccounts.youtube = undefined;
+        } else if (provider === 'facebook') {
+            user.socialAccounts.facebook = undefined;
+            // Instagram is usually linked to FB, so might want to clear it too or handle separately
+            user.socialAccounts.instagram = undefined;
+        } else if (provider === 'instagram') {
+            user.socialAccounts.instagram = undefined;
+        } else {
+            return res.status(400).json({ error: 'Invalid provider' });
+        }
+
+        user.markModified('socialAccounts');
+        await user.save();
+
+        return res.json({ message: `Disconnected ${provider}`, socialAccounts: user.socialAccounts });
+
+    } catch (error) {
+        console.error('Disconnect Error:', error);
+        return res.status(500).json({ error: 'Disconnect failed' });
+    }
+};

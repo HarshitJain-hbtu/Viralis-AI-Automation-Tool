@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Header } from "@/components/dashboard/Headers";
 import { Filter, Eye, Heart, TrendingUp, Plus, Search, Mail, Phone, MoreVertical, ExternalLink, RefreshCw } from "lucide-react";
 import { useLeadStore, InstagramMedia, VideoAnalysis, Lead } from '@/lib/store/leadStore';
 
@@ -81,7 +80,6 @@ export default function LeadManagement() {
 
     return (
         <div className="min-h-screen bg-[#FAFAFA]">
-            <Header />
 
             <main className="px-8 py-6 max-w-[1600px] mx-auto">
                 {/* Page Header */}

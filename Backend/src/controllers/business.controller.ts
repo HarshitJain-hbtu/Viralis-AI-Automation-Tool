@@ -19,6 +19,7 @@ export class BusinessController {
     static async updateProfile(req: Request, res: Response) {
         try {
             const {
+                name, // Fix: Extract Name
                 industryMode,
                 description,
                 location,
@@ -30,24 +31,47 @@ export class BusinessController {
                 knowledgeBase // Add knowledgeBase
             } = req.body;
 
+            console.log(`📝 [Update Profile] Updating Business: ${req.user?.businessId}`);
+            console.log('📦 Payload:', JSON.stringify(req.body, null, 2));
+
+            // Sanitization Helper
+            const removeEmpty = (obj: any) => {
+                if (!obj || typeof obj !== 'object') return obj;
+                Object.keys(obj).forEach(key => {
+                    if (obj[key] === "" || obj[key] === null) {
+                        delete obj[key];
+                    } else if (typeof obj[key] === 'object') {
+                        removeEmpty(obj[key]);
+                    }
+                });
+                return obj;
+            };
+
+            // Deep copy and clean specific objects prone to enum errors
+            const cleanBrandVoice = brandVoice ? removeEmpty(JSON.parse(JSON.stringify(brandVoice))) : undefined;
+            const cleanLocation = location ? removeEmpty(JSON.parse(JSON.stringify(location))) : undefined;
+
             const business = await Business.findByIdAndUpdate(
                 req.user?.businessId,
                 {
                     $set: {
+                        ...(name && { name }), // Fix: Update Name
                         ...(industryMode && { industryMode }),
                         ...(description && { description }),
-                        ...(location && { location }),
-                        ...(brandVoice && { brandVoice }),
+                        ...(cleanLocation && Object.keys(cleanLocation).length > 0 && { location: cleanLocation }),
+                        ...(cleanBrandVoice && Object.keys(cleanBrandVoice).length > 0 && { brandVoice: cleanBrandVoice }),
                         ...(visualStyle && { visualStyle }),
                         ...(competitors && { competitors }),
                         ...(voiceAgent && { voiceAgent }),
                         ...(onboardingStep !== undefined && { onboardingStep }),
                         ...(knowledgeBase && { knowledgeBase }), // Update knowledgeBase
+                        ...(req.body.subscriptionTier && { subscriptionTier: req.body.subscriptionTier }), // Allow Manual Tier Update
                     }
                 },
                 { new: true, runValidators: true }
             );
 
+            console.log(`✅ [Update Profile] Result Name: ${business?.name}`);
             if (!business) return res.status(404).json({ error: 'Business not found' });
             return res.json(business);
         } catch (error) {
@@ -60,15 +84,17 @@ export class BusinessController {
     static async getPublicProfile(req: Request, res: Response) {
         try {
             const { brandId } = req.params;
-            
+            console.log(`🔍 [Public API] Fetching Brand Profile: ${brandId}`);
+
             // Validate ID format
             if (!brandId.match(/^[0-9a-fA-F]{24}$/)) {
-                 return res.status(400).json({ error: 'Invalid Brand ID' });
+                return res.status(400).json({ error: 'Invalid Brand ID' });
             }
 
             const business = await Business.findById(brandId)
-                .select('name businessHours knowledgeBase location industry');
+                .select('name businessHours knowledgeBase location industry industryMode brandVoice description');
 
+            console.log(`✅ [Public API] Found Business: ${business?.name}`);
             if (!business) return res.status(404).json({ error: 'Business not found' });
             return res.json(business);
         } catch (error) {
@@ -108,9 +134,9 @@ export class BusinessController {
                 }
             });
 
-            return res.json({ 
+            return res.json({
                 message: "Database Seeded! Iron Flex Gym Created.",
-                _id: business._id 
+                _id: business._id
             });
 
         } catch (error) {

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store/authStore';
 import { Sidebar } from '@/components/dashboard/Sidebar';
+import { Header } from '@/components/dashboard/Headers';
 
 export default function DashboardLayout({
     children,
@@ -41,8 +42,11 @@ export default function DashboardLayout({
             <div className="hidden md:block">
                 <Sidebar />
             </div>
-            <main className="flex-1 overflow-y-auto h-screen md:ml-64 pt-16">
-                {children}
+            <main className="flex-1 flex flex-col h-screen overflow-hidden md:ml-64">
+                <Header />
+                <div className="flex-1 overflow-y-auto">
+                    {children}
+                </div>
             </main>
         </div>
     );

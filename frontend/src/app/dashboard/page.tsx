@@ -1,6 +1,6 @@
 'use client';
+import { useState } from 'react';
 
-import { Header } from "@/components/dashboard/Headers";
 import { RichStatsCard } from "@/components/dashboard/RichStatsCard";
 import { GrowthChart } from "@/components/dashboard/GrowthChart";
 import { LocalSEOMap } from "@/components/dashboard/LocalSEOMap";
@@ -14,10 +14,10 @@ import { useAuthStore } from "@/lib/store/authStore";
 
 export default function Dashboard() {
     const { user } = useAuthStore();
+    const [activeTab, setActiveTab] = useState('leads');
 
     return (
         <div className="min-h-screen bg-[#FAFAFA]">
-            <Header />
 
             <main className="px-8 py-6 max-w-[1600px] mx-auto">
                 <div className="mb-8 flex justify-between items-end">
@@ -53,11 +53,7 @@ export default function Dashboard() {
                 </div>
 
 
-                {/* Stats Row */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-                    {/* Growth Chart */}
 
-                {/* Social Integration */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                     <div className="lg:col-span-1">
                         <SocialConnect />

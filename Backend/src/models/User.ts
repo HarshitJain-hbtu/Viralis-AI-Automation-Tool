@@ -6,6 +6,7 @@ export interface IUser extends Document {
     password?: string;
     googleId?: string;
     name: string;
+    avatar?: string;
     role: 'admin' | 'user';
     businessId: mongoose.Types.ObjectId;
     socialAccounts?: {
@@ -36,6 +37,7 @@ const userSchema = new Schema<IUser>(
         password: { type: String, select: false },
         googleId: { type: String },
         name: { type: String, required: true },
+        avatar: { type: String }, // Optional custom avatar URL
         role: { type: String, enum: ['admin', 'user'], default: 'user' },
         businessId: { type: Schema.Types.ObjectId, ref: 'Business', required: true },
         socialAccounts: {
