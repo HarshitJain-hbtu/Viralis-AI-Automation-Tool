@@ -52,8 +52,11 @@ export function Header() {
           Share
         </Button>
 
-        <Button className="bg-[#1C1C1C] text-white hover:bg-gray-800 h-9 rounded-lg gap-2 px-4 font-medium shadow-sm">
-          <Plus className="w-4 h-4" />
+        <Button 
+          onClick={() => router.push('/dashboard/ai-calendar')}
+          className="bg-[#1C1C1C] text-white hover:bg-gray-800 h-9 rounded-lg gap-2 px-4 font-medium shadow-sm"
+        >
+          <Sparkles className="w-4 h-4" />
           Create content
         </Button>
 
