@@ -50,6 +50,7 @@ const toolItems = [
   { icon: Video, label: "Reels Studio", href: "/studio" },
   { icon: Mic, label: "Voice Lab", href: "/voice" },
   { icon: Search, label: "Competitor Spy", href: "/spy" },
+  { icon: Search, label: "Lead Management", href: "/lead-management" },
 ];
 
 const secondaryItems = [

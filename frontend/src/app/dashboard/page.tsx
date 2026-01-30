@@ -9,11 +9,9 @@ import { BrandVoiceMeter } from "@/components/dashboard/BrandVoiceMeter";
 import { ActionCenter } from "@/components/dashboard/ActionCenter";
 import { Filter, LayoutGrid, Plus, MoreVertical, Phone, MessageSquare, User, Calendar, Video } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
-import { useState } from "react";
 
 export default function Dashboard() {
     const { user } = useAuthStore();
-    const [activeTab, setActiveTab] = useState<'content' | 'leads'>('leads');
 
     return (
         <div className="min-h-screen bg-[#FAFAFA]">
@@ -23,21 +21,7 @@ export default function Dashboard() {
                 <div className="mb-8 flex justify-between items-end">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">Business Overview</h1>
-                        <p className="text-gray-500 mt-1">AI CRM & Content Engine</p>
-                    </div>
-                    <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
-                        <button
-                            onClick={() => setActiveTab('leads')}
-                            className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-all ${activeTab === 'leads' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
-                        >
-                            CRM & Leads
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('content')}
-                            className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-all ${activeTab === 'content' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
-                        >
-                            Content Engine
-                        </button>
+                        <p className="text-gray-500 mt-1">AI Content Engine</p>
                     </div>
                 </div>
 
@@ -49,52 +33,9 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* CRM Stats Row */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-                    {/* 1. Leads Funnel */}
-                    <RichStatsCard
-                        title="Lead Pipeline"
-                        total="42"
-                        subStats={[
-                            { label: "New", value: "12", color: "bg-blue-500" },
-                            { label: "Qualified", value: "8", color: "bg-green-500" },
-                            { label: "Calls", value: "22", color: "bg-orange-500" }
-                        ]}
-                        chart={
-                            <div className="h-16 w-full flex gap-0.5 rounded-lg overflow-hidden mt-2">
-                                <div className="h-full bg-blue-500 w-[30%] opacity-90" />
-                                <div className="h-full bg-green-500 w-[20%] opacity-90" />
-                                <div className="h-full bg-orange-500 w-[50%] opacity-90" />
-                            </div>
-                        }
-                    />
-
-                    {/* 2. Voice Agent Stats */}
-                    <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-[0_2px_4px_rgba(0,0,0,0.02)] flex flex-col justify-between">
-                        <div className="flex justify-between items-start">
-                            <div className="flex items-center gap-2 text-gray-900 font-semibold">
-                                <div className="w-2 h-2 rounded-full bg-orange-500" />
-                                Voice Agent
-                            </div>
-                            <span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full">ACTIVE</span>
-                        </div>
-                        <div className="flex items-end gap-2 mt-4">
-                            <span className="text-3xl font-bold text-gray-900">89</span>
-                            <span className="text-sm text-gray-500 mb-1">Calls handled</span>
-                        </div>
-                        <div className="mt-4 space-y-2">
-                            <div className="flex justify-between text-sm">
-                                <span className="text-gray-500">Appointments Booked</span>
-                                <span className="font-semibold">14</span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                                <span className="text-gray-500">FAQs Answered</span>
-                                <span className="font-semibold">65</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* 3. Growth Chart */}
+                {/* Stats Row */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+                    {/* Growth Chart */}
                     <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-[0_2px_4px_rgba(0,0,0,0.02)] flex flex-col">
                         <div className="flex justify-between items-center mb-4">
                             <div className="flex items-center gap-2 text-gray-900 font-semibold">
@@ -106,13 +47,18 @@ export default function Dashboard() {
                             <GrowthChart />
                         </div>
                     </div>
+
+                    {/* Brand Voice Meter */}
+                    <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-[0_2px_4px_rgba(0,0,0,0.02)] flex flex-col">
+                        <BrandVoiceMeter />
+                    </div>
                 </div>
 
-                {/* Main Board Area - Toggles between CRM and Content */}
+                {/* Main Board Area - Content Production */}
                 <div>
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-lg font-bold text-gray-900">
-                            {activeTab === 'leads' ? 'Lead Management' : 'Content Production'}
+                            Content Production
                         </h2>
 
                         <div className="flex gap-2">
@@ -122,46 +68,23 @@ export default function Dashboard() {
                             </button>
                             <button className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-gray-900 text-white hover:bg-gray-800 rounded-lg transition-colors">
                                 <Plus className="w-4 h-4" />
-                                {activeTab === 'leads' ? 'Add Lead' : 'Create Post'}
+                                Create Post
                             </button>
                         </div>
                     </div>
 
-                    {activeTab === 'leads' ? (
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                            <KanbanColumn
-                                title="New Leads"
-                                count={12}
-                                items={[
-                                    { title: "John Doe", tag: "Voice Call", date: "2m ago", icon: Phone, color: "text-orange-500" },
-                                    { title: "Sarah Smith", tag: "Website", date: "1h ago", icon: User, color: "text-blue-500" }
-                                ]}
-                            />
-                            <KanbanColumn
-                                title="Qualified"
-                                count={5}
-                                color="text-green-500"
-                                items={[
-                                    { title: "Mike Johnson", tag: "High Intent", date: "Yesterday", icon: User, color: "text-green-600" }
-                                ]}
-                            />
-                            <KanbanColumn title="Follow Up" count={3} color="text-yellow-500" items={[]} />
-                            <KanbanColumn title="Closed" count={45} color="text-gray-400" items={[]} />
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                            <KanbanColumn
-                                title="Idea Backlog"
-                                count={12}
-                                items={[
-                                    { title: "Summer Promo", tag: "Marketing", date: "Sept 19", icon: Calendar, color: "text-purple-500" }
-                                ]}
-                            />
-                            <KanbanColumn title="Scripting" count={4} color="text-blue-500" items={[]} />
-                            <KanbanColumn title="Ready to Post" count={2} color="text-green-500" items={[]} />
-                            <KanbanColumn title="Published" count={128} color="text-gray-500" items={[]} />
-                        </div>
-                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <KanbanColumn
+                            title="Idea Backlog"
+                            count={12}
+                            items={[
+                                { title: "Summer Promo", tag: "Marketing", date: "Sept 19", icon: Calendar, color: "text-purple-500" }
+                            ]}
+                        />
+                        <KanbanColumn title="Scripting" count={4} color="text-blue-500" items={[]} />
+                        <KanbanColumn title="Ready to Post" count={2} color="text-green-500" items={[]} />
+                        <KanbanColumn title="Published" count={128} color="text-gray-500" items={[]} />
+                    </div>
                 </div>
 
                 {/* Widgets Row */}

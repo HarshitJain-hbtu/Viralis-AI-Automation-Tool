@@ -10,6 +10,7 @@ import { connectMongoDB } from './config/mongodb';
 import { connectRedis } from './config/redis';
 import authRoutes from './routes/auth.routes';
 import businessRoutes from './routes/business.routes';
+import leadRoutes from './routes/lead.routes';
 
 // Initialize App
 const app = express();
@@ -44,6 +45,7 @@ io.on('connection', (socket) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/business', businessRoutes);
+app.use('/api/leads', leadRoutes);
 app.get('/', (_req, res) => {
     res.send('🚀 VIRALIS Backend is Running (TypeScript)!');
 });
