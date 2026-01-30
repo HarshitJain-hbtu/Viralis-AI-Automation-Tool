@@ -1,0 +1,302 @@
+[
+  {
+    "day": 1,
+    "hook": "It all started with a dusty box of records.",
+    "caption": "Ever find a passion in the most unexpected place? For us, it was a love for all things retro, sparked by a collection of vintage vinyl. That spark grew into {{BRAND_NAME}}, a place where we could share our love for the stories and styles of the past. We're more than just a store; we're a time capsule. 🕰️✨",
+    "hashtags": ["#{{BRAND_NAME}}", "#BrandStory", "#WhyWeStarted", "#{{NICHE}}", "#{{CITY}}Vintage", "#RetroLove", "#PassionProject", "#VintageFinds"],
+    "post_type": "carousel",
+    "best_time": "5–7 PM",
+    "cta": "Share your own 'spark' story in the comments!",
+    "visual_prompt": "A carousel post. The first slide is a moody, warm-toned photo of a vintage record player. Subsequent slides show close-ups of album art, vintage fashion details, and maybe an old photograph of the founder."
+  },
+  {
+    "day": 2,
+    "hook": "Our mission? To bring history back to life.",
+    "caption": "At {{BRAND_NAME}}, our mission is simple: to rescue timeless pieces from being forgotten. We believe that vintage isn't just about 'old clothes'; it's about sustainability, individuality, and celebrating the craftsmanship of a bygone era. Every stitch has a story. Join us in keeping those stories alive. 🌱♻️",
+    "hashtags": ["#SustainableFashion", "#VintageMission", "#CelebrateHistory", "#{{NICHE}}Style", "#{{CITY}}Fashion", "#Individuality", "#EcoChic", "#WearTheStory"],
+    "post_type": "static",
+    "best_time": "7–9 PM",
+    "cta": "What does sustainable fashion mean to you?",
+    "visual_prompt": "A clean, text-based graphic with a bold, retro font. The brand's mission statement is central, set against a textured paper background. The brand logo is at the bottom."
+  },
+  {
+    "day": 3,
+    "hook": "Meet the mind behind {{BRAND_NAME}}.",
+    "caption": "Hey everyone, I'm the founder of {{BRAND_NAME}}! My love for {{NICHE}} started when [insert brief, personal anecdote, e.g., 'I inherited my grandmother's collection of 70s dresses']. I poured my heart into creating a space that feels like a treasure hunt. Thanks for being here on this journey with me! 🙏❤️",
+    "hashtags": ["#FounderStory", "#MeetTheOwner", "#SmallBusinessOwner", "#{{CITY}}Local", "#EntrepreneurLife", "#PassionToAction", "#BehindTheBrand", "#{{BRAND_NAME}}"],
+    "post_type": "story",
+    "best_time": "12–2 PM",
+    "cta": "Ask me anything in the comments!",
+    "visual_prompt": "A friendly, casual portrait of the founder, either in the store or holding a favorite vintage item. The lighting is warm and inviting. They are smiling and looking at the camera."
+  },
+  {
+    "day": 4,
+    "hook": "Why the name '{{BRAND_NAME}}'?",
+    "caption": "We get asked this a lot! We chose '{{BRAND_NAME}}' because it perfectly captures [explain the meaning, e.g., 'the idea that style is cyclical and great threads are timeless']. It's a nod to the quality and enduring appeal of the pieces we curate. What do you think, does it suit us? 😉",
+    "hashtags": ["#BrandName", "#StoryBehindTheName", "#BrandIdentity", "#{{NICHE}}Community", "#Whatsinaname", "#{{CITY}}Business", "#RetroVibes", "#TimelessStyle"],
+    "post_type": "static",
+    "best_time": "6–8 PM",
+    "cta": "Drop a comment if you love our name!",
+    "visual_prompt": "A simple, elegant graphic that features the brand's logo prominently. Underneath the logo, in a smaller, clean font, is the text explaining the name's origin. Use the brand's color palette."
+  },
+  {
+    "day": 5,
+    "hook": "Our promise: style that doesn't cost the Earth.",
+    "caption": "Fashion is one of the world's biggest polluters. That's a fact we want to change. By choosing vintage, you're not just getting a unique piece; you're casting a vote for sustainability, reducing waste, and giving beautiful garments a second life. It’s a style statement and an environmental one. 🌍💚",
+    "hashtags": ["#SustainableFashion", "#VintageMission", "#CelebrateHistory", "#{{NICHE}}Style", "#{{CITY}}Fashion", "#Individuality", "#EcoChic", "#WearTheStory"],
+    "post_type": "carousel",
+    "best_time": "4–6 PM",
+    "cta": "Tag a friend who loves sustainable fashion!",
+    "visual_prompt": "A carousel with impactful stats. Slide 1: 'Fashion's Footprint is Huge'. Slide 2: A shocking statistic about textile waste. Slide 3: 'How Does Vintage Help?'. Slide 4: A positive message about circular fashion. Use earthy tones and simple icons."
+  },
+  {
+    "day": 6,
+    "hook": "Denim that tells a story. 👖",
+    "caption": "There's nothing like a perfectly worn-in pair of vintage jeans. From classic Levi's to 70s bell-bottoms, our denim collection is curated for character and quality. Each fade, fray, and patch tells a story. Ready to find the pair that speaks to you?",
+    "hashtags": ["#VintageDenim", "#Levis", "#BellBottoms", "#HeroProduct", "#DenimLover", "#RetroStyle", "#{{CITY}}Shopping", "#DurableFashion"],
+    "post_type": "carousel",
+    "best_time": "7–9 PM",
+    "cta": "Which denim era is your favorite? 70s, 80s, or 90s?",
+    "visual_prompt": "A carousel of high-quality, detailed shots of vintage denim. Show the texture of the fabric, unique pocket details, worn-in fades, and different styles hanging on a rack."
+  },
+  {
+    "day": 7,
+    "hook": "The ultimate guide to our [Hero Product/Service].",
+    "caption": "Let's talk about our [Product/Service Name]! It's one of our bestsellers for a reason. Not only does it help you [key benefit 1], but it also makes it easy to [key benefit 2]. Perfect for [target user], it solves the problem of [problem]. Swipe to see how it works! 🤩",
+    "hashtags": ["#HeroProduct", "#Bestseller", "#ProductSpotlight", "#{{NICHE}}", "#HowToUse", "#Benefits", "#MustHave", "#{{BRAND_NAME}}Faves"],
+    "post_type": "carousel",
+    "best_time": "11 AM–1 PM",
+    "cta": "Have questions about it? Ask us below!",
+    "visual_prompt": "An informative carousel. Slide 1: A striking image of the product. Slides 2-4: A mix of text overlays and images explaining the benefits and use-cases. Slide 5: A customer testimonial about the product."
+  },
+  {
+    "day": 8,
+    "hook": "Tired of the same old look?",
+    "caption": "Unleash your inner style icon with our personal styling sessions! Whether you're revamping your wardrobe or hunting for the perfect outfit for an event, we're here to help. We'll handpick vintage pieces that match your vibe and budget. It's like a treasure hunt with your own personal guide. 🗺️✨",
+    "hashtags": ["#PersonalStyling", "#VintageStylist", "#{{CITY}}Style", "#WardrobeRevamp", "#FindYourStyle", "#ShoppingExperience", "#StyleService", "#{{BRAND_NAME}}"],
+    "post_type": "static",
+    "best_time": "6–8 PM",
+    "cta": "Book your free consultation today! Link in bio.",
+    "visual_prompt": "A stylish, text-heavy graphic that reads 'Unlock Your Unique Style: Personal Vintage Styling Sessions Now Available'. Use a retro font and place it over a soft-focus image of a rack of colorful vintage clothes."
+  },
+  {
+    "day": 9,
+    "hook": "It's the little things that matter most.",
+    "caption": "Don't forget the accessories! A bold vintage belt, a quirky silk scarf, or a statement handbag can transform an entire outfit. Our collection of accessories is a treasure trove of unique finds waiting to complete your look. What's your go-to accessory? 👜🧣",
+    "hashtags": ["#VintageAccessories", "#FinishingTouches", "#StyleDetails", "#Accessorize", "#UniqueFinds", "#RetroBling", "#{{CITY}}Vintage", "#CompleteTheLook"],
+    "post_type": "reel",
+    "best_time": "5–7 PM",
+    "cta": "Explore our accessories collection online!",
+    "visual_prompt": "A fast-paced reel showing different ways to style accessories. A scarf being tied in 3 different ways, a belt cinching a dress, a close-up of a unique handbag clasp. Upbeat, retro music in the background."
+  },
+  {
+    "day": 10,
+    "hook": "One jacket, three completely different vibes.",
+    "caption": "This is how versatile vintage can be! We took one classic 80s leather jacket and styled it for three occasions: 1️⃣ Casual cool with jeans and a band tee. 2️⃣ Date night over a silky slip dress. 3️⃣ Office chic with tailored trousers. How would you wear it? 🤔",
+    "hashtags": ["#StyleGuide", "#HowToStyle", "#VintageVersatility", "#WaystoWear", "#FashionInspo", "#80sFashion", "#LeatherJacket", "#{{BRAND_NAME}}Style"],
+    "post_type": "carousel",
+    "best_time": "7–9 PM",
+    "cta": "Which look is your favorite: 1, 2, or 3?",
+    "visual_prompt": "A carousel showing three distinct flat-lay outfits, all featuring the same hero jacket. Each slide clearly labels the 'vibe' (e.g., 'Weekend Casual'). The background is a clean, neutral color."
+  },
+  {
+    "day": 11,
+    "hook": "Ever wonder what goes on behind the scenes?",
+    "caption": "It’s not all glitz and glamour! A typical day at {{BRAND_NAME}} involves sorting through new arrivals, steaming endless racks of clothes, photographing our favorite finds, and, of course, helping you lovely people find your next treasure. It's a labor of love! ❤️",
+    "hashtags": ["#BehindTheScenes", "#DayInTheLife", "#SmallBizLife", "#VintageShop", "#HardWork", "#Passion", "#{{CITY}}SmallBusiness", "#StoreLife"],
+    "post_type": "reel",
+    "best_time": "12–2 PM",
+    "cta": "What else do you want to see from our BTS?",
+    "visual_prompt": "A time-lapse or quick-cut reel showing the team performing various tasks: unboxing a new shipment, steaming a wrinkly dress, laughing while arranging a display, and packing an online order."
+  },
+  {
+    "day": 12,
+    "hook": "Meet the dream team that makes it happen! ✨",
+    "caption": "It takes a village! Say hello to the amazing people behind {{BRAND_NAME}}. From our expert curator to our friendly sales staff, each person brings their unique passion for vintage to the table. We couldn't do it without them! 👋",
+    "hashtags": ["#MeetTheTeam", "#Teamwork", "#DreamTeam", "#VintageLovers", "#OurPeople", "#SmallBusinessTeam", "#{{CITY}}Community", "#FacesOfTheBrand"],
+    "post_type": "carousel",
+    "best_time": "6–8 PM",
+    "cta": "Show our team some love in the comments!",
+    "visual_prompt": "A carousel where each slide introduces a team member. Include a fun, candid photo of them and a short, quirky bio or their favorite vintage era."
+  },
+  {
+    "day": 13,
+    "hook": "The thrill of the hunt is REAL.",
+    "caption": "How do we find all these amazing pieces? It involves early mornings, long drives, and digging through countless racks and piles. We scour estate sales, flea markets, and private collections to unearth gems for the store. Every sourcing trip is an adventure! 🚗💨",
+    "hashtags": ["#TheThrillOfTheHunt", "#Sourcing", "#VintageFinds", "#TreasureHunting", "#HowWeDoIt", "#FleaMarketFinds", "#BehindTheMagic", "#VintageSourcing"],
+    "post_type": "story",
+    "best_time": "9–11 AM",
+    "cta": "Vote in our poll: Where should we go sourcing next?",
+    "visual_prompt": "A series of short video clips for stories, showing the 'reality' of sourcing. A shot from inside a car on the road, a quick pan over a messy pile of clothes at a flea market, a 'victory' shot of holding up a cool find."
+  },
+  {
+    "day": 14,
+    "hook": "Bringing vintage back to its former glory.",
+    "caption": "Every piece that comes through our doors gets a little TLC. Our process includes careful inspection, professional cleaning, and minor repairs like sewing buttons or fixing seams. We want to ensure your vintage find is ready to wear the moment you take it home. 🧼🧵",
+    "hashtags": ["#Restoration", "#VintageCare", "#QualityCheck", "#AttentionToDetail", "#TheProcess", "#LikeNew", "#HandledWithCare", "#{{BRAND_NAME}}"],
+    "post_type": "static",
+    "best_time": "4–6 PM",
+    "cta": "Do you have any vintage care questions?",
+    "visual_prompt": "A satisfying before-and-after shot. A split-screen image showing a garment looking a bit sad and wrinkled on one side, and perfectly clean, steamed, and presented on the other."
+  },
+  {
+    "day": 15,
+    "hook": "Welcome to our treasure chest!",
+    "caption": "Want a peek inside our stockroom? This is where the magic happens! It's an organized chaos of yet-to-be-listed items, our mending station, and racks upon racks of vintage goodness. It's our happy place. 😊",
+    "hashtags": ["#Stockroom", "#BehindTheCurtain", "#OrganizedChaos", "#SneakPeek", "#VintageInventory", "#WhereTheMagicHappens", "#BTS", "#TreasureChest"],
+    "post_type": "reel",
+    "best_time": "7–9 PM",
+    "cta": "Spot any items you want to see in the shop?",
+    "visual_prompt": "A 'walk-through' reel where the camera glides through the stockroom, panning slowly across neatly organized racks of clothing, boxes labeled with eras ('70s blouses', '80s denim'), and the mending station."
+  },
+  {
+    "day": 16,
+    "hook": "We love seeing our clothes find new homes!",
+    "caption": "Look at how amazing @customer_username looks in our 70s floral dress! This is what it's all about for us—seeing these beautiful pieces get a new life and bring joy. Thanks for sharing! You're rocking it. 💃",
+    "hashtags": ["#CustomerSpotlight", "#Spotted", "#StyledByYou", "#UGC", "#HappyCustomer", "#VintageInTheWild", "#CommunityLove", "#{{BRAND_NAME}}Family"],
+    "post_type": "static",
+    "best_time": "1–3 PM",
+    "cta": "Tag us in your photos for a chance to be featured!",
+    "visual_prompt": "A high-quality customer photo (with their permission, of course). The photo is reposted with a branded frame or border that includes the customer's handle and the brand's logo."
+  },
+  {
+    "day": 17,
+    "hook": "Your kind words mean the world to us.",
+    "caption": "This review just made our day! 'I found the most perfect vintage blazer here. The staff was so helpful and the quality is amazing!' Knowing you love your finds as much as we do is the best feeling. Thank you for your support! 🙏",
+    "hashtags": ["#Testimonial", "#5StarReview", "#CustomerFeedback", "#SocialProof", "#ThankYou", "#SmallBizLove", "#{{CITY}}Reviews", "#HappyClient"],
+    "post_type": "static",
+    "best_time": "10 AM–12 PM",
+    "cta": "Leave us a review if you've had a good experience!",
+    "visual_prompt": "A visually appealing graphic that looks like a screenshot of a 5-star review. The text of the review is large and easy to read, with star icons and maybe a small, abstract floral or retro graphic element."
+  },
+  {
+    "day": 18,
+    "hook": "You're the stylist! How would you wear this?",
+    "caption": "We just got this incredible 80s sequin top in. It's a statement piece for sure! But we want to know... how would YOU style it? For a concert? A holiday party? With jeans? Tell us your vision in the comments! 👇",
+    "hashtags": ["#StyleChallenge", "#HowWouldYouWearIt", "#UGCidea", "#GetCreative", "#FashionFun", "#CommunityPost", "#80sGlam", "#Interactive"],
+    "post_type": "carousel",
+    "best_time": "6–8 PM",
+    "cta": "The best styling idea gets a shoutout in our stories!",
+    "visual_prompt": "A carousel showing the item from all angles. The first slide is a high-quality photo of the sequin top on a mannequin or hanger against a plain background. Subsequent slides show close-up details of the sequins and construction."
+  },
+  {
+    "day": 19,
+    "hook": "Straight from the source! 🗣️",
+    "caption": "'I get compliments every single time I wear a piece from {{BRAND_NAME}}.' - Happy Customer. We could talk all day about our love for vintage, but hearing it from you is what truly matters. Your confidence is our greatest compliment!",
+    "hashtags": ["#QuoteOfTheDay", "#TestimonialTuesday", "#WordOfMouth", "#CustomerLove", "#Confidence", "#StyleThatSpeaks", "#VintageCommunity", "#RealFeedback"],
+    "post_type": "reel",
+    "best_time": "1–3 PM",
+    "cta": "Want to share your story? DM us a video!",
+    "visual_prompt": "A short, dynamic reel where a customer's text testimonial animates on screen word by word. Use bold, kinetic typography and set it to an upbeat, positive audio track. The background is a moving, blurred video of the inside of the shop."
+  },
+  {
+    "day": 20,
+    "hook": "Our community has the best style. Period.",
+    "caption": "Just a little appreciation post for our amazing community! We love scrolling through our tagged photos and seeing all the creative ways you style your finds from {{BRAND_NAME}}. You all are the heart of this brand. Keep tagging us! ❤️",
+    "hashtags": ["#CommunityAppreciation", "#WallOfFame", "#YouGotStyle", "#VintageFamily", "#Tagged", "#Inspiration", "#FashionCommunity", "#Thankful"],
+    "post_type": "carousel",
+    "best_time": "8–10 PM",
+    "cta": "Keep sharing your looks with #{{BRAND_NAME}}Style!",
+    "visual_prompt": "A vibrant, scrapbook-style collage of multiple customer photos (UGC). The photos are arranged in a dynamic grid, with some overlapping. Use fun digital 'tape' or 'polaroid frame' effects."
+  },
+  {
+    "day": 21,
+    "hook": "Is it vintage or just old? Here's how to tell.",
+    "caption": "Not all old clothes are true vintage! Here are 3 quick tips: 1️⃣ Check the tags - look for unique logos, paper tags, or a 'Made in USA' label with no other country listed. 2️⃣ Examine the zipper - metal zippers are often a good sign. 3️⃣ Look at the construction - single-stitching on hems is a classic vintage indicator. 🕵️‍♀️",
+    "hashtags": ["#VintageTips", "#HowTo", "#ThriftingTips", "#GoodToKnow", "#ExpertAdvice", "#Educational", "#VintageHunting", "#KnowYourStuff"],
+    "post_type": "carousel",
+    "best_time": "5–7 PM",
+    "cta": "Save this post for your next thrifting adventure!",
+    "visual_prompt": "An informative carousel with clear, close-up photos. Slide 1: 'How to Spot True Vintage'. Slide 2: A photo of a vintage clothing tag. Slide 3: A close-up of a metal zipper. Slide 4: A macro shot of single-stitching."
+  },
+  {
+    "day": 22,
+    "hook": "3 problems, 1 solution: the vintage scarf.",
+    "caption": "Got a boring bag, a bad hair day, or a plain outfit? The humble vintage scarf is your secret weapon! 💥 1. Tie it on your handbag for a pop of color. 2. Use it as a headband or tie it around your ponytail. 3. Wear it as a chic neckerchief. Voilà!",
+    "hashtags": ["#StyleHacks", "#LifeHacks", "#ProblemSolved", "#VintageScarf", "#HowToStyle", "#VersatileFashion", "#Accessorize", "#FashionTips"],
+    "post_type": "reel",
+    "best_time": "12–2 PM",
+    "cta": "What's your favorite way to use a scarf?",
+    "visual_prompt": "A quick-cut 'how-to' reel. The video shows someone demonstrating the three scarf tricks in rapid succession. The text 'Problem: Bad Hair Day' appears, followed by the solution. Use snappy transitions."
+  },
+  {
+    "day": 23,
+    "hook": "Help! How do I wash this?",
+    "caption": "We get it, washing vintage can be scary. Our #1 tip: when in doubt, hand wash cold and lay flat to dry! For delicate fabrics like silk or rayon, this is a must. For sturdy cottons, a gentle machine cycle can work. Avoid the dryer at all costs - it's a vintage killer! 🚫🔥",
+    "hashtags": ["#VintageCareTips", "#LaundryDay", "#HowToWash", "#FashionEducation", "#ProTip", "#HandleWithCare", "#SustainableLiving", "#ClothingCare"],
+    "post_type": "static",
+    "best_time": "7–9 PM",
+    "cta": "Share your best vintage care tips below!",
+    "visual_prompt": "An infographic-style post. Use icons to represent 'hand wash' (a basin with a hand), 'cold water' (a snowflake), and 'lay flat to dry' (a sweater icon with arrows). The text is minimal and very clear."
+  },
+  {
+    "day": 24,
+    "hook": "A little history lesson on [Fashion Trend]... 📜",
+    "caption": "Ever wonder where the [e.g., bell bottom] trend came from? It actually started with [brief origin story, e.g., sailors in the 19th century] and became a symbol of rebellion and freedom in the 70s. Fashion is history you can wear! Isn't that cool?",
+    "hashtags": ["#FashionHistory", "#HistoryLesson", "#DidYouKnow", "#BellBottoms", "#70sFashion", "#TrendHistory", "#VintageFacts", "#TheMoreYouKnow"],
+    "post_type": "carousel",
+    "best_time": "4–6 PM",
+    "cta": "What fashion trend should we cover next?",
+    "visual_prompt": "A carousel with a mix of historical photos and modern interpretations. Slide 1: Text 'The History of...' Slide 2: A vintage black-and-white photo of the trend. Slide 3: A colorful, iconic photo from the trend's heyday. Slide 4: A modern celebrity or influencer wearing the trend."
+  },
+  {
+    "day": 25,
+    "hook": "The secret to not looking like a costume.",
+    "caption": "Love vintage but don't want to look like you're in a period drama? The key is balance! Try the 'one-piece' rule: pair one standout vintage item (like a 70s blouse) with modern basics (like your favorite jeans and sneakers). It's the perfect way to make vintage feel fresh and current. ✨",
+    "hashtags": ["#StylingTips", "#MixAndMatch", "#ModernVintage", "#FashionAdvice", "#WearItWell", "#PersonalStyle", "#RuleToBreak", "#VintageModern"],
+    "post_type": "static",
+    "best_time": "6–8 PM",
+    "cta": "How do you mix vintage with your modern wardrobe?",
+    "visual_prompt": "A chic, minimalist graphic showing a simple equation: 'Vintage Blouse + Modern Jeans = Perfect Look'. Use clean fonts and maybe simple line drawings of the clothing items."
+  },
+  {
+    "day": 26,
+    "hook": "Psst... something special is happening this weekend.",
+    "caption": "You heard it here first! This weekend only, we're having a store-wide sale. Get 20% off EVERYTHING, including our new arrivals. It's our little thank you for being such an amazing community. Tag a friend who can't miss this! 🛍️💸",
+    "hashtags": ["#Sale", "#Promotion", "#SpecialOffer", "#VintageSale", "#{{CITY}}Deals", "#WeekendShopping", "#Discount", "#ShopSmall"],
+    "post_type": "static",
+    "best_time": "7–9 PM",
+    "cta": "The sale starts Friday! What's on your wishlist?",
+    "visual_prompt": "A bold, eye-catching announcement graphic. Use bright colors and a large, unmissable font that says '20% OFF - ENTIRE STORE - THIS WEEKEND ONLY'. The brand logo is clearly visible."
+  },
+  {
+    "day": 27,
+    "hook": "Time to play: This or That? 👈 👉",
+    "caption": "Let's settle the great debate! What's the superior vintage era? The groovy, free-spirited 70s or the bold, glamorous 80s? We're torn! Head to our stories to cast your vote in our poll. Let the battle of the decades begin! 🕺💃",
+    "hashtags": ["#ThisOrThat", "#Engagement", "#Poll", "#70svs80s", "#DecadeWars", "#VoteNow", "#CommunityFun", "#VintageDebate"],
+    "post_type": "story",
+    "best_time": "12–2 PM",
+    "cta": "Go vote in our stories now!",
+    "visual_prompt": "A two-part story poll. The first slide is a graphic with '70s' on one side and '80s' on the other, with iconic imagery for each (e.g., a disco ball for the 70s, neon for the 80s). The second slide uses the native poll sticker."
+  },
+  {
+    "day": 28,
+    "hook": "✨GIVEAWAY ALERT!✨ Win a vintage treasure box!",
+    "caption": "To say thank you for your incredible support, we're giving away a curated box of vintage goodies! One lucky winner will receive a vintage scarf, a piece of jewelry, and a $50 gift card to {{BRAND_NAME}}!\n\nTo Enter:\n1️⃣ Like this post\n2️⃣ Follow @{{BRAND_NAME}}\n3️⃣ Tag a friend who loves vintage (unlimited entries!)\n\nWinner will be announced on [Date]!",
+    "hashtags": ["#Giveaway", "#Contest", "#Win", "#Freebie", "#VintageGiveaway", "#Prize", "#EnterToWin", "#{{CITY}}Giveaway", "#ThankYou", "#CommunityLove"],
+    "post_type": "carousel",
+    "best_time": "6–8 PM",
+    "cta": "Good luck, everyone!",
+    "visual_prompt": "A very clear, exciting giveaway graphic on the first slide of a carousel. Use words like 'GIVEAWAY' in a huge font. The next slides show pictures of the prizes (the scarf, the jewelry, a mock-up of the gift card)."
+  },
+  {
+    "day": 29,
+    "hook": "Last call! Don't miss out on 20% off.",
+    "caption": "This is your final reminder! Our weekend sale ends tonight at midnight. This is your last chance to snag that piece you've been eyeing at a discount. Don't let the one that got away haunt your dreams! 👻",
+    "hashtags": ["#LastChance", "#SaleEnding", "#DontMissOut", "#FinalCall", "#FOMO", "#VintageSale", "#ActFast", "#ShopNow"],
+    "post_type": "reel",
+    "best_time": "5–7 PM",
+    "cta": "Click the link in our bio to shop the sale before it's over!",
+    "visual_prompt": "A fast-paced 'last call' reel. Use quick shots of popular items in the store with a text overlay that says 'SALE ENDS TONIGHT'. An audio clip with a ticking clock sound effect would be effective."
+  },
+  {
+    "day": 30,
+    "hook": "We've got answers! It's an AMA.",
+    "caption": "We've shared a lot about our brand this month, and now we want to hear from you! Ask us anything. Seriously. Questions about styling, vintage care, running a business, our favorite 80s movies... anything goes! Drop your questions in the comments and we'll answer them all. 🤔",
+    "hashtags": ["#AMA", "#AskMeAnything", "#QandA", "#GetToKnowUs", "#OpenBook", "#Community", "#LetsChat", "#BehindTheBusiness"],
+    "post_type": "static",
+    "best_time": "7–9 PM",
+    "cta": "What's on your mind? Ask away!",
+    "visual_prompt": "A simple but inviting graphic with a large question mark in the center. The text reads 'ASK US ANYTHING' in a friendly, handwritten-style font. The background is a warm, solid color from the brand palette."
+  }
+]

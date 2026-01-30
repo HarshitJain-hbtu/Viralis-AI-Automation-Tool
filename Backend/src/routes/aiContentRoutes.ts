@@ -1,15 +1,16 @@
 import { Router } from "express";
-import { generateCalendar, generateDayImage, getCalendar } from "../controllers/aiCalendarController";
+import { generateCalendar, getCalendar } from "../controllers/aiCalendarController";
 
 const router = Router();
 
-// Generate 30-day text calendar
+// POST /api/ai-content/calendar
+// Generates a new 30-day content calendar
+// This is a public route
 router.post("/calendar", generateCalendar);
 
-// Get existing calendar
+// GET /api/ai-content/calendar/:calendarId
+// Retrieves a generated calendar by its ID
+// This is a public route
 router.get("/calendar/:calendarId", getCalendar);
-
-// Generate image for specific day (on-demand)
-router.post("/calendar/:calendarId/day/:day/image", generateDayImage);
 
 export default router;

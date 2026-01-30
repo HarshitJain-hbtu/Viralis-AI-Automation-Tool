@@ -10,12 +10,9 @@ import { connectMongoDB } from './config/mongodb';
 import { connectRedis } from './config/redis';
 import authRoutes from './routes/auth.routes';
 import businessRoutes from './routes/business.routes';
-
 import leadRoutes from './routes/lead.routes';
-
 import { BusinessController } from './controllers/business.controller';
 import aiContentRoutes from './routes/aiContentRoutes';
-
 import socialRoutes from './routes/socialRoutes';
 import aiRoutes from './routes/aiRoutes';
 import './config/passport'; // Initialize Passport Config
@@ -62,15 +59,11 @@ app.use('/api/business', businessRoutes);
 app.use('/api/leads', leadRoutes);
 
 app.use('/api/ai', aiRoutes);
+app.use('/api/ai-content', aiContentRoutes); // Corrected and moved
 
 app.get('/', (_req, res) => {
     res.send('🚀 VIRALIS Backend is Running (TypeScript)!');
 });
-
-// Temporary Seed Route
-app.get('/api/seed-db', BusinessController.seedDatabase);
-
-app.use('/api', aiContentRoutes);
 
 
 // Start Server
