@@ -11,11 +11,9 @@ import { SocialConnect } from "@/components/SocialConnect";
 import { SocialStats } from "@/components/SocialStats";
 import { Filter, LayoutGrid, Plus, MoreVertical, Phone, MessageSquare, User, Calendar, Video } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
-import { useState } from "react";
 
 export default function Dashboard() {
     const { user } = useAuthStore();
-    const [activeTab, setActiveTab] = useState<'content' | 'leads'>('leads');
 
     return (
         <div className="min-h-screen bg-[#FAFAFA]">
@@ -25,6 +23,8 @@ export default function Dashboard() {
                 <div className="mb-8 flex justify-between items-end">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">Business Overview</h1>
+                        <p className="text-gray-500 mt-1">AI Content Engine</p>
+
                         <p className="text-gray-500 mt-1">Gemini 3 Powered CRM & Content Engine</p>
                     </div>
                     <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
@@ -40,6 +40,7 @@ export default function Dashboard() {
                         >
                             Content Engine
                         </button>
+
                     </div>
                 </div>
 
@@ -50,6 +51,11 @@ export default function Dashboard() {
                         <ActionCenter />
                     </div>
                 </div>
+
+
+                {/* Stats Row */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+                    {/* Growth Chart */}
 
                 {/* Social Integration */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -118,13 +124,18 @@ export default function Dashboard() {
                             <GrowthChart />
                         </div>
                     </div>
+
+                    {/* Brand Voice Meter */}
+                    <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-[0_2px_4px_rgba(0,0,0,0.02)] flex flex-col">
+                        <BrandVoiceMeter />
+                    </div>
                 </div>
 
-                {/* Main Board Area - Toggles between CRM and Content */}
+                {/* Main Board Area - Content Production */}
                 <div>
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-lg font-bold text-gray-900">
-                            {activeTab === 'leads' ? 'Lead Management' : 'Content Production'}
+                            Content Production
                         </h2>
 
                         <div className="flex gap-2">
@@ -134,46 +145,23 @@ export default function Dashboard() {
                             </button>
                             <button className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-gray-900 text-white hover:bg-gray-800 rounded-lg transition-colors">
                                 <Plus className="w-4 h-4" />
-                                {activeTab === 'leads' ? 'Add Lead' : 'Create Post'}
+                                Create Post
                             </button>
                         </div>
                     </div>
 
-                    {activeTab === 'leads' ? (
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                            <KanbanColumn
-                                title="New Leads"
-                                count={12}
-                                items={[
-                                    { title: "John Doe", tag: "Voice Call", date: "2m ago", icon: Phone, color: "text-orange-500" },
-                                    { title: "Sarah Smith", tag: "Website", date: "1h ago", icon: User, color: "text-blue-500" }
-                                ]}
-                            />
-                            <KanbanColumn
-                                title="Qualified"
-                                count={5}
-                                color="text-green-500"
-                                items={[
-                                    { title: "Mike Johnson", tag: "High Intent", date: "Yesterday", icon: User, color: "text-green-600" }
-                                ]}
-                            />
-                            <KanbanColumn title="Follow Up" count={3} color="text-yellow-500" items={[]} />
-                            <KanbanColumn title="Closed" count={45} color="text-gray-400" items={[]} />
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                            <KanbanColumn
-                                title="Idea Backlog"
-                                count={12}
-                                items={[
-                                    { title: "Summer Promo", tag: "Marketing", date: "Sept 19", icon: Calendar, color: "text-purple-500" }
-                                ]}
-                            />
-                            <KanbanColumn title="Scripting" count={4} color="text-blue-500" items={[]} />
-                            <KanbanColumn title="Ready to Post" count={2} color="text-green-500" items={[]} />
-                            <KanbanColumn title="Published" count={128} color="text-gray-500" items={[]} />
-                        </div>
-                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <KanbanColumn
+                            title="Idea Backlog"
+                            count={12}
+                            items={[
+                                { title: "Summer Promo", tag: "Marketing", date: "Sept 19", icon: Calendar, color: "text-purple-500" }
+                            ]}
+                        />
+                        <KanbanColumn title="Scripting" count={4} color="text-blue-500" items={[]} />
+                        <KanbanColumn title="Ready to Post" count={2} color="text-green-500" items={[]} />
+                        <KanbanColumn title="Published" count={128} color="text-gray-500" items={[]} />
+                    </div>
                 </div>
 
                 {/* Widgets Row */}

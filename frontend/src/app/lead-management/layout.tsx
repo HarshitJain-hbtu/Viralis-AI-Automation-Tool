@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store/authStore';
 import { Sidebar } from '@/components/dashboard/Sidebar';
 
-export default function DashboardLayout({
+export default function LeadManagementLayout({
     children,
 }: {
     children: React.ReactNode;
