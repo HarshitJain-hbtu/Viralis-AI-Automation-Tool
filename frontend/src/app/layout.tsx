@@ -4,15 +4,21 @@ import VisualEditsMessenger from "../visual-edits/VisualEditsMessenger";
 import ErrorReporter from "@/components/ErrorReporter";
 import Script from "next/script";
 import { Providers } from "@/components/Provider";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "VIRALIS - AI Social Growth CRM",
   description: "AI Social Growth CRM Dashboard",
 };
 
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans, Instrument_Serif } from "next/font/google";
 
 const font = Plus_Jakarta_Sans({ subsets: ["latin"] });
+const serifFont = Instrument_Serif({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-serif",
+});
 
 export default function RootLayout({
   children,
@@ -21,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${font.className} antialiased`}>
+      <body className={`${font.className} ${serifFont.variable} antialiased`}>
         <Providers>
           <Script
             id="orchids-browser-logs"
@@ -42,6 +48,7 @@ export default function RootLayout({
           />
           {children}
           <VisualEditsMessenger />
+          <Toaster />
         </Providers>
       </body>
     </html>

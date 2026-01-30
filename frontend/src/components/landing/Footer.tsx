@@ -74,12 +74,12 @@ export default function Footer() {
                     </div>
 
                     {/* Icon 4: Rocket - Right Top */}
-                    <div className="absolute top-10 right-[10%] w-32 h-32 -rotate-12 animate-float-slow z-20">
+                    <div className="absolute top-10 right-[-5%] w-32 h-32 -rotate-12 animate-float z-20">
                         <img src="/rocket.png" alt="Launch" className="w-full h-full object-contain drop-shadow-2xl" />
                     </div>
 
                     {/* Icon 5: Calendar - Right Bottom */}
-                    <div className="absolute bottom-0 right-[28%] w-32 h-32 rotate-12 transition-transform hover:scale-110 z-10">
+                    <div className="absolute bottom-0 right-[15%] w-32 h-32 rotate-12 transition-transform animate-float z-10">
                         <img src="/calendar.png" alt="Tasks" className="w-full h-full object-contain drop-shadow-xl opacity-80" />
                     </div>
 

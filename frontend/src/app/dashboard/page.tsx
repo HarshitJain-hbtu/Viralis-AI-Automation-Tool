@@ -7,6 +7,8 @@ import { LocalSEOMap } from "@/components/dashboard/LocalSEOMap";
 import { CompetitorWidget } from "@/components/dashboard/CompetitorWidget";
 import { BrandVoiceMeter } from "@/components/dashboard/BrandVoiceMeter";
 import { ActionCenter } from "@/components/dashboard/ActionCenter";
+import { SocialConnect } from "@/components/SocialConnect";
+import { SocialStats } from "@/components/SocialStats";
 import { Filter, LayoutGrid, Plus, MoreVertical, Phone, MessageSquare, User, Calendar, Video } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
 
@@ -22,20 +24,95 @@ export default function Dashboard() {
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">Business Overview</h1>
                         <p className="text-gray-500 mt-1">AI Content Engine</p>
+
+                        <p className="text-gray-500 mt-1">Gemini 3 Powered CRM & Content Engine</p>
+                    </div>
+                    <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
+                        <button
+                            onClick={() => setActiveTab('leads')}
+                            className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-all ${activeTab === 'leads' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
+                        >
+                            CRM & Leads
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('content')}
+                            className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-all ${activeTab === 'content' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
+                        >
+                            Content Engine
+                        </button>
+
                     </div>
                 </div>
 
                 {/* Top Actions: AI Advisor */}
                 <div className="mb-8">
                     <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-[0_2px_4px_rgba(0,0,0,0.02)]">
-                        <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Daily AI Actions</h3>
+                        <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Daily Gemini 3 Actions</h3>
                         <ActionCenter />
                     </div>
                 </div>
 
+
                 {/* Stats Row */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
                     {/* Growth Chart */}
+
+                {/* Social Integration */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <div className="lg:col-span-1">
+                        <SocialConnect />
+                    </div>
+                    <div className="lg:col-span-2">
+                        <SocialStats />
+                    </div>
+                </div>
+
+                {/* CRM Stats Row */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+                    {/* 1. Leads Funnel */}
+                    <RichStatsCard
+                        title="Lead Pipeline"
+                        total="42"
+                        subStats={[
+                            { label: "New", value: "12", color: "bg-blue-500" },
+                            { label: "Qualified", value: "8", color: "bg-green-500" },
+                            { label: "Calls", value: "22", color: "bg-orange-500" }
+                        ]}
+                        chart={
+                            <div className="h-16 w-full flex gap-0.5 rounded-lg overflow-hidden mt-2">
+                                <div className="h-full bg-blue-500 w-[30%] opacity-90" />
+                                <div className="h-full bg-green-500 w-[20%] opacity-90" />
+                                <div className="h-full bg-orange-500 w-[50%] opacity-90" />
+                            </div>
+                        }
+                    />
+
+                    {/* 2. Voice Agent Stats */}
+                    <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-[0_2px_4px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+                        <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-2 text-gray-900 font-semibold">
+                                <div className="w-2 h-2 rounded-full bg-orange-500" />
+                                Voice Agent
+                            </div>
+                            <span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full">ACTIVE</span>
+                        </div>
+                        <div className="flex items-end gap-2 mt-4">
+                            <span className="text-3xl font-bold text-gray-900">89</span>
+                            <span className="text-sm text-gray-500 mb-1">Calls handled</span>
+                        </div>
+                        <div className="mt-4 space-y-2">
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-500">Appointments Booked</span>
+                                <span className="font-semibold">14</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-500">FAQs Answered</span>
+                                <span className="font-semibold">65</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 3. Growth Chart */}
                     <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-[0_2px_4px_rgba(0,0,0,0.02)] flex flex-col">
                         <div className="flex justify-between items-center mb-4">
                             <div className="flex items-center gap-2 text-gray-900 font-semibold">

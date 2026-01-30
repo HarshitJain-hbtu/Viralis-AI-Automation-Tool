@@ -1,39 +1,176 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import { Globe } from 'lucide-react';
 
+const INTEGRATIONS = [
+    {
+        id: 'youtube',
+        name: 'YouTube',
+        image: '/icons/youtube.png',
+        testimonial: {
+            quote: "Viralis automatically turns my long-form videos into viral shorts. The Gemini integration suggests the best clips.",
+            author: "Casey Neistat",
+            role: "YouTuber & Filmmaker",
+            avatar: "https://i.pravatar.cc/150?u=casey"
+        }
+    },
+    {
+        id: 'instagram',
+        name: 'Instagram',
+        image: '/icons/instagram.png',
+        testimonial: {
+            quote: "Managing DMs and comments used to take hours. Now Viralis handles engagement while I sleep.",
+            author: "Emily Paris",
+            role: "Lifestyle Influencer",
+            avatar: "https://i.pravatar.cc/150?u=emily"
+        }
+    },
+    {
+        id: 'gemini',
+        name: 'Gemini',
+        image: '/icons/gemini.png',
+        isCenter: true,
+        testimonial: {
+            quote: "The Gemini Reference model understands my brand voice perfectly. It writes scripts that sound exactly like me.",
+            author: "Alex Hormozi",
+            role: "Entrepreneur",
+            avatar: "https://i.pravatar.cc/150?u=alex"
+        }
+    },
+    {
+        id: 'tiktok',
+        name: 'TikTok',
+        image: '/icons/tiktok.png',
+        testimonial: {
+            quote: "We scaled to 1M followers in 3 months using Viralis trends analysis. It tells us exactly what to post.",
+            author: "Sarah Cooper",
+            role: "Viral Creator",
+            avatar: "https://i.pravatar.cc/150?u=sarah"
+        }
+    },
+    {
+        id: 'linkedin',
+        name: 'LinkedIn',
+        image: '/icons/linkedin.png',
+        testimonial: {
+            quote: "B2B growth on autopilot. Viralis identifies key decision makers and engages with their content smartly.",
+            author: "Reid Hoffman",
+            role: "Venture Capitalist",
+            avatar: "https://i.pravatar.cc/150?u=reid"
+        }
+    }
+];
+
 export default function Integrations() {
+    const [activeIndex, setActiveIndex] = useState(2); // Start with Gemini (center)
+
+    // Cycle testimonials automatically
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setActiveIndex((current) => (current + 1) % INTEGRATIONS.length);
+        }, 5000); // Switch every 5 seconds
+        return () => clearInterval(interval);
+    }, []);
+
+    const activeIntegration = INTEGRATIONS[activeIndex];
+
     return (
         <section id="solutions" className="py-24 bg-white overflow-hidden">
-            <div className="max-w-7xl mx-auto px-6 text-center">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-50 border border-purple-100 text-purple-600 text-xs font-semibold uppercase tracking-wide mb-6">
-                    <Globe className="w-3 h-3" />
-                    Ecosystem
-                </div>
-                <h2 className="text-4xl font-bold text-gray-900 mb-6">Connect the tools you use everyday</h2>
-                <p className="text-xl text-gray-500 max-w-2xl mx-auto mb-16">
-                    Viralis integrates seamlessly with your existing stack. Sync contacts, export leads, and trigger workflows instantly.
-                </p>
-
-                <div className="relative max-w-5xl mx-auto">
-                    <div className="absolute inset-0 bg-gradient-to-r from-white via-transparent to-white z-10" />
-                    <div className="flex gap-8 items-center justify-center flex-wrap opacity-80">
-                        {[
-                            { name: 'Slack', color: 'bg-[#4A154B]' },
-                            { name: 'Notion', color: 'bg-black' },
-                            { name: 'HubSpot', color: 'bg-[#FF7A59]' },
-                            { name: 'Salesforce', color: 'bg-[#00A1E0]' },
-                            { name: 'Gmail', color: 'bg-[#EA4335]' },
-                            { name: 'Zoom', color: 'bg-[#2D8CFF]' },
-                            { name: 'Zapier', color: 'bg-[#FF4F00]' },
-                            { name: 'Shopify', color: 'bg-[#96BF48]' }
-                        ].map((app, i) => (
-                            <div key={i} className="flex flex-col items-center gap-3 p-6 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md hover:scale-105 transition-all w-32 h-32 justify-center">
-                                <div className={`w-12 h-12 rounded-xl ${app.color} text-white flex items-center justify-center font-bold text-lg`}>
-                                    {app.name[0]}
-                                </div>
-                                <span className="text-xs font-semibold text-gray-700">{app.name}</span>
-                            </div>
-                        ))}
+            <div className="w-full max-w-[1920px] mx-auto text-center relative z-10">
+                <div className="px-6 mb-16">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-xs font-bold uppercase tracking-wide mb-6">
+                        <Globe className="w-3 h-3" />
+                        Ecosystem
                     </div>
+                    <h2 className="text-5xl lg:text-7xl font-serif text-gray-900 mb-6 italic tracking-tight">
+                        Powering your growth engine
+                    </h2>
+                    <p className="text-xl text-gray-500 max-w-2xl mx-auto">
+                        The only platform that deeply integrates with the world's biggest social networks and AI models.
+                    </p>
+                </div>
+
+                {/* Arch Circuit Visualization */}
+                <div className="relative w-full h-[500px] flex items-center justify-center mt-10 select-none">
+
+                    {/* SVG Circuit Line - Full Width Smooth Arc */}
+                    <svg className="absolute inset-x-0 bottom-0 w-full h-full pointer-events-none" viewBox="0 0 1600 600" preserveAspectRatio="none">
+                        {/* Gradient definition for the path */}
+                        <defs>
+                            <linearGradient id="arcGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stopColor="#e2e8f0" stopOpacity="0" />
+                                <stop offset="20%" stopColor="#cbd5e1" stopOpacity="1" />
+                                <stop offset="80%" stopColor="#cbd5e1" stopOpacity="1" />
+                                <stop offset="100%" stopColor="#e2e8f0" stopOpacity="0" />
+                            </linearGradient>
+                        </defs>
+
+                        {/* Smooth Bezier Curve - Starts low/wide, arches up to center */}
+                        <path
+                            d="M -100 600 C 300 600, 400 150, 800 150 C 1200 150, 1300 600, 1700 600"
+                            stroke="url(#arcGradient)"
+                            strokeWidth="2"
+                            fill="none"
+                            strokeLinecap="round"
+                        />
+                    </svg>
+
+                    {/* Central Testimonial Area */}
+                    <div className="absolute top-[350px] left-1/2 -translate-x-1/2 text-center z-10 w-full max-w-2xl px-4">
+                        <div key={activeIntegration.id} className="animate-in fade-in zoom-in-95 duration-700">
+                            <p className="text-2xl font-serif italic text-gray-800 mb-8 leading-relaxed">
+                                "{activeIntegration.testimonial.quote}"
+                            </p>
+                            <div className="flex items-center justify-center gap-4">
+                                <img src={activeIntegration.testimonial.avatar} alt={activeIntegration.testimonial.author} className="w-12 h-12 rounded-full border border-gray-100 shadow-sm" />
+                                <div className="text-left">
+                                    <p className="text-base font-bold text-gray-900">{activeIntegration.testimonial.author}</p>
+                                    <p className="text-sm text-gray-500">{activeIntegration.testimonial.role}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Arc Nodes - 3D Icons (Static positions, no active state interaction) */}
+                    {INTEGRATIONS.map((app, index) => {
+                        // Adjusted positions to sit ON the line (offset by ~5-10% to account for center anchor)
+                        const positions = [
+                            { left: '18%', top: '65%' },  // YouTube (Lower)
+                            { left: '32%', top: '35%' },  // Instagram (Mid)
+                            { left: '50%', top: '25%' },   // Gemini (Peak - 150px/600px = 25%)
+                            { right: '32%', top: '35%', left: 'auto' }, // TikTok
+                            { right: '18%', top: '65%', left: 'auto' }  // LinkedIn
+                        ];
+                        const pos = positions[index];
+
+                        return (
+                            <div
+                                key={app.id}
+                                className="absolute -translate-x-1/2 -translate-y-1/2 hover:scale-105 transition-transform duration-300 cursor-pointer z-20"
+                                style={{
+                                    left: pos.left !== 'auto' ? pos.left : undefined,
+                                    right: pos.right,
+                                    top: pos.top,
+                                    transform: pos.right ? 'translate(50%, -50%)' : 'translate(-50%, -50%)'
+                                }}
+                                // Optional: User can manually click to view that testimonial if they want,
+                                // but the visual state of the icon won't change drastically.
+                                onClick={() => setActiveIndex(index)}
+                            >
+                                <div className="relative">
+                                    <div className="w-24 h-24 md:w-32 md:h-32 flex items-center justify-center">
+                                        <img
+                                            src={app.image}
+                                            alt={app.name}
+                                            className="w-full h-full object-contain filter drop-shadow-lg" // Consistent refined shadow
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+
                 </div>
             </div>
         </section>

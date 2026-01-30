@@ -1,0 +1,31 @@
+src/app/ai-content/calendar/page.tsx(18,35): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/app/ai-content/calendar/page.tsx(38,38): error TS7006: Parameter 'dayIndex' implicitly has an 'any' type.
+src/app/ai-content/calendar/page.tsx(47,31): error TS2339: Property 'visual_prompt' does not exist on type 'never'.
+src/app/ai-content/calendar/page.tsx(48,21): error TS2339: Property 'day' does not exist on type 'never'.
+src/app/ai-content/calendar/page.tsx(54,31): error TS2339: Property 'image_url' does not exist on type 'never'.
+src/app/ai-content/calendar/page.tsx(77,30): error TS2339: Property 'day' does not exist on type 'never'.
+src/app/ai-content/calendar/page.tsx(80,31): error TS2339: Property 'day' does not exist on type 'never'.
+src/app/ai-content/calendar/page.tsx(86,25): error TS2339: Property 'image_url' does not exist on type 'never'.
+src/app/ai-content/calendar/page.tsx(87,36): error TS2339: Property 'image_url' does not exist on type 'never'.
+src/app/ai-content/calendar/page.tsx(87,64): error TS2339: Property 'day' does not exist on type 'never'.
+src/app/ai-content/calendar/page.tsx(100,25): error TS2339: Property 'hook' does not exist on type 'never'.
+src/app/ai-content/calendar/page.tsx(104,78): error TS2339: Property 'caption' does not exist on type 'never'.
+src/app/ai-content/calendar/page.tsx(108,25): error TS2339: Property 'hashtags' does not exist on type 'never'.
+src/app/ai-content/calendar/page.tsx(108,51): error TS7006: Parameter 'tag' implicitly has an 'any' type.
+src/app/ai-content/calendar/page.tsx(108,56): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/app/ai-content/page.tsx(14,31): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/app/ai-content/page.tsx(110,66): error TS2339: Property 'caption' does not exist on type 'never'.
+src/app/ai-content/page.tsx(117,27): error TS2339: Property 'hook' does not exist on type 'never'.
+src/app/ai-content/page.tsx(124,27): error TS2339: Property 'hashtags' does not exist on type 'never'.
+src/app/ai-content/page.tsx(124,41): error TS7006: Parameter 'tag' implicitly has an 'any' type.
+src/app/ai-content/page.tsx(124,46): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/app/ai-content/page.tsx(135,57): error TS2339: Property 'visual_prompt' does not exist on type 'never'.
+src/components/SocialStats.tsx(251,26): error TS2339: Property 'instagram' does not exist on type '{ youtube: any; facebook: any; }'.
+src/components/SocialStats.tsx(254,38): error TS2339: Property 'instagram' does not exist on type '{ youtube: any; facebook: any; }'.
+src/components/SocialStats.tsx(256,50): error TS2339: Property 'instagram' does not exist on type '{ youtube: any; facebook: any; }'.
+src/components/SocialStats.tsx(262,77): error TS2339: Property 'instagram' does not exist on type '{ youtube: any; facebook: any; }'.
+src/components/SocialStats.tsx(279,82): error TS2339: Property 'instagram' does not exist on type '{ youtube: any; facebook: any; }'.
+src/components/SocialStats.tsx(288,82): error TS2339: Property 'instagram' does not exist on type '{ youtube: any; facebook: any; }'.
+src/components/SocialStats.tsx(293,34): error TS2339: Property 'instagram' does not exist on type '{ youtube: any; facebook: any; }'.
+src/components/SocialStats.tsx(293,71): error TS2339: Property 'instagram' does not exist on type '{ youtube: any; facebook: any; }'.
+src/components/SocialStats.tsx(297,46): error TS2339: Property 'instagram' does not exist on type '{ youtube: any; facebook: any; }'.
