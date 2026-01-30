@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import api from '../api/client';
+import { SocialStats } from '../types/socials';
 
 interface Business {
     _id: string;
@@ -26,7 +27,7 @@ interface AuthState {
     register: (name: string, email: string, password: string) => Promise<void>;
     logout: () => void;
     checkAuth: () => Promise<void>;
-    socialStats: { youtube: any; facebook: any; instagram: any } | null;
+    socialStats: SocialStats | null;
     fetchSocialStats: () => Promise<void>;
     replyToComment: (commentId: string, text: string) => Promise<any>;
     updateUser: (data: Partial<User>) => Promise<void>;

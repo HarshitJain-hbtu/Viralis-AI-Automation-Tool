@@ -62,7 +62,7 @@ export function SocialConnect() {
                         <div>
                             <p className="font-medium">YouTube</p>
                             <p className="text-sm text-muted-foreground">
-                                {isYoutubeConnected ? `Connected as ${socialStats.youtube.channelTitle}` : 'Connect channel'}
+                                {isYoutubeConnected ? `Connected as ${socialStats.youtube?.channelTitle || ''}` : 'Connect channel'}
                             </p>
                         </div>
                     </div>
@@ -87,7 +87,7 @@ export function SocialConnect() {
                         <div>
                             <p className="font-medium">Facebook Page</p>
                             <p className="text-sm text-muted-foreground">
-                                {isFacebookConnected ? `Connected as ${socialStats.facebook.pageName}` : 'Connect business page'}
+                                {isFacebookConnected ? `Connected as ${socialStats.facebook?.pageName || ''}` : 'Connect business page'}
                             </p>
                         </div>
                     </div>

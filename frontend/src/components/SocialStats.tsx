@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuthStore } from '@/lib/store/authStore';
 import { Youtube, Activity } from 'lucide-react';
+import { YouTubeVideo, YouTubeComment, FacebookPost, InstagramMedia } from '../lib/types/socials';
 
 export function SocialStats() {
     const { socialStats, fetchSocialStats } = useAuthStore();
@@ -85,8 +86,8 @@ export function SocialStats() {
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">
-                                    {socialStats.youtube.videoCount > 0
-                                        ? Math.round(parseInt(socialStats.youtube.viewCount || '0') / parseInt(socialStats.youtube.videoCount)).toLocaleString()
+                                    {parseInt(socialStats.youtube.videoCount || '0') > 0
+                                        ? Math.round(parseInt(socialStats.youtube.viewCount || '0') / parseInt(socialStats.youtube.videoCount || '0')).toLocaleString()
                                         : 0}
                                 </div>
                             </CardContent>
@@ -98,7 +99,7 @@ export function SocialStats() {
                         <div>
                             <h3 className="text-xl font-semibold mb-4">Recent Video Performance</h3>
                             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
-                                {socialStats.youtube.recentVideos.map((video: any) => (
+                                {socialStats.youtube.recentVideos.map((video: YouTubeVideo) => (
                                     <Card key={video.id} className="overflow-hidden">
                                         <div className="aspect-video w-full overflow-hidden">
                                             <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover" />
@@ -127,7 +128,7 @@ export function SocialStats() {
                             <Card>
                                 <CardContent className="p-0">
                                     <div className="divide-y">
-                                        {socialStats.youtube.recentComments.map((comment: any) => (
+                                        {socialStats.youtube.recentComments.map((comment: YouTubeComment) => (
                                             <div key={comment.id} className="p-4 flex gap-4 hover:bg-muted/50 transition-colors">
                                                 <img
                                                     src={comment.authorProfileImageUrl}
@@ -213,7 +214,7 @@ export function SocialStats() {
                         <div>
                             <h3 className="text-xl font-semibold mb-4">Recent Posts</h3>
                             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
-                                {socialStats.facebook.recentPosts.map((post: any) => (
+                                {socialStats.facebook.recentPosts.map((post: FacebookPost) => (
                                     <Card key={post.id} className="overflow-hidden">
                                         {post.full_picture && (
                                             <div className="aspect-video w-full overflow-hidden bg-gray-100">
@@ -294,7 +295,7 @@ export function SocialStats() {
                         <div>
                             <h3 className="text-xl font-semibold mb-4">Recent Media</h3>
                             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
-                                {socialStats.instagram.recentMedia.map((media: any) => (
+                                {socialStats.instagram.recentMedia.map((media: InstagramMedia) => (
                                     <Card key={media.id} className="overflow-hidden">
                                         <div className="aspect-square w-full overflow-hidden bg-gray-100 relative">
                                             {media.media_type === 'VIDEO' && (
