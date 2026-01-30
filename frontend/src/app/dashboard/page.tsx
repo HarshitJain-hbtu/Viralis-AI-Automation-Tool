@@ -1,6 +1,8 @@
 'use client';
 import { useState } from 'react';
 
+import React, { useState } from 'react';
+import { Header } from "@/components/dashboard/Headers";
 import { RichStatsCard } from "@/components/dashboard/RichStatsCard";
 import { GrowthChart } from "@/components/dashboard/GrowthChart";
 import { LocalSEOMap } from "@/components/dashboard/LocalSEOMap";
@@ -9,11 +11,12 @@ import { BrandVoiceMeter } from "@/components/dashboard/BrandVoiceMeter";
 import { ActionCenter } from "@/components/dashboard/ActionCenter";
 import { SocialConnect } from "@/components/SocialConnect";
 import { SocialStats } from "@/components/SocialStats";
-import { Filter, LayoutGrid, Plus, MoreVertical, Phone, MessageSquare, User, Calendar, Video } from "lucide-react";
+import { Filter, Plus, MoreVertical, Calendar } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
 
 export default function Dashboard() {
     const { user } = useAuthStore();
+    const [activeTab, setActiveTab] = useState('content');
     const [activeTab, setActiveTab] = useState('leads');
 
     return (
@@ -53,6 +56,10 @@ export default function Dashboard() {
                 </div>
 
 
+                {/* Stats Row */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+                    {/* Growth Chart */}
+                </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                     <div className="lg:col-span-1">
@@ -181,7 +188,15 @@ export default function Dashboard() {
     );
 }
 
-function KanbanColumn({ title, count, color = "text-gray-500", items }: { title: string, count: number, color?: string, items: any[] }) {
+interface KanbanItem {
+    color: string;
+    tag: string;
+    title: string;
+    icon: React.ComponentType<{ className?: string }>;
+    date: string;
+}
+
+function KanbanColumn({ title, count, color = "text-gray-500", items }: { title: string, count: number, color?: string, items: KanbanItem[] }) {
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between px-1">
