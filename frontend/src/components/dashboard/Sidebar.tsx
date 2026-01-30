@@ -51,7 +51,10 @@ const toolItems = [
   { icon: Video, label: "Reels Studio", href: "/dashboard/studio" },
   { icon: Mic, label: "Voice Lab", href: "/voice" },
   { icon: Search, label: "Competitor Spy", href: "/spy" },
+
+  { icon: Search, label: "Lead Management", href: "/lead-management" },
   { icon: Settings, label: "AI Knowledge Base", href: "/dashboard/settings/ai-brain" }, // Added
+
 ];
 
 const secondaryItems = [

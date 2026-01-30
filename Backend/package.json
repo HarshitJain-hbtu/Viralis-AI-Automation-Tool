@@ -9,7 +9,10 @@
     "start": "node dist/index.js",
     "lint": "eslint src/**/*.ts",
     "typecheck": "tsc --noEmit",
-    "test": "jest"
+    "test": "jest",
+    "seed-mock": "ts-node src/scripts/seedMockLeads.ts",
+    "diagnose": "ts-node src/scripts/diagnoseData.ts",
+    "test-real": "ts-node src/scripts/testRealAnalysis.ts"
   },
   "keywords": [],
   "author": "",
