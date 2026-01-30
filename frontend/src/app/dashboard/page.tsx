@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 
 import React, { useState } from 'react';
 import { Header } from "@/components/dashboard/Headers";
@@ -16,10 +17,10 @@ import { useAuthStore } from "@/lib/store/authStore";
 export default function Dashboard() {
     const { user } = useAuthStore();
     const [activeTab, setActiveTab] = useState('content');
+    const [activeTab, setActiveTab] = useState('leads');
 
     return (
         <div className="min-h-screen bg-[#FAFAFA]">
-            <Header />
 
             <main className="px-8 py-6 max-w-[1600px] mx-auto">
                 <div className="mb-8 flex justify-between items-end">
@@ -60,7 +61,6 @@ export default function Dashboard() {
                     {/* Growth Chart */}
                 </div>
 
-                {/* Social Integration */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                     <div className="lg:col-span-1">
                         <SocialConnect />

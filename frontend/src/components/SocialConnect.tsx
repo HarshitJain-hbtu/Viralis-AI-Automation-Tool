@@ -8,7 +8,7 @@ import { useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 
 export function SocialConnect() {
-    const { token, fetchSocialStats } = useAuthStore();
+    const { token, fetchSocialStats, socialStats, disconnectSocial } = useAuthStore();
     const searchParams = useSearchParams();
     const router = useRouter();
 
@@ -22,23 +22,10 @@ export function SocialConnect() {
     }, [searchParams, fetchSocialStats, router]);
 
     const handleConnect = async (provider: 'youtube' | 'facebook' | 'facebook-mock') => {
-        // We pass the token in the state/query param so backend can identify user.
-        // However, passport-google-oauth20 flow is initiated by backend.
-        // If we use standard link, we can't easily pass the Bearer token header.
-        // We will pass it as a query param `state` (holding the token) which the backend will verify.
-        // The backend expects `state` or `token`. In our routes we used `state` for passport logic, 
-        // but `req.query.token` in the route handler. 
-        // Let's check `socialRoutes.ts`: `const state = req.query.token as string;`
-
         if (!token) return;
 
         if (provider === 'facebook-mock') {
             try {
-                // We need to import api client here or use fetch with token
-                // Importing api client is better but might cause circular dep if not careful.
-                // Let's use fetch for this specific mock action or try to use the store action if we had one.
-                // For quickness, let's just use the `api` client import if available or fetch.
-                // We didn't import api here yet. Let's do it.
                 const { default: api } = await import('@/lib/api/client');
                 await api.post('/auth/facebook/mock');
                 fetchSocialStats();
@@ -53,6 +40,15 @@ export function SocialConnect() {
         window.location.href = `${backendUrl}/auth/${provider}?token=${token}`;
     };
 
+    const handleDisconnect = async (provider: string) => {
+        if (confirm(`Are you sure you want to disconnect ${provider}?`)) {
+            await disconnectSocial(provider);
+        }
+    };
+
+    const isYoutubeConnected = !!socialStats?.youtube?.channelTitle;
+    const isFacebookConnected = !!socialStats?.facebook?.pageName;
+
     return (
         <Card>
             <CardHeader>
@@ -65,12 +61,20 @@ export function SocialConnect() {
                         <Youtube className="w-6 h-6 text-red-600" />
                         <div>
                             <p className="font-medium">YouTube</p>
-                            <p className="text-sm text-muted-foreground">Connect channel</p>
+                            <p className="text-sm text-muted-foreground">
+                                {isYoutubeConnected ? `Connected as ${socialStats.youtube.channelTitle}` : 'Connect channel'}
+                            </p>
                         </div>
                     </div>
-                    <Button variant="outline" onClick={() => handleConnect('youtube')}>
-                        Connect
-                    </Button>
+                    {isYoutubeConnected ? (
+                        <Button variant="outline" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleDisconnect('youtube')}>
+                            Disconnect
+                        </Button>
+                    ) : (
+                        <Button variant="outline" onClick={() => handleConnect('youtube')}>
+                            Connect
+                        </Button>
+                    )}
                 </div>
 
 
@@ -82,12 +86,20 @@ export function SocialConnect() {
                         <div className="w-6 h-6 bg-blue-600 rounded-sm flex items-center justify-center text-white text-[14px] font-bold">f</div>
                         <div>
                             <p className="font-medium">Facebook Page</p>
-                            <p className="text-sm text-muted-foreground">Connect business page</p>
+                            <p className="text-sm text-muted-foreground">
+                                {isFacebookConnected ? `Connected as ${socialStats.facebook.pageName}` : 'Connect business page'}
+                            </p>
                         </div>
                     </div>
-                    <Button variant="outline" onClick={() => handleConnect('facebook')}>
-                        Connect
-                    </Button>
+                    {isFacebookConnected ? (
+                        <Button variant="outline" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleDisconnect('facebook')}>
+                            Disconnect
+                        </Button>
+                    ) : (
+                        <Button variant="outline" onClick={() => handleConnect('facebook')}>
+                            Connect
+                        </Button>
+                    )}
                 </div>
 
                 {/* Instagram Connect */}
@@ -101,9 +113,15 @@ export function SocialConnect() {
                             <p className="text-sm text-muted-foreground">Connect via Facebook</p>
                         </div>
                     </div>
-                    <Button variant="outline" onClick={() => handleConnect('facebook')}>
-                        Connect
-                    </Button>
+                    {isFacebookConnected ? (
+                        <Button variant="ghost" disabled className="text-xs text-gray-400">
+                            Linked to FB
+                        </Button>
+                    ) : (
+                        <Button variant="outline" onClick={() => handleConnect('facebook')}>
+                            Connect
+                        </Button>
+                    )}
                 </div>
 
             </CardContent>

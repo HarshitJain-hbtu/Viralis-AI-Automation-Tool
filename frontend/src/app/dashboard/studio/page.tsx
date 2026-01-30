@@ -36,7 +36,6 @@ import {
     Play
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Header } from '@/components/dashboard/Headers';
 
 // Enhanced mock data
 const mockReelContent = {
@@ -196,7 +195,6 @@ export default function StudioPage() {
 
     return (
         <div className="min-h-screen bg-[#FAFAFA]">
-            <Header />
 
             <main className="max-w-[1600px] mx-auto px-8 py-6">
                 <div className="mb-8 flex justify-between items-end">

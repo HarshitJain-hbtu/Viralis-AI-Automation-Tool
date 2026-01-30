@@ -80,6 +80,8 @@ export interface IBusiness extends Document {
         customInstructions?: string;
     };
 
+    subscriptionTier: 'Free' | 'Starter' | 'Business';
+
     createdAt: Date;
     updatedAt: Date;
 }
@@ -162,6 +164,12 @@ const businessSchema = new Schema<IBusiness>(
             services: [{ name: String, price: String }],
             customInstructions: String
         },
+
+        subscriptionTier: {
+            type: String,
+            enum: ['Free', 'Starter', 'Business'],
+            default: 'Free'
+        }
     },
     { timestamps: true }
 );

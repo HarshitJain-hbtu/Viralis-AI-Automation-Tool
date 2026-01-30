@@ -5,13 +5,14 @@ import { useAuthStore } from '@/lib/store/authStore';
 import { useBusinessStore } from '@/lib/store/businessStore';
 import { Button } from '@/components/ui/button';
 import { Save, Building2, MapPin, Mic } from 'lucide-react';
-import { Header } from "@/components/dashboard/Headers";
+
 
 export default function SettingsPage() {
     const { user, checkAuth } = useAuthStore();
     const { updateProfile, isLoading } = useBusinessStore();
 
     // Form State
+    const [name, setName] = useState('');
     const [industryMode, setIndustryMode] = useState('');
     const [city, setCity] = useState('');
     const [tone, setTone] = useState('');
@@ -23,6 +24,7 @@ export default function SettingsPage() {
     useEffect(() => {
         if (user && user.businessId && typeof user.businessId === 'object') {
             const business = user.businessId as any;
+            setName(business.name || '');
             setIndustryMode(business.industryMode || 'Other');
             setCity(business.location?.city || '');
             setTone(business.brandVoice?.tone || 'Professional');
@@ -35,6 +37,7 @@ export default function SettingsPage() {
         setMessage('');
         try {
             await updateProfile({
+                name,
                 industryMode,
                 location: { city },
                 brandVoice: { tone },
@@ -52,10 +55,10 @@ export default function SettingsPage() {
 
     return (
         <div className="min-h-screen bg-[#FAFAFA]">
-            <Header />
+
             <main className="px-8 py-6 max-w-4xl mx-auto">
                 <div className="mb-8">
-                    <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+                    <h1 className="text-2xl font-bold text-gray-900">Business Profile</h1>
                     <p className="text-gray-500 mt-1">Manage your business profile and AI preferences.</p>
                 </div>
 
@@ -66,6 +69,21 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="p-6 space-y-6">
+                        {/* Business Name */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                <Building2 className="w-4 h-4 text-gray-400" />
+                                Business Name
+                            </label>
+                            <input
+                                type="text"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                className="block w-full max-w-md px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                placeholder="e.g. Acme Corp"
+                            />
+                        </div>
+
                         {/* Industry */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">

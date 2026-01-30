@@ -49,11 +49,11 @@ const navItems = [
 
 const toolItems = [
   { icon: Video, label: "Reels Studio", href: "/dashboard/studio" },
-  { icon: Mic, label: "Voice Lab", href: "/voice" },
+
   { icon: Search, label: "Competitor Spy", href: "/spy" },
 
   { icon: Search, label: "Lead Management", href: "/lead-management" },
-  { icon: Settings, label: "AI Knowledge Base", href: "/dashboard/settings/ai-brain" }, // Added
+  { icon: Mic, label: "Voice Lab", href: "/dashboard/settings/ai-brain" }, // Updated
 
 ];
 
@@ -69,10 +69,49 @@ export function Sidebar() {
   const business = user?.businessId as any;
   const [showSubscription, setShowSubscription] = useState(false);
 
-  const handleLogout = () => {
-    logout();
-    router.push('/login');
-  }
+  // Helper to get Plan Details
+  const getPlanDetails = () => {
+    const tier = (typeof business === 'object' ? business?.subscriptionTier : 'Free') || 'Free';
+
+    switch (tier) {
+      case 'Business':
+        return {
+          name: 'Viralis Business',
+          badge: 'BIZ',
+          credits: '2,500/10,000',
+          percent: 25,
+          color: 'from-amber-400 to-orange-500',
+          textColor: 'text-amber-600',
+          bgColor: 'bg-amber-50',
+          borderColor: 'border-amber-100'
+        };
+      case 'Starter':
+        return {
+          name: 'Viralis Starter',
+          badge: 'PRO',
+          credits: '750/1,000',
+          percent: 75,
+          color: 'from-blue-500 to-cyan-400',
+          textColor: 'text-blue-600',
+          bgColor: 'bg-blue-50',
+          borderColor: 'border-blue-100'
+        };
+      case 'Free':
+      default:
+        return {
+          name: 'Viralis Free',
+          badge: 'FREE',
+          credits: '5/5 Videos',
+          percent: 100,
+          color: 'from-gray-400 to-gray-500',
+          textColor: 'text-gray-600',
+          bgColor: 'bg-gray-50',
+          borderColor: 'border-gray-100'
+        };
+    }
+  };
+
+  const plan = getPlanDetails();
 
   return (
     <>
@@ -157,20 +196,27 @@ export function Sidebar() {
         {/* User Profile - Static Bottom */}
         <div className="mt-0 pt-4 border-t border-gray-100 bg-[#FDFCFF] z-10">
           {/* Subscription Snippet */}
-          <div className="mb-4 p-4 bg-gray-900 rounded-xl text-white relative overflow-hidden group cursor-pointer" onClick={() => setShowSubscription(true)}>
+          <div className="mb-4 p-4 bg-gray-900 rounded-xl text-white relative overflow-hidden group cursor-pointer" onClick={() => router.push('/dashboard/billing')}>
             <div className="absolute top-0 right-0 p-3 opacity-10 transition-transform group-hover:scale-110">
               <Sparkles className="w-16 h-16" />
             </div>
             <div className="relative z-10">
               <div className="flex justify-between items-center mb-1">
-                <h3 className="font-bold text-sm">Viralis Pro</h3>
-                <span className="text-[10px] bg-white/20 px-1.5 rounded font-medium">PRO</span>
+                <h3 className="font-bold text-sm">{plan.name}</h3>
+                <span className="text-[10px] bg-white/20 px-1.5 rounded font-medium">{plan.badge}</span>
               </div>
-              <p className="text-[10px] text-gray-400 mb-3">750/1000 AI Credits Used</p>
+              <p className="text-[10px] text-gray-400 mb-3">{plan.credits} Used</p>
               <div className="w-full h-1.5 bg-gray-800 rounded-full mb-3 overflow-hidden">
-                <div className="w-[75%] h-full bg-gradient-to-r from-violet-500 to-fuchsia-500" />
+                <div className={`h-full bg-gradient-to-r ${plan.color}`} style={{ width: `${plan.percent}%` }} />
               </div>
-              <Button size="sm" className="w-full bg-white text-gray-900 hover:bg-gray-100 h-7 text-xs font-bold border-0">
+              <Button
+                size="sm"
+                className="w-full bg-white text-gray-900 hover:bg-gray-100 h-7 text-xs font-bold border-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push('/dashboard/billing');
+                }}
+              >
                 Upgrade Now
               </Button>
             </div>
@@ -178,48 +224,6 @@ export function Sidebar() {
 
         </div>
       </div>
-
-      {/* Subscription Dialog */}
-      <Dialog open={showSubscription} onOpenChange={setShowSubscription}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-purple-600" />
-              Viralis Pro Plan
-            </DialogTitle>
-            <DialogDescription>
-              You are currently on the Pro Tier. Here's your usage.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 space-y-3">
-              <div className="flex justify-between text-sm font-medium">
-                <span className="text-gray-600">AI Credits</span>
-                <span className="text-gray-900">750 / 1,000</span>
-              </div>
-              <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
-                <div className="h-full w-3/4 bg-purple-600 rounded-full" />
-              </div>
-              <p className="text-xs text-gray-500">Resets in 12 days</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
-                <p className="text-xs text-blue-600 font-medium mb-1">Voice Agent</p>
-                <p className="text-lg font-bold text-blue-900">Active</p>
-              </div>
-              <div className="p-3 bg-green-50 rounded-lg border border-green-100">
-                <p className="text-xs text-green-600 font-medium mb-1">Seats Used</p>
-                <p className="text-lg font-bold text-green-900">1 / 3</p>
-              </div>
-            </div>
-          </div>
-          <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={() => setShowSubscription(false)}>Close</Button>
-            <Button className="bg-purple-600 hover:bg-purple-700 text-white">Upgrade Plan</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }

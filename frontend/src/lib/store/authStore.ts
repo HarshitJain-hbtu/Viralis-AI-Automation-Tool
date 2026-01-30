@@ -13,6 +13,7 @@ interface User {
     email: string;
     name: string;
     role: string;
+    avatar?: string;
     businessId: string | Business; // Updated to allow populated object
 }
 
@@ -28,6 +29,8 @@ interface AuthState {
     socialStats: { youtube: any; facebook: any; instagram: any } | null;
     fetchSocialStats: () => Promise<void>;
     replyToComment: (commentId: string, text: string) => Promise<any>;
+    updateUser: (data: Partial<User>) => Promise<void>;
+    disconnectSocial: (provider: string) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -109,4 +112,30 @@ export const useAuthStore = create<AuthState>((set) => ({
             throw error;
         }
     },
+
+    updateUser: async (data: Partial<User>) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await api.patch('/auth/me', data);
+            set({ user: response.data, isLoading: false });
+        } catch (error: any) {
+            set({
+                error: error.response?.data?.error || 'Update failed',
+                isLoading: false
+            });
+            throw error;
+        }
+    },
+
+    disconnectSocial: async (provider: string) => {
+        try {
+            await api.delete(`/auth/disconnect/${provider}`);
+            // Refresh stats (should be empty now)
+            const response = await api.get('/stats');
+            set({ socialStats: response.data });
+        } catch (error) {
+            console.error('Failed to disconnect', error);
+            throw error;
+        }
+    }
 }));

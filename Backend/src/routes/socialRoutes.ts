@@ -48,4 +48,9 @@ router.post('/auth/facebook/mock', authMiddleware, async (req, res) => {
     mockFacebookAuth(req, res);
 });
 
+router.delete('/auth/disconnect/:provider', authMiddleware, async (req, res) => {
+    const { disconnectSocial } = await import('../controllers/socialController');
+    disconnectSocial(req, res);
+});
+
 export default router;
