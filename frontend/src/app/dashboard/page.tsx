@@ -1,6 +1,4 @@
 'use client';
-import { useState } from 'react';
-
 import React, { useState } from 'react';
 import { Header } from "@/components/dashboard/Headers";
 import { RichStatsCard } from "@/components/dashboard/RichStatsCard";
@@ -17,7 +15,6 @@ import { useAuthStore } from "@/lib/store/authStore";
 export default function Dashboard() {
     const { user } = useAuthStore();
     const [activeTab, setActiveTab] = useState('content');
-    const [activeTab, setActiveTab] = useState('leads');
 
     return (
         <div className="min-h-screen bg-[#FAFAFA]">
@@ -26,10 +23,7 @@ export default function Dashboard() {
                 <div className="mb-8 flex justify-between items-end">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">Business Overview</h1>
-                        <p className="text-gray-500 mt-1">AI Content Engine</p>
-
-                        <p className="text-gray-500 mt-1">Gemini 3 Powered CRM & Content Engine</p>
-                    </div>
+                        <p className="text-gray-500 mt-1">Gemini 3 Powered CRM & Content Engine</p>                    </div>
                     <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
                         <button
                             onClick={() => setActiveTab('leads')}
