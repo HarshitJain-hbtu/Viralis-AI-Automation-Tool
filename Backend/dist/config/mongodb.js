@@ -14,7 +14,7 @@ async function connectMongoDB() {
     }
     catch (error) {
         logger_1.default.error('❌ MongoDB connection failed:', error);
-        process.exit(1);
+        // process.exit(1); // Don't crash, let the server run
     }
 }
 //# sourceMappingURL=mongodb.js.map

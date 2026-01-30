@@ -95,6 +95,14 @@ const businessSchema = new mongoose_1.Schema({
         deepgram: String,
         twilio: String,
     },
+    knowledgeBase: {
+        businessHours: String,
+        contactPhone: String,
+        address: String,
+        services: [{ name: String, price: String }],
+        customInstructions: String
+    },
 }, { timestamps: true });
-exports.Business = mongoose_1.default.model('Business', businessSchema);
+const Business = mongoose_1.default.model('Business', businessSchema);
+exports.Business = Business;
 //# sourceMappingURL=Business.js.map
