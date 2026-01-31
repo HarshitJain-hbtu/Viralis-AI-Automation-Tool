@@ -50,7 +50,7 @@ const navItems = [
 const toolItems = [
   { icon: Video, label: "Reels Studio", href: "/dashboard/studio" },
 
-  { icon: Search, label: "Competitor Spy", href: "/spy" },
+  { icon: Search, label: "Competitor Spy", href: "/dashboard/competitor-spy" },
 
   { icon: Search, label: "Lead Management", href: "/lead-management" },
   { icon: Mic, label: "Voice Lab", href: "/dashboard/settings/ai-brain" }, // Updated
