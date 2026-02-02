@@ -3,8 +3,12 @@
 import { motion } from "framer-motion";
 import { Mic, CheckCircle2 } from "lucide-react";
 
-export function BrandVoiceMeter() {
-  const score = 92;
+interface BrandVoiceMeterProps {
+  score?: number;
+  tone?: string;
+}
+
+export function BrandVoiceMeter({ score = 85, tone = 'Professional' }: BrandVoiceMeterProps) {
   const circumference = 2 * Math.PI * 40;
   const offset = circumference - (score / 100) * circumference;
 
@@ -62,7 +66,7 @@ export function BrandVoiceMeter() {
       </div>
 
       <p className="text-xs text-gray-500 font-medium px-4 leading-relaxed mt-2">
-        Your AI content is currently <span className="text-emerald-600 font-bold">92%</span> aligned with your "Expert Surgeon" persona.
+        Your AI content is currently <span className="text-emerald-600 font-bold">{score}%</span> aligned with your "{tone}" persona.
       </p>
     </motion.div>
   );

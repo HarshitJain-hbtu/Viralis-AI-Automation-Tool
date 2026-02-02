@@ -14,7 +14,21 @@ import {
 import { competitorData } from "@/lib/mock-data";
 import { AlertCircle } from "lucide-react";
 
-export function CompetitorWidget() {
+interface CompetitorWidgetProps {
+  userPostsCount?: number;
+}
+
+export function CompetitorWidget({ userPostsCount = 0 }: CompetitorWidgetProps) {
+  // Simulate competitor data. Competitor is always slightly ahead to encourage action.
+  const competitorCount = Math.max(userPostsCount + 5, 20);
+
+  const data = [
+    { name: 'You', reels: userPostsCount },
+    { name: 'Top Competitor', reels: competitorCount },
+  ];
+
+  const gap = competitorCount - userPostsCount;
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -24,7 +38,7 @@ export function CompetitorWidget() {
       <div className="flex justify-between items-start mb-6">
         <div>
           <h3 className="text-lg font-bold">Competitor Watch</h3>
-          <p className="text-zinc-500 text-xs">You vs. Dr. Smile Clinic</p>
+          <p className="text-zinc-500 text-xs">You vs. Market Leaders</p>
         </div>
         <div className="bg-red-500/10 text-red-600 px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 animate-pulse">
           <AlertCircle className="w-3 h-3" />
@@ -34,7 +48,7 @@ export function CompetitorWidget() {
 
       <div className="h-[200px] w-full mb-4">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={competitorData}>
+          <BarChart data={data}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#88888820" />
             <XAxis
               dataKey="name"
@@ -54,7 +68,7 @@ export function CompetitorWidget() {
               }}
             />
             <Bar dataKey="reels" radius={[6, 6, 0, 0]}>
-              {competitorData.map((entry, index) => (
+              {data.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={index === 0 ? "#10b981" : "#cbd5e1"} />
               ))}
             </Bar>
@@ -64,7 +78,7 @@ export function CompetitorWidget() {
 
       <div className="p-3 rounded-xl bg-red-50 border border-red-100 mt-4">
         <p className="text-xs text-red-600 font-medium">
-          They are winning on Reels. AI suggests posting 2 more Reels this week to close the gap.
+          They are winning on content volume. AI suggests posting {gap} more posts this week to close the gap.
         </p>
       </div>
     </motion.div>

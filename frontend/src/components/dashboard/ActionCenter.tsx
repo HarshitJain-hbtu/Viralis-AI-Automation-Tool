@@ -5,17 +5,40 @@ import {
   Rocket,
   MessageCircle,
   Star,
-  Video,
   Sparkles,
-  ChevronRight
+  ChevronRight,
+  TrendingUp,
+  CalendarCheck
 } from "lucide-react";
-import { recommendedActions } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 
+// More realistic "General Business" actions instead of specific dental ones
+const recommendedActions = [
+  {
+    id: 1,
+    text: "Schedule content for next week to maintain consistency",
+    icon: "calendar",
+    priority: "HIGH",
+  },
+  {
+    id: 2,
+    text: "Review competitor performance report",
+    icon: "rocket",
+    priority: "MEDIUM",
+  },
+  {
+    id: 3,
+    text: "Check new leads from recent campaigns",
+    icon: "star",
+    priority: "LOW",
+  }
+];
+
 const icons: Record<string, any> = {
-  rocket: Rocket,
+  rocket: TrendingUp,
   message: MessageCircle,
   star: Star,
+  calendar: CalendarCheck
 };
 
 export function ActionCenter() {
@@ -38,17 +61,23 @@ export function ActionCenter() {
                 className="flex items-center justify-between p-4 rounded-xl bg-white border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all cursor-pointer group"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${action.priority === 'HIGH' ? 'bg-blue-50 text-blue-600' :
+                      action.priority === 'MEDIUM' ? 'bg-purple-50 text-purple-600' :
+                        'bg-gray-50 text-gray-600'
+                    }`}>
                     <Icon className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold">{action.text}</p>
-                    <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
+                    <p className="text-sm font-semibold text-gray-900">{action.text}</p>
+                    <span className={`text-[10px] uppercase font-bold tracking-wider ${action.priority === 'HIGH' ? 'text-blue-600' :
+                        action.priority === 'MEDIUM' ? 'text-purple-600' :
+                          'text-gray-400'
+                      }`}>
                       Priority: {action.priority}
                     </span>
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-zinc-300 group-hover:text-emerald-500 transition-colors" />
+                <ChevronRight className="w-5 h-5 text-zinc-300 group-hover:text-blue-500 transition-colors" />
               </motion.div>
             );
           })}
@@ -57,23 +86,26 @@ export function ActionCenter() {
 
       <motion.div
         whileHover={{ scale: 1.01 }}
-        className="relative rounded-2xl overflow-hidden group h-full min-h-[200px] shadow-sm"
+        className="relative rounded-2xl overflow-hidden group h-full min-h-[200px] shadow-sm cursor-pointer"
+        onClick={() => window.location.href = '/dashboard/ai-calendar'}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900 to-indigo-900 opacity-90 group-hover:opacity-100 transition-opacity" />
-        <img
-          src="/ai-studio.png"
-          alt="Studio"
-          className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-80"
+        {/* Background Image */}
+        <div
+          className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+          style={{ backgroundImage: "url('/assets/content-studio-banner.png')" }}
         />
-        <div className="absolute inset-0 p-8 flex flex-col justify-between text-white">
+        {/* Overlay for legibility */}
+        <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors" />
+
+        <div className="relative inset-0 p-8 flex flex-col justify-between text-white relative z-10">
           <div>
-            <h4 className="text-2xl font-black mb-2">Video Studio</h4>
-            <p className="text-blue-100 text-sm font-medium leading-relaxed">
-              Generate 10 viral reels in 60 seconds using AI.
+            <h4 className="text-2xl font-black mb-2 text-white drop-shadow-md">Content Studio</h4>
+            <p className="text-gray-100 text-sm font-medium leading-relaxed drop-shadow-sm max-w-[90%]">
+              Generate viral posts, schedule content, and manage your calendar.
             </p>
           </div>
-          <Button className="w-full bg-white text-blue-600 hover:bg-gray-50 rounded-xl h-12 font-bold gap-2">
-            Quick Generate <Video className="w-4 h-4" />
+          <Button className="w-[90%] absolute -bottom-20 right-5 bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 rounded-xl h-12 font-bold gap-2">
+            Open Studio <Sparkles className="w-4 h-4" />
           </Button>
         </div>
       </motion.div>

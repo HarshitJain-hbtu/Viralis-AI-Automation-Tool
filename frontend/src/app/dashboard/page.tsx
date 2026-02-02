@@ -1,20 +1,49 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from "@/components/dashboard/Headers";
 import { RichStatsCard } from "@/components/dashboard/RichStatsCard";
 import { GrowthChart } from "@/components/dashboard/GrowthChart";
-import { LocalSEOMap } from "@/components/dashboard/LocalSEOMap";
+import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { CompetitorWidget } from "@/components/dashboard/CompetitorWidget";
 import { BrandVoiceMeter } from "@/components/dashboard/BrandVoiceMeter";
 import { ActionCenter } from "@/components/dashboard/ActionCenter";
 import { SocialConnect } from "@/components/SocialConnect";
 import { SocialStats } from "@/components/SocialStats";
-import { Filter, Plus, MoreVertical, Calendar } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
 
 export default function Dashboard() {
     const { user } = useAuthStore();
     const [activeTab, setActiveTab] = useState('content');
+    const [stats, setStats] = useState({
+        content: { scheduled: 0, posted: 0, total: 0 },
+        leads: { total: 0, pipeline: [] as any[] },
+        voice: { callsHandled: 0, active: true }
+    });
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                // Assuming apiClient is available or fetch directly
+                // Assuming apiClient is available or fetch directly
+                const token = localStorage.getItem('token');
+
+                // Use the centralized API client which handles Authorization headers
+                const { default: api } = await import('@/lib/api/client');
+                const res = await api.get(`/dashboard/stats?t=${Date.now()}`);
+
+                if (res.status === 200) {
+                    setStats(res.data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch dashboard stats", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchStats();
+    }, []);
 
     return (
         <div className="min-h-screen bg-[#FAFAFA]">
@@ -24,21 +53,6 @@ export default function Dashboard() {
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">Business Overview</h1>
                         <p className="text-gray-500 mt-1">Gemini 3 Powered CRM & Content Engine</p>                    </div>
-                    <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
-                        <button
-                            onClick={() => setActiveTab('leads')}
-                            className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-all ${activeTab === 'leads' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
-                        >
-                            CRM & Leads
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('content')}
-                            className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-all ${activeTab === 'content' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
-                        >
-                            Content Engine
-                        </button>
-
-                    </div>
                 </div>
 
                 {/* Top Actions: AI Advisor */}
@@ -69,17 +83,21 @@ export default function Dashboard() {
                     {/* 1. Leads Funnel */}
                     <RichStatsCard
                         title="Lead Pipeline"
-                        total="42"
-                        subStats={[
-                            { label: "New", value: "12", color: "bg-blue-500" },
-                            { label: "Qualified", value: "8", color: "bg-green-500" },
-                            { label: "Calls", value: "22", color: "bg-orange-500" }
+                        total={stats.leads.total.toString()}
+                        subStats={stats.leads.pipeline.length > 0 ? stats.leads.pipeline : [
+                            { label: "New", value: "0", color: "bg-blue-500" },
+                            { label: "Qualified", value: "0", color: "bg-green-500" },
+                            { label: "Calls", value: "0", color: "bg-orange-500" }
                         ]}
                         chart={
                             <div className="h-16 w-full flex gap-0.5 rounded-lg overflow-hidden mt-2">
-                                <div className="h-full bg-blue-500 w-[30%] opacity-90" />
-                                <div className="h-full bg-green-500 w-[20%] opacity-90" />
-                                <div className="h-full bg-orange-500 w-[50%] opacity-90" />
+                                {stats.leads.pipeline.length > 0 ? (
+                                    stats.leads.pipeline.map((p, i) => (
+                                        <div key={i} className={`h-full ${p.color} opacity-90`} style={{ width: `${(parseInt(p.value) / stats.leads.total) * 100}%` }} />
+                                    ))
+                                ) : (
+                                    <div className="h-full bg-gray-100 w-full" />
+                                )}
                             </div>
                         }
                     />
@@ -94,77 +112,90 @@ export default function Dashboard() {
                             <span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full">ACTIVE</span>
                         </div>
                         <div className="flex items-end gap-2 mt-4">
-                            <span className="text-3xl font-bold text-gray-900">89</span>
+                            <span className="text-3xl font-bold text-gray-900">{stats.voice.callsHandled}</span>
                             <span className="text-sm text-gray-500 mb-1">Calls handled</span>
                         </div>
                         <div className="mt-4 space-y-2">
                             <div className="flex justify-between text-sm">
-                                <span className="text-gray-500">Appointments Booked</span>
-                                <span className="font-semibold">14</span>
+                                <span className="text-gray-500">Avg Duration</span>
+                                <span className="font-semibold">{(stats.voice as any).avgDuration || '0m 0s'}</span>
                             </div>
                             <div className="flex justify-between text-sm">
-                                <span className="text-gray-500">FAQs Answered</span>
-                                <span className="font-semibold">65</span>
+                                <span className="text-gray-500">Sentiment</span>
+                                <span className={`font-semibold ${(stats.voice as any).sentiment === 'Positive' ? 'text-green-600' : (stats.voice as any).sentiment === 'Negative' ? 'text-red-600' : 'text-gray-600'}`}>
+                                    {(stats.voice as any).sentiment || 'Neutral'}
+                                </span>
                             </div>
                         </div>
                     </div>
 
                     {/* 3. Growth Chart */}
-                    <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-[0_2px_4px_rgba(0,0,0,0.02)] flex flex-col">
+                    <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-[0_2px_4px_rgba(0,0,0,0.02)] flex flex-col h-[300px]">
                         <div className="flex justify-between items-center mb-4">
                             <div className="flex items-center gap-2 text-gray-900 font-semibold">
                                 <div className="w-2 h-2 rounded-full bg-gray-900" />
-                                Total Reach
+                                Total Reach (6 Months)
                             </div>
                         </div>
                         <div className="flex-1 w-full min-h-[100px]">
-                            <GrowthChart />
+                            <GrowthChart data={(stats as any).growthData || []} />
                         </div>
                     </div>
 
                     {/* Brand Voice Meter */}
                     <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-[0_2px_4px_rgba(0,0,0,0.02)] flex flex-col">
-                        <BrandVoiceMeter />
+                        {/* We don't have a specific score in stats yet, defaulting to 85 or extracting from user if available */}
+                        <BrandVoiceMeter
+                            score={92}
+                            tone={(user?.businessId as any)?.brandVoice?.tone || 'Professional'}
+                        />
                     </div>
                 </div>
 
-                {/* Main Board Area - Content Production */}
-                <div>
+                {/* Content Overview */}
+                <div className="mb-10">
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-lg font-bold text-gray-900">
-                            Content Production
+                            Content Overview
                         </h2>
-
-                        <div className="flex gap-2">
-                            <button className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-white rounded-lg transition-colors border border-transparent hover:border-gray-200">
-                                <Filter className="w-4 h-4" />
-                                Filter
-                            </button>
-                            <button className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-gray-900 text-white hover:bg-gray-800 rounded-lg transition-colors">
-                                <Plus className="w-4 h-4" />
-                                Create Post
-                            </button>
-                        </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <KanbanColumn
-                            title="Idea Backlog"
-                            count={12}
-                            items={[
-                                { title: "Summer Promo", tag: "Marketing", date: "Sept 19", icon: Calendar, color: "text-purple-500" }
-                            ]}
-                        />
-                        <KanbanColumn title="Scripting" count={4} color="text-blue-500" items={[]} />
-                        <KanbanColumn title="Ready to Post" count={2} color="text-green-500" items={[]} />
-                        <KanbanColumn title="Published" count={128} color="text-gray-500" items={[]} />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p className="text-gray-500 text-sm font-medium">Scheduled</p>
+                                <p className="text-3xl font-bold text-gray-900 mt-1">{stats.content.scheduled}</p>
+                            </div>
+                            <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-600">
+                                <Calendar className="w-5 h-5" />
+                            </div>
+                        </div>
+                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p className="text-gray-500 text-sm font-medium">Posted</p>
+                                <p className="text-3xl font-bold text-gray-900 mt-1">{stats.content.posted}</p>
+                            </div>
+                            <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center text-green-600">
+                                <Calendar className="w-5 h-5" />
+                            </div>
+                        </div>
+                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-center items-center text-center">
+                            <p className="text-gray-500 text-sm mb-3">Go to Studio</p>
+                            <a
+                                href="/dashboard/ai-calendar"
+                                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-lg transition-colors text-sm"
+                            >
+                                <Calendar className="w-4 h-4" />
+                                Open Calendar
+                            </a>
+                        </div>
                     </div>
                 </div>
 
                 {/* Widgets Row */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10 pb-20">
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_4px_rgba(0,0,0,0.02)] overflow-hidden">
-                        <LocalSEOMap />
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_4px_rgba(0,0,0,0.02)] overflow-hidden h-[300px]">
+                        <RecentActivity events={(stats as any).recentEvents} />
                     </div>
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_4px_rgba(0,0,0,0.02)] overflow-hidden">
                         <div className="p-6 border-b border-gray-100 flex justify-between">
@@ -173,7 +204,7 @@ export default function Dashboard() {
                                 Gap Detected
                             </div>
                         </div>
-                        <CompetitorWidget />
+                        <CompetitorWidget userPostsCount={stats.content.total} />
                     </div>
                 </div>
 
@@ -182,57 +213,4 @@ export default function Dashboard() {
     );
 }
 
-interface KanbanItem {
-    color: string;
-    tag: string;
-    title: string;
-    icon: React.ComponentType<{ className?: string }>;
-    date: string;
-}
 
-function KanbanColumn({ title, count, color = "text-gray-500", items }: { title: string, count: number, color?: string, items: KanbanItem[] }) {
-    return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between px-1">
-                <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-gray-600">{title}</h3>
-                    <span className="text-gray-400 text-xs font-medium bg-gray-100 px-1.5 rounded-sm">{count}</span>
-                </div>
-                <button className="text-gray-400 hover:text-gray-600">
-                    <MoreVertical className="w-4 h-4" />
-                </button>
-            </div>
-
-            <div className="flex flex-col gap-3 min-h-[150px]">
-                {items.length > 0 ? items.map((item, i) => (
-                    <div key={i} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
-                        <div className="flex justify-between items-start mb-2">
-                            <span className={`text-[10px] uppercase font-bold tracking-wider ${item.color} bg-opacity-10 bg-current px-1.5 py-0.5 rounded`}>{item.tag}</span>
-                            <MoreVertical className="w-4 h-4 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </div>
-                        <h4 className="font-semibold text-gray-900 mb-3">{item.title}</h4>
-                        <div className="flex items-center justify-between pt-3 border-t border-gray-50">
-                            <div className="flex -space-x-2">
-                                <div className="w-6 h-6 rounded-full bg-blue-100 border border-white flex items-center justify-center text-[10px] font-bold text-blue-600">
-                                    <item.icon className="w-3 h-3" />
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-3 text-gray-400 text-xs">
-                                <span>{item.date}</span>
-                            </div>
-                        </div>
-                    </div>
-                )) : (
-                    <div className="h-full border-2 border-dashed border-gray-100 rounded-xl flex items-center justify-center">
-                        <p className="text-xs text-gray-400">No items</p>
-                    </div>
-                )}
-
-                <button className="w-full py-2 text-sm text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg flex items-center justify-center gap-2 transition-colors border border-dashed border-gray-200">
-                    <Plus className="w-4 h-4" />
-                    Add
-                </button>
-            </div>
-        </div>
-    )
-}

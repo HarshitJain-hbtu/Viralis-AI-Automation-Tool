@@ -35,11 +35,37 @@ export const youtubeCallback = async (req: Request, res: Response, _next: NextFu
         // Initialize socialAccounts if needed
         if (!user.socialAccounts) user.socialAccounts = {};
 
+        // Fetch initial stats immediately
+        let initialStats = {};
+        try {
+            const oauth2Client = new google.auth.OAuth2();
+            oauth2Client.setCredentials({ access_token: userPayload.accessToken });
+            const youtube = google.youtube({ version: 'v3', auth: oauth2Client });
+
+            const channelResponse = await youtube.channels.list({
+                part: ['statistics', 'snippet'],
+                mine: true
+            });
+
+            if (channelResponse.data.items && channelResponse.data.items.length > 0) {
+                const channel = channelResponse.data.items[0];
+                initialStats = {
+                    viewCount: channel.statistics?.viewCount || '0',
+                    subscriberCount: channel.statistics?.subscriberCount || '0',
+                    videoCount: channel.statistics?.videoCount || '0',
+                    channelTitle: channel.snippet?.title,
+                    avatarUrl: channel.snippet?.thumbnails?.default?.url
+                };
+            }
+        } catch (statErr) {
+            console.error('Failed to fetch initial YT stats:', statErr);
+        }
+
         user.socialAccounts.youtube = {
             accessToken: userPayload.accessToken,
             refreshToken: userPayload.refreshToken,
-            channelId: userPayload.profile.id, // Assuming channel ID is the profile ID for now
-            stats: {} // Will be populated later
+            channelId: userPayload.profile.id,
+            stats: initialStats
         };
 
         await user.save();

@@ -2,8 +2,9 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IBusiness extends Document {
     name: string;
+    logo?: string; // Base64 logo image
     industry?: string;
-    industryMode?: 'Dentist' | 'Gym' | 'Real Estate' | 'Salon' | 'Cafe' | 'Other';
+    industryMode?: string;
     website?: string;
     description?: string;
 
@@ -89,10 +90,10 @@ export interface IBusiness extends Document {
 const businessSchema = new Schema<IBusiness>(
     {
         name: { type: String, required: true },
+        logo: { type: String }, // Base64 logo image
         industry: { type: String },
         industryMode: {
             type: String,
-            enum: ['Dentist', 'Gym', 'Real Estate', 'Salon', 'Cafe', 'Other'],
             default: 'Other'
         },
         website: { type: String },

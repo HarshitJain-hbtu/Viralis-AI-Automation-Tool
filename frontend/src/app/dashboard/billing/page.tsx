@@ -9,7 +9,6 @@ import { toast } from 'sonner';
 
 export default function BillingPage() {
     const { user } = useAuthStore();
-    // Safe access to subscriptionTier, defaulting to 'Free' if not set or if businessId is just an ID string
     const currentTier = (typeof user?.businessId === 'object' ? (user.businessId as any).subscriptionTier : 'Free') || 'Free';
 
     const handleUpgrade = (tier: string) => {
@@ -22,7 +21,7 @@ export default function BillingPage() {
 
                 <div className="text-center max-w-2xl mx-auto mb-12">
                     <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-4">Subscription & Billing</h1>
-                    <p className="text-gray-500">Manage your workspace plan. Currently, plan changes are handled manually by our team.</p>
+                    <p className="text-gray-500">Manage your workspace plan. All plans include core AI features.</p>
                 </div>
 
                 <div className="grid lg:grid-cols-3 gap-8 items-start">
@@ -36,7 +35,7 @@ export default function BillingPage() {
                         )}
                         <CardHeader className="pb-4">
                             <CardTitle className="text-xl font-bold text-gray-900">Free Forever</CardTitle>
-                            <CardDescription>For solo entrepreneurs starting out.</CardDescription>
+                            <CardDescription>Try Viralis with limited features.</CardDescription>
                             <div className="pt-4 flex items-baseline gap-1">
                                 <span className="text-4xl font-bold text-gray-900">$0</span>
                                 <span className="text-gray-400 font-medium">/mo</span>
@@ -44,11 +43,12 @@ export default function BillingPage() {
                         </CardHeader>
                         <CardContent className="space-y-4">
                             {[
+                                '1 Content Generation/day',
+                                '2 Hours Voice Agent/month',
                                 '1 Social Account',
-                                'Basic Comment Inbox',
-                                'Manual Lead Tagging',
-                                '5 AI Videos/mo',
-                                '3 Days Data Retention'
+                                '10 Leads Storage',
+                                'Basic Analytics',
+                                '7 Days Data Retention'
                             ].map((feat) => (
                                 <div key={feat} className="flex items-center gap-3 text-sm text-gray-600">
                                     <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
@@ -68,9 +68,9 @@ export default function BillingPage() {
                         </CardFooter>
                     </Card>
 
-                    {/* Starter Plan */}
-                    <Card className={`relative border-2 transition-all ${currentTier === 'Starter' ? 'border-blue-600 ring-4 ring-blue-600/10 shadow-xl' : 'border-blue-100/50 shadow-md hover:shadow-lg bg-blue-50/10'}`}>
-                        {currentTier === 'Starter' && (
+                    {/* Growth Plan */}
+                    <Card className={`relative border-2 transition-all ${currentTier === 'Growth' ? 'border-blue-600 ring-4 ring-blue-600/10 shadow-xl' : 'border-blue-100/50 shadow-md hover:shadow-lg bg-blue-50/10'}`}>
+                        {currentTier === 'Growth' && (
                             <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">
                                 Current Plan
                             </div>
@@ -83,21 +83,23 @@ export default function BillingPage() {
                                 <Zap className="w-5 h-5 text-blue-600 fill-current" />
                                 <span className="text-sm font-bold text-blue-600 uppercase tracking-wider">Best Value</span>
                             </div>
-                            <CardTitle className="text-xl font-bold text-gray-900">Starter</CardTitle>
-                            <CardDescription>Automate your social presence.</CardDescription>
+                            <CardTitle className="text-xl font-bold text-gray-900">Growth</CardTitle>
+                            <CardDescription>For growing businesses.</CardDescription>
                             <div className="pt-4 flex items-baseline gap-1">
-                                <span className="text-4xl font-bold text-gray-900">$9</span>
+                                <span className="text-4xl font-bold text-gray-900">$19</span>
                                 <span className="text-gray-400 font-medium">/mo</span>
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             {[
-                                'Unified Inbox (All Platforms)',
-                                'Auto-Reply AI Agents',
-                                'Capture Leads from Comments',
-                                'Unlimited Repurposing',
-                                'WhatsApp Integration (Beta)',
-                                'Competitor Tracking'
+                                'Unlimited Content Generation',
+                                '10 Hours Voice Agent/month',
+                                '3 Social Accounts',
+                                'Unlimited Leads',
+                                'Content Studio (Full Access)',
+                                'Competitor Intelligence',
+                                'AI Insights Dashboard',
+                                '30 Days Data Retention'
                             ].map((feat) => (
                                 <div key={feat} className="flex items-center gap-3 text-sm text-gray-700 font-medium">
                                     <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
@@ -107,39 +109,41 @@ export default function BillingPage() {
                         </CardContent>
                         <CardFooter>
                             <Button
-                                className={`w-full ${currentTier === 'Starter' ? 'border-blue-200 text-blue-700 bg-blue-50' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
-                                variant={currentTier === 'Starter' ? 'outline' : 'default'}
-                                disabled={currentTier === 'Starter'}
-                                onClick={() => handleUpgrade('Starter')}
+                                className={`w-full ${currentTier === 'Growth' ? 'border-blue-200 text-blue-700 bg-blue-50' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
+                                variant={currentTier === 'Growth' ? 'outline' : 'default'}
+                                disabled={currentTier === 'Growth'}
+                                onClick={() => handleUpgrade('Growth')}
                             >
-                                {currentTier === 'Starter' ? 'Active Plan' : 'Upgrade to Starter'}
+                                {currentTier === 'Growth' ? 'Active Plan' : 'Upgrade to Growth'}
                             </Button>
                         </CardFooter>
                     </Card>
 
-                    {/* Business Plan */}
-                    <Card className={`relative border-2 transition-all ${currentTier === 'Business' ? 'border-primary ring-4 ring-primary/10 shadow-xl' : 'border-gray-100 shadow-sm hover:shadow-md'}`}>
-                        {currentTier === 'Business' && (
+                    {/* Agency Plan */}
+                    <Card className={`relative border-2 transition-all ${currentTier === 'Agency' ? 'border-primary ring-4 ring-primary/10 shadow-xl' : 'border-gray-100 shadow-sm hover:shadow-md'}`}>
+                        {currentTier === 'Agency' && (
                             <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">
                                 Current Plan
                             </div>
                         )}
                         <CardHeader className="pb-4">
-                            <CardTitle className="text-xl font-bold text-gray-900">Business</CardTitle>
-                            <CardDescription>For scaling teams & agencies.</CardDescription>
+                            <CardTitle className="text-xl font-bold text-gray-900">Agency</CardTitle>
+                            <CardDescription>For teams & agencies.</CardDescription>
                             <div className="pt-4 flex items-baseline gap-1">
-                                <span className="text-4xl font-bold text-gray-900">$29</span>
+                                <span className="text-4xl font-bold text-gray-900">$49</span>
                                 <span className="text-gray-400 font-medium">/mo</span>
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             {[
-                                'Everything in Starter',
+                                'Everything in Growth',
+                                'Unlimited Voice Agent Hours',
+                                '10 Social Accounts',
                                 '5 Team Members',
-                                'CRM Integrations',
                                 'White-label Reports',
-                                'Dedicated Account Manager',
-                                'Priority Support'
+                                'API Access',
+                                'Dedicated Support',
+                                'Unlimited Data Retention'
                             ].map((feat) => (
                                 <div key={feat} className="flex items-center gap-3 text-sm text-gray-600">
                                     <CheckCircle2 className="w-4 h-4 text-gray-900 shrink-0" />
@@ -150,11 +154,11 @@ export default function BillingPage() {
                         <CardFooter>
                             <Button
                                 className="w-full"
-                                variant={currentTier === 'Business' ? 'outline' : 'default'}
-                                disabled={currentTier === 'Business'}
-                                onClick={() => handleUpgrade('Business')}
+                                variant={currentTier === 'Agency' ? 'outline' : 'default'}
+                                disabled={currentTier === 'Agency'}
+                                onClick={() => handleUpgrade('Agency')}
                             >
-                                {currentTier === 'Business' ? 'Active Plan' : 'Contact Sales'}
+                                {currentTier === 'Agency' ? 'Active Plan' : 'Contact Sales'}
                             </Button>
                         </CardFooter>
                     </Card>
@@ -165,7 +169,7 @@ export default function BillingPage() {
                     <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
                     <div>
                         <h4 className="font-semibold text-blue-900 text-sm">Enterprise or Custom Needs?</h4>
-                        <p className="text-blue-700 text-sm mt-1">If you need a custom plan or higher limits, please reach out to our sales team directly at <a href="mailto:sales@viralis.com" className="underline hover:text-blue-900">sales@viralis.com</a>.</p>
+                        <p className="text-blue-700 text-sm mt-1">Need higher limits or custom integrations? Reach out at <a href="mailto:team@viralis.ai" className="underline hover:text-blue-900">team@viralis.ai</a>.</p>
                     </div>
                 </div>
 
@@ -173,3 +177,4 @@ export default function BillingPage() {
         </div>
     );
 }
+

@@ -15,6 +15,7 @@ import leadRoutes from './routes/lead.routes';
 import aiContentRoutes from './routes/aiContentRoutes';
 import socialRoutes from './routes/socialRoutes';
 import aiRoutes from './routes/aiRoutes';
+import voiceRoutes from './routes/voice.routes';
 import './config/passport'; // Initialize Passport Config
 
 
@@ -23,8 +24,14 @@ const app = express();
 const server = http.createServer(app);
 
 // Middleware
-app.use(express.json());
-app.use(cors());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
+app.use(cors({
+    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(helmet());
 app.use(morgan('dev'));
 
@@ -55,11 +62,14 @@ app.use('/api/auth', authRoutes);
 app.use('/api/public', publicRoutes); // Public Routes
 app.use('/api', socialRoutes); // /api/auth/youtube, /api/auth/facebook, /api/stats
 app.use('/api/business', businessRoutes);
+app.use('/api/voice', voiceRoutes);
 
 app.use('/api/leads', leadRoutes);
 
 app.use('/api/ai', aiRoutes);
 app.use('/api/ai-content', aiContentRoutes); // Corrected and moved
+import dashboardRoutes from './routes/dashboard.routes';
+app.use('/api/dashboard', dashboardRoutes);
 
 app.get('/', (_req, res) => {
     res.send('🚀 VIRALIS Backend is Running (TypeScript)!');

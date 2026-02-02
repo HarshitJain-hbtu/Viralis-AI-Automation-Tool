@@ -17,12 +17,14 @@ import {
   LogOut,
   CreditCard,
   User,
-  Sparkles
+  Sparkles,
+  FileText,
+  Phone
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store/authStore";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,24 +44,18 @@ import { Button } from "@/components/ui/button";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
-  { icon: Calendar, label: "Growth Plan", href: "/calendar" },
-  { icon: Layers, label: "Content Board", href: "/board" },
-  { icon: Sparkles, label: "Content Studio", href: "/dashboard/content" },
+  { icon: Sparkles, label: "Content Studio", href: "/dashboard/ai-calendar" },
+  { icon: Layers, label: "Content Board", href: "/dashboard/board" },
 ];
 
 const toolItems = [
-  { icon: Video, label: "Reels Studio", href: "/dashboard/studio" },
-
   { icon: Search, label: "Competitor Spy", href: "/dashboard/competitor-spy" },
-
   { icon: Search, label: "Lead Management", href: "/lead-management" },
-  { icon: Mic, label: "Voice Lab", href: "/dashboard/settings/ai-brain" }, // Updated
-
+  { icon: Mic, label: "Voice Lab", href: "/dashboard/settings/ai-brain" },
 ];
 
 const secondaryItems = [
-  { icon: MessageSquare, label: "Inbox", href: "/dashboard/inbox", badge: 7 },
-  { icon: BarChart3, label: "Reporting", href: "/reporting" },
+  { icon: MessageSquare, label: "Inbox", href: "/dashboard/inbox" },
 ];
 
 export function Sidebar() {
@@ -67,51 +63,66 @@ export function Sidebar() {
   const router = useRouter();
   const { user, logout } = useAuthStore();
   const business = user?.businessId as any;
-  const [showSubscription, setShowSubscription] = useState(false);
 
-  // Helper to get Plan Details
+  // Usage tracking state (would come from API in production)
+  const [usage, setUsage] = useState({
+    contentToday: 0,
+    contentLimit: 1,
+    voiceMinutesUsed: 0,
+    voiceMinutesLimit: 120, // 2 hours = 120 mins
+  });
+
+  // Get plan details with usage limits
   const getPlanDetails = () => {
     const tier = (typeof business === 'object' ? business?.subscriptionTier : 'Free') || 'Free';
 
     switch (tier) {
-      case 'Business':
+      case 'Agency':
         return {
-          name: 'Viralis Business',
-          badge: 'BIZ',
-          credits: '2,500/10,000',
-          percent: 25,
-          color: 'from-amber-400 to-orange-500',
-          textColor: 'text-amber-600',
-          bgColor: 'bg-amber-50',
-          borderColor: 'border-amber-100'
+          name: 'Viralis Agency',
+          badge: 'AGENCY',
+          contentLimit: Infinity,
+          voiceLimit: Infinity,
+          color: 'from-purple-500 to-pink-500',
+          textColor: 'text-purple-600',
         };
-      case 'Starter':
+      case 'Growth':
         return {
-          name: 'Viralis Starter',
-          badge: 'PRO',
-          credits: '750/1,000',
-          percent: 75,
+          name: 'Viralis Growth',
+          badge: 'GROWTH',
+          contentLimit: Infinity,
+          voiceLimit: 600, // 10 hours
           color: 'from-blue-500 to-cyan-400',
           textColor: 'text-blue-600',
-          bgColor: 'bg-blue-50',
-          borderColor: 'border-blue-100'
         };
       case 'Free':
       default:
         return {
           name: 'Viralis Free',
           badge: 'FREE',
-          credits: '5/5 Videos',
-          percent: 100,
+          contentLimit: 1,
+          voiceLimit: 120, // 2 hours
           color: 'from-gray-400 to-gray-500',
           textColor: 'text-gray-600',
-          bgColor: 'bg-gray-50',
-          borderColor: 'border-gray-100'
         };
     }
   };
 
   const plan = getPlanDetails();
+
+  // Calculate usage percentages
+  const contentPercent = plan.contentLimit === Infinity ? 0 : Math.min((usage.contentToday / plan.contentLimit) * 100, 100);
+  const voicePercent = plan.voiceLimit === Infinity ? 0 : Math.min((usage.voiceMinutesUsed / plan.voiceLimit) * 100, 100);
+
+  // Format voice minutes to readable time
+  const formatMinutes = (mins: number) => {
+    if (mins >= 60) {
+      const hrs = Math.floor(mins / 60);
+      const remainMins = mins % 60;
+      return remainMins > 0 ? `${hrs}h ${remainMins}m` : `${hrs}h`;
+    }
+    return `${mins}m`;
+  };
 
   return (
     <>
@@ -182,48 +193,88 @@ export function Sidebar() {
                     <item.icon className="w-4 h-4 text-gray-500" />
                     {item.label}
                   </div>
-                  {item.badge && (
-                    <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
-                      {item.badge}
-                    </span>
-                  )}
                 </Link>
               ))}
             </nav>
           </div>
         </div>
 
-        {/* User Profile - Static Bottom */}
-        <div className="mt-0 pt-4 border-t border-gray-100 bg-[#FDFCFF] z-10">
-          {/* Subscription Snippet */}
-          <div className="mb-4 p-4 bg-gray-900 rounded-xl text-white relative overflow-hidden group cursor-pointer" onClick={() => router.push('/dashboard/billing')}>
-            <div className="absolute top-0 right-0 p-3 opacity-10 transition-transform group-hover:scale-110">
-              <Sparkles className="w-16 h-16" />
+        {/* Usage Tracking & Subscription - Static Bottom */}
+        <div className="mt-0 pt-4 border-t border-gray-100 bg-[#FDFCFF] z-10 space-y-3">
+
+          {/* Usage Card */}
+          <div className="p-3 bg-white border border-gray-100 rounded-xl shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Daily Usage</span>
+              <span className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-medium">{plan.badge}</span>
             </div>
-            <div className="relative z-10">
-              <div className="flex justify-between items-center mb-1">
-                <h3 className="font-bold text-sm">{plan.name}</h3>
-                <span className="text-[10px] bg-white/20 px-1.5 rounded font-medium">{plan.badge}</span>
+
+            {/* Content Generation */}
+            <div className="mb-3">
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-1.5">
+                  <FileText className="w-3 h-3 text-blue-500" />
+                  <span className="text-xs text-gray-700 font-medium">Content</span>
+                </div>
+                <span className="text-[10px] text-gray-500">
+                  {plan.contentLimit === Infinity ? '∞' : `${usage.contentToday}/${plan.contentLimit}`}
+                </span>
               </div>
-              <p className="text-[10px] text-gray-400 mb-3">{plan.credits} Used</p>
-              <div className="w-full h-1.5 bg-gray-800 rounded-full mb-3 overflow-hidden">
-                <div className={`h-full bg-gradient-to-r ${plan.color}`} style={{ width: `${plan.percent}%` }} />
+              <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className={cn(
+                    "h-full rounded-full transition-all",
+                    contentPercent >= 100 ? "bg-red-500" : "bg-blue-500"
+                  )}
+                  style={{ width: plan.contentLimit === Infinity ? '10%' : `${contentPercent}%` }}
+                />
               </div>
-              <Button
-                size="sm"
-                className="w-full bg-white text-gray-900 hover:bg-gray-100 h-7 text-xs font-bold border-0"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  router.push('/dashboard/billing');
-                }}
-              >
-                Upgrade Now
-              </Button>
+              {contentPercent >= 100 && plan.contentLimit !== Infinity && (
+                <p className="text-[9px] text-red-500 mt-1">Limit reached. Resets tomorrow.</p>
+              )}
+            </div>
+
+            {/* Voice Agent */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-1.5">
+                  <Phone className="w-3 h-3 text-green-500" />
+                  <span className="text-xs text-gray-700 font-medium">Voice Agent</span>
+                </div>
+                <span className="text-[10px] text-gray-500">
+                  {plan.voiceLimit === Infinity ? '∞' : `${formatMinutes(usage.voiceMinutesUsed)}/${formatMinutes(plan.voiceLimit)}`}
+                </span>
+              </div>
+              <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className={cn(
+                    "h-full rounded-full transition-all",
+                    voicePercent >= 100 ? "bg-red-500" : "bg-green-500"
+                  )}
+                  style={{ width: plan.voiceLimit === Infinity ? '10%' : `${voicePercent}%` }}
+                />
+              </div>
+              {voicePercent >= 100 && plan.voiceLimit !== Infinity && (
+                <p className="text-[9px] text-red-500 mt-1">Monthly limit reached.</p>
+              )}
             </div>
           </div>
+
+          {/* Upgrade CTA */}
+          {plan.badge === 'FREE' && (
+            <Button
+              size="sm"
+              className="w-full bg-gray-900 hover:bg-gray-800 text-white h-9 text-xs font-bold"
+              onClick={() => router.push('/dashboard/billing')}
+            >
+              <Zap className="w-3 h-3 mr-1.5" />
+              Upgrade for Unlimited
+            </Button>
+          )}
 
         </div>
       </div>
     </>
   );
 }
+

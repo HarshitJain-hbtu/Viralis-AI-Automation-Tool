@@ -19,7 +19,8 @@ export class BusinessController {
     static async updateProfile(req: Request, res: Response) {
         try {
             const {
-                name, // Fix: Extract Name
+                name,
+                logo, // Add logo field
                 industryMode,
                 description,
                 location,
@@ -28,11 +29,11 @@ export class BusinessController {
                 competitors,
                 voiceAgent,
                 onboardingStep,
-                knowledgeBase // Add knowledgeBase
+                knowledgeBase
             } = req.body;
 
             console.log(`📝 [Update Profile] Updating Business: ${req.user?.businessId}`);
-            console.log('📦 Payload:', JSON.stringify(req.body, null, 2));
+            console.log('📦 Payload:', JSON.stringify({ ...req.body, logo: logo ? '[BASE64 IMAGE]' : undefined }, null, 2));
 
             // Sanitization Helper
             const removeEmpty = (obj: any) => {
@@ -55,7 +56,8 @@ export class BusinessController {
                 req.user?.businessId,
                 {
                     $set: {
-                        ...(name && { name }), // Fix: Update Name
+                        ...(name && { name }),
+                        ...(logo !== undefined && { logo }), // Allow setting or clearing logo
                         ...(industryMode && { industryMode }),
                         ...(description && { description }),
                         ...(cleanLocation && Object.keys(cleanLocation).length > 0 && { location: cleanLocation }),
@@ -64,8 +66,8 @@ export class BusinessController {
                         ...(competitors && { competitors }),
                         ...(voiceAgent && { voiceAgent }),
                         ...(onboardingStep !== undefined && { onboardingStep }),
-                        ...(knowledgeBase && { knowledgeBase }), // Update knowledgeBase
-                        ...(req.body.subscriptionTier && { subscriptionTier: req.body.subscriptionTier }), // Allow Manual Tier Update
+                        ...(knowledgeBase && { knowledgeBase }),
+                        ...(req.body.subscriptionTier && { subscriptionTier: req.body.subscriptionTier }),
                     }
                 },
                 { new: true, runValidators: true }

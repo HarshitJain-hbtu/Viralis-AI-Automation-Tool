@@ -46,8 +46,8 @@ export function SocialConnect() {
         }
     };
 
-    const isYoutubeConnected = !!socialStats?.youtube?.channelTitle;
-    const isFacebookConnected = !!socialStats?.facebook?.pageName;
+    const isYoutubeConnected = !!socialStats?.youtube;
+    const isFacebookConnected = !!socialStats?.facebook;
 
     return (
         <Card>
@@ -62,7 +62,7 @@ export function SocialConnect() {
                         <div>
                             <p className="font-medium">YouTube</p>
                             <p className="text-sm text-muted-foreground">
-                                {isYoutubeConnected ? `Connected as ${socialStats.youtube?.channelTitle || ''}` : 'Connect channel'}
+                                {isYoutubeConnected ? `Connected as ${socialStats?.youtube?.channelTitle || 'YouTube Channel'}` : 'Connect channel'}
                             </p>
                         </div>
                     </div>

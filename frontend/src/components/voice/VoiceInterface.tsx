@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, Phone, Wifi, Video, VideoOff, Volume2, User, MicOff, MapPin, Clock } from 'lucide-react';
+import { Mic, Phone, Wifi, Volume2, User, MapPin, Clock, Send, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -24,15 +25,22 @@ type ConnectionStatus = 'IDLE' | 'CONNECTING' | 'LIVE' | 'ERROR';
 export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) {
   const [status, setStatus] = useState<ConnectionStatus>('IDLE');
   const [micPermission, setMicPermission] = useState<boolean>(false);
-  const [transcript, setTranscript] = useState<string>('');
-  const [isTalking, setIsTalking] = useState(false); // Validating if user or AI is talking for visuals
+  const [isTalking, setIsTalking] = useState(false);
   const [showContact, setShowContact] = useState(false);
 
+  // New State for Lead Capture
+  const [showLeadForm, setShowLeadForm] = useState(false);
+  const [userInterested, setUserInterested] = useState(false);
+  const [callDuration, setCallDuration] = useState(0);
+  const [leadSubmitted, setLeadSubmitted] = useState(false);
+  const [leadFormData, setLeadFormData] = useState({ name: '', phone: '', email: '' });
 
   // Refs
   const wsRef = useRef<WebSocket | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const callStartTimeRef = useRef<number>(0);
+  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -43,6 +51,11 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
 
   const startCall = async () => {
     setStatus('CONNECTING');
+    setUserInterested(false);
+    setShowLeadForm(false);
+    setLeadSubmitted(false);
+    setCallDuration(0);
+
     try {
       // 1. Get Mic Permission
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -50,13 +63,19 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
       setMicPermission(true);
 
       // 2. Connect WebSocket
-      const wsUrl = `ws://localhost:8080?brandId=${brandId}`; // Adjust if deployed
+      const wsUrl = `ws://localhost:8080?brandId=${brandId}`;
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
       ws.onopen = () => {
         setStatus('LIVE');
+        callStartTimeRef.current = Date.now();
         setupAudioProcessing(stream);
+
+        // Start timer
+        timerIntervalRef.current = setInterval(() => {
+          setCallDuration(Math.floor((Date.now() - callStartTimeRef.current) / 1000));
+        }, 1000);
       };
 
       ws.onmessage = async (event) => {
@@ -64,10 +83,18 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
           // Received Audio Blob from AI
           playAudioBlob(event.data);
           setIsTalking(true);
-          setTimeout(() => setIsTalking(false), 2000); // Simple visual fallback
-        } else {
-          // Maybe text?
-          console.log('Received text:', event.data);
+          setTimeout(() => setIsTalking(false), 2000);
+        } else if (typeof event.data === 'string') {
+          // Check for JSON signals
+          try {
+            const msg = JSON.parse(event.data);
+            if (msg.type === 'interest_detected' && msg.interested) {
+              console.log('📩 Interest signal received from server');
+              setUserInterested(true);
+            }
+          } catch {
+            console.log('Received text:', event.data);
+          }
         }
       };
 
@@ -78,9 +105,18 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
       };
 
       ws.onclose = () => {
+        if (timerIntervalRef.current) {
+          clearInterval(timerIntervalRef.current);
+        }
         if (status === 'LIVE') {
+          // Show lead form if user was interested
+          if (userInterested) {
+            setShowLeadForm(true);
+            toast.success('Thank you for connecting! Please leave your details.');
+          } else {
+            toast.info('Call ended. Thank you!');
+          }
           setStatus('IDLE');
-          toast.info('Call ended');
         }
       };
 
@@ -107,7 +143,6 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
     processor.onaudioprocess = (e) => {
       if (wsRef.current?.readyState === WebSocket.OPEN) {
         const inputData = e.inputBuffer.getChannelData(0);
-        // Downsample to 16kHz
         const downsampled = downsampleBuffer(inputData, audioContext.sampleRate, 16000);
         const buffer = convertFloat32ToInt16(downsampled);
         wsRef.current.send(buffer);
@@ -116,12 +151,8 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
   };
 
   const downsampleBuffer = (buffer: Float32Array, sampleRate: number, outSampleRate: number) => {
-    if (outSampleRate === sampleRate) {
-      return buffer;
-    }
-    if (outSampleRate > sampleRate) {
-      return buffer; // Cannot upsample effectively this way
-    }
+    if (outSampleRate === sampleRate) return buffer;
+    if (outSampleRate > sampleRate) return buffer;
     const sampleRateRatio = sampleRate / outSampleRate;
     const newLength = Math.round(buffer.length / sampleRateRatio);
     const result = new Float32Array(newLength);
@@ -129,7 +160,6 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
     let offsetBuffer = 0;
     while (offsetResult < result.length) {
       const nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
-      // Accumulate
       let accum = 0, count = 0;
       for (let i = offsetBuffer; i < nextOffsetBuffer && i < buffer.length; i++) {
         accum += buffer[i];
@@ -146,9 +176,7 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
     let l = buffer.length;
     const buf = new Int16Array(l);
     while (l--) {
-      // Clamp the value between -1 and 1
       const s = Math.max(-1, Math.min(1, buffer[l]));
-      // Convert to 16-bit PCM
       buf[l] = s < 0 ? s * 0x8000 : s * 0x7FFF;
     }
     return buf.buffer;
@@ -173,12 +201,51 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
     wsRef.current?.close();
     mediaStreamRef.current?.getTracks().forEach(track => track.stop());
     audioContextRef.current?.close();
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+    }
     setStatus('IDLE');
+  };
+
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleLeadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/api/voice/webhook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          callerNumber: leadFormData.phone || 'web-form',
+          callerName: leadFormData.name || 'Web Visitor',
+          email: leadFormData.email,
+          transcript: 'Lead captured via form after voice call',
+          duration: callDuration,
+          sentiment: 'positive',
+          status: 'lead_captured',
+          userInterested: true
+        })
+      });
+
+      if (response.ok) {
+        setLeadSubmitted(true);
+        toast.success('Thank you! We will contact you soon.');
+      } else {
+        toast.error('Failed to submit. Please try again.');
+      }
+    } catch (err) {
+      console.error('Lead submit error:', err);
+      toast.error('Connection error. Please try again.');
+    }
   };
 
   return (
     <div className="flex flex-col h-[100dvh] bg-[#FDFCFF] text-gray-900 overflow-hidden relative font-sans selection:bg-purple-100">
-      {/* Background Ambience (Light Mode) */}
+      {/* Background Ambience */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-purple-200/40 rounded-full blur-[120px]" />
         <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-blue-200/40 rounded-full blur-[120px]" />
@@ -198,7 +265,7 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
         <div className="bg-white/80 backdrop-blur-md border border-gray-200 shadow-sm rounded-full px-3 py-1.5 flex items-center gap-2">
           <div className={cn("w-2 h-2 rounded-full transition-colors duration-300", status === 'LIVE' ? "bg-green-500 animate-pulse" : "bg-gray-300")} />
           <span className="text-xs font-mono text-gray-500 font-medium">
-            {status === 'LIVE' ? '00:00' : status}
+            {status === 'LIVE' ? formatDuration(callDuration) : status}
           </span>
         </div>
       </header>
@@ -208,7 +275,7 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
 
         {/* The Orb */}
         <div className="relative group cursor-pointer" onClick={status === 'IDLE' ? startCall : undefined}>
-          {/* Ping Animations (Light Mode) */}
+          {/* Ping Animations */}
           {status === 'LIVE' && (
             <>
               <motion.div
@@ -243,7 +310,6 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
                 transition={{ repeat: Infinity, duration: 0.5 }}
                 className="flex items-center gap-1.5"
               >
-                {/* Fake Waveform */}
                 {[1, 2, 3, 4, 5].map(i => (
                   <motion.div
                     key={i}
@@ -257,7 +323,7 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
           </motion.button>
         </div>
 
-        {/* Status Text / Transcript */}
+        {/* Status Text */}
         <div className="mt-12 px-8 text-center max-w-md h-20">
           {status === 'IDLE' && (
             <p className="text-gray-400 text-sm font-medium animate-pulse">Tap the microphone to start</p>
@@ -303,6 +369,66 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
         )}
       </footer>
 
+      {/* Lead Capture Form Dialog */}
+      <Dialog open={showLeadForm && !leadSubmitted} onOpenChange={setShowLeadForm}>
+        <DialogContent className="sm:max-w-md bg-white border-0 shadow-2xl rounded-3xl overflow-hidden">
+          <div className="absolute inset-0 h-32 bg-gradient-to-br from-green-500/10 to-blue-500/10 z-0 pointer-events-none" />
+
+          <DialogHeader className="relative z-10 pt-4 px-2">
+            <DialogTitle className="text-2xl font-bold text-gray-900 text-center">Almost Done!</DialogTitle>
+            <DialogDescription className="text-center text-gray-500">
+              Thanks for connecting! Drop your details and we'll get back to you very soon.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleLeadSubmit} className="grid gap-4 py-4 relative z-10 px-2">
+            <Input
+              placeholder="Your Name"
+              value={leadFormData.name}
+              onChange={(e) => setLeadFormData({ ...leadFormData, name: e.target.value })}
+              className="h-12 rounded-xl"
+              required
+            />
+            <Input
+              placeholder="Phone Number"
+              type="tel"
+              value={leadFormData.phone}
+              onChange={(e) => setLeadFormData({ ...leadFormData, phone: e.target.value })}
+              className="h-12 rounded-xl"
+              required
+            />
+            <Input
+              placeholder="Email (optional)"
+              type="email"
+              value={leadFormData.email}
+              onChange={(e) => setLeadFormData({ ...leadFormData, email: e.target.value })}
+              className="h-12 rounded-xl"
+            />
+            <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white py-6 rounded-xl font-semibold gap-2">
+              <Send className="w-4 h-4" />
+              Submit
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Dialog */}
+      <Dialog open={leadSubmitted} onOpenChange={() => setLeadSubmitted(false)}>
+        <DialogContent className="sm:max-w-sm bg-white border-0 shadow-2xl rounded-3xl text-center p-8">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+              <CheckCircle className="w-8 h-8 text-green-600" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900">Thank You!</h2>
+            <p className="text-gray-500 text-sm">We've received your details. Our team will reach out soon.</p>
+            <Button onClick={() => setLeadSubmitted(false)} className="mt-4 bg-gray-900 hover:bg-gray-800 text-white rounded-xl px-8">
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Contact Business Dialog (Original) */}
       <Dialog open={showContact} onOpenChange={setShowContact}>
         <DialogContent className="sm:max-w-md bg-white border-0 shadow-2xl rounded-3xl overflow-hidden">
           <div className="absolute inset-0 h-32 bg-gradient-to-br from-purple-500/10 to-blue-500/10 z-0 pointer-events-none" />
@@ -310,7 +436,7 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
           <DialogHeader className="relative z-10 pt-4 px-2">
             <DialogTitle className="text-2xl font-bold text-gray-900 text-center">Contact {brand.name}</DialogTitle>
             <DialogDescription className="text-center text-gray-500">
-              Prefer to speak with a real person? API details below.
+              Prefer to speak with a real person? Details below.
             </DialogDescription>
           </DialogHeader>
 
@@ -326,9 +452,6 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
                   {brand.knowledgeBase?.contactPhone || 'Not Available'}
                 </a>
               </div>
-              <a href={`tel:${brand.knowledgeBase?.contactPhone}`} className="bg-white p-2 rounded-full shadow-sm text-green-600 hover:bg-green-50 transition-colors">
-                <Phone className="w-4 h-4" />
-              </a>
             </div>
 
             {/* Address Card */}
@@ -342,9 +465,6 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
                   {brand.knowledgeBase?.address ||
                     [brand.location?.address, brand.location?.city, brand.location?.country].filter(Boolean).join(', ') ||
                     'Digital Only'}
-                </p>
-                <p className="text-xs text-gray-400">
-                  {brand.location?.city || ''} {brand.location?.country ? `, ${brand.location.country}` : ''}
                 </p>
               </div>
             </div>
@@ -361,7 +481,6 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
                 </p>
               </div>
             </div>
-
           </div>
 
           <div className="flex justify-center pb-2">

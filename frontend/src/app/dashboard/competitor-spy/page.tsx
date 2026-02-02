@@ -147,7 +147,7 @@ export default function CompetitorSpyPage() {
                             {/* Overview Cards */}
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                 <StatsCard
-                                    label="Followers"
+                                    label={data.profile.label || "Followers"}
                                     value={data.profile.followers.toLocaleString()}
                                     icon={Users}
                                     trend="High"

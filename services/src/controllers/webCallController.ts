@@ -19,6 +19,21 @@ if (!DEEPGRAM_API_KEY || !GEMINI_API_KEY) {
 const deepgram = createClient(DEEPGRAM_API_KEY);
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
+// Phrases that indicate user interest/intent to connect
+const INTEREST_PHRASES = [
+    "connect you",
+    "someone will call",
+    "call you back",
+    "schedule",
+    "appointment",
+    "book",
+    "leave your details",
+    "drop your details",
+    "get back to you",
+    "take a message",
+    "our team will"
+];
+
 interface BrandData {
     name: string;
     description?: string;
@@ -90,17 +105,30 @@ ${servicesList}
 Guardrails:
 - Keep responses brief (1-2 sentences).
 - Never invent prices. Only quote from the list above.
+- If the user wants to connect with a human or schedule something, say "Thank you for connecting! We'll get back to you very soon. Please drop your details in the form." and then confirm.
 - If you don't know, offer to take a message or have a human call back.
     `.trim();
+}
+
+// Helper: Check if response indicates interest
+function detectInterest(text: string): boolean {
+    const lowerText = text.toLowerCase();
+    return INTEREST_PHRASES.some(phrase => lowerText.includes(phrase));
 }
 
 // Main Handler
 export const handleWebConnection = async (ws: WebSocket, req: Request) => {
     console.log('📞 New Voice Call Connection');
 
+    // === CALL STATE TRACKING ===
+    const callStartTime = Date.now();
+    const conversationLog: string[] = [];
+    let userInterested = false;
+    let brandId: string | null = null;
+
     // 1. Parse Params
     const url = new URL(req.url!, `http://${req.headers.host}`);
-    const brandId = url.searchParams.get('brandId');
+    brandId = url.searchParams.get('brandId');
 
     if (!brandId) {
         console.error('❌ Missing brandId');
@@ -123,12 +151,12 @@ export const handleWebConnection = async (ws: WebSocket, req: Request) => {
     console.log('📝 System Prompt:', systemPrompt);
 
     // 3. Setup Gemini
-    const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2-flash-lite' });
     const chat = model.startChat({
         history: [
             {
                 role: 'user',
-                parts: [{ text: createSystemPrompt(brand) }]
+                parts: [{ text: systemPrompt }]
             },
             {
                 role: 'model',
@@ -138,7 +166,6 @@ export const handleWebConnection = async (ws: WebSocket, req: Request) => {
     });
 
     // 4. Setup Deepgram STT (Listen)
-    // Using standard 16k for VoIP stability
     const live = deepgram.listen.live({
         model: 'nova-2',
         language: 'en-US',
@@ -157,6 +184,7 @@ export const handleWebConnection = async (ws: WebSocket, req: Request) => {
 
             if (transcript && data.is_final) {
                 console.log(`🗣️ User: ${transcript}`);
+                conversationLog.push(`User: ${transcript}`);
 
                 // 5. Send to Gemini
                 try {
@@ -164,10 +192,21 @@ export const handleWebConnection = async (ws: WebSocket, req: Request) => {
                     const result = await chat.sendMessage(transcript);
                     const responseText = result.response.text();
                     console.log(`🤖 AI Response: "${responseText}"`);
+                    conversationLog.push(`AI: ${responseText}`);
 
                     if (!responseText) {
                         console.warn('⚠️ Gemini returned empty response');
                         return;
+                    }
+
+                    // === INTEREST DETECTION ===
+                    if (detectInterest(responseText)) {
+                        userInterested = true;
+                        console.log('✅ Interest detected! User wants to connect.');
+                        // Send signal to client
+                        if (ws.readyState === WebSocket.OPEN) {
+                            ws.send(JSON.stringify({ type: 'interest_detected', interested: true }));
+                        }
                     }
 
                     // 6. Generate TTS (Speak)
@@ -218,7 +257,6 @@ export const handleWebConnection = async (ws: WebSocket, req: Request) => {
     // 7. Pipe Client Audio -> Deepgram
     ws.on('message', (data) => {
         if (Buffer.isBuffer(data)) {
-            // console.log(`🎤 Received Audio Chunk: ${data.length} bytes`); // Uncomment for deep debug
             if (live.getReadyState() === 1) { // OPEN
                 live.send(data as any);
             }
@@ -227,8 +265,34 @@ export const handleWebConnection = async (ws: WebSocket, req: Request) => {
         }
     });
 
-    ws.on('close', () => {
-        console.log('Call Ended');
+    // === ON CALL CLOSE: POST WEBHOOK ===
+    ws.on('close', async () => {
+        console.log('📴 Call Ended');
         live.finish();
+
+        const callDuration = Math.round((Date.now() - callStartTime) / 1000);
+        console.log(`⏱️ Call Duration: ${callDuration} seconds`);
+        console.log(`📋 Conversation:\n${conversationLog.join('\n')}`);
+        console.log(`💡 User Interested: ${userInterested}`);
+
+        // POST to Backend Webhook to create Lead/Transcript
+        try {
+            const webhookPayload = {
+                callerNumber: 'web-call',
+                callerName: 'Web Visitor',
+                transcript: conversationLog.join('\n'),
+                duration: callDuration,
+                sentiment: 'neutral', // Could be enhanced with AI analysis
+                status: 'completed',
+                userInterested: userInterested
+            };
+
+            console.log('📤 Posting to Backend Webhook:', JSON.stringify(webhookPayload, null, 2));
+            await axios.post(`${BACKEND_URL}/api/voice/webhook`, webhookPayload);
+            console.log('✅ Webhook POST successful');
+        } catch (err) {
+            console.error('❌ Failed to post webhook:', err);
+        }
     });
 };
+

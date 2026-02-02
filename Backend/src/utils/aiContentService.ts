@@ -95,16 +95,98 @@ export async function generate30DayCalendar(input: CalendarInput): Promise<DayPo
     if (!Array.isArray(parsedJson) || parsedJson.length !== 30) {
       throw new Error(`Validation failed: Expected 30 items, but got ${parsedJson.length}.`);
     }
-    
+
     // Simple validation of the first item to increase confidence
     const firstItem = parsedJson[0];
     if (!firstItem.day || !firstItem.hook || !firstItem.caption) {
-        throw new Error("Validation failed: The first item in the array has a missing property.");
+      throw new Error("Validation failed: The first item in the array has a missing property.");
     }
 
     return parsedJson as DayPost[];
   } catch (error) {
     console.error("Error generating content with Gemini:", error);
     throw new Error("Failed to generate content from AI service.");
+  }
+
+}
+
+
+export interface DailyPostInput extends CalendarInput {
+  date: string;
+  context: {
+    last7DaysContent: string[];
+    recentStats: string; // Summary of performance
+    brandPositioning: string;
+  };
+}
+
+export interface PostVariations {
+  viral: DayPost;
+  reach: DayPost;
+  niche: DayPost;
+}
+
+function buildDailyPrompt(input: DailyPostInput): string {
+  const { niche, platform, city, description, brandName, date, context } = input;
+
+  return `
+    You are VIRALIS AI, an expert social media content strategist.
+    Your task is to generate THREE distinct social media post variations for a specific date, tailored to the brand's positioning and recent performance.
+
+    INPUTS:
+    - Target Date: "${date}"
+    - Brand: "${brandName || 'the brand'}" (${niche})
+    - Platform: "${platform}"
+    - Location: "${city}"
+    - Extra Context: "${description || ''}"
+
+    STRATEGIC CONTEXT:
+    - Brand Positioning: "${context.brandPositioning}"
+    - Recent Performance: "${context.recentStats}"
+
+    GENERATE 3 VARIATIONS:
+    1. "Viral Factor": High energy, controversial or surprising hook, short & punchy caption, aimed at maximum shareability.
+    2. "Most Reach": Broad appeal, relatable content, uses trending audio/concepts, aimed at new eyeballs.
+    3. "Niche Special": Deep dive, industry specific, educational or authority-building, aimed at high engagement from core audience.
+
+    OUTPUT FORMAT:
+    Return ONLY a valid JSON object with keys "viral", "reach", and "niche". Do not include markdown. Structure:
+    {
+      "viral": {
+        "day": "${date}",
+        "hook": "string",
+        "caption": "string",
+        "hashtags": ["string"],
+        "post_type": "carousel" | "reel" | "story" | "static",
+        "best_time": "string",
+        "cta": "string",
+        "visual_prompt": "string",
+        "script": "string"
+      },
+      "reach": { ...same structure },
+      "niche": { ...same structure }
+    }
+  `;
+}
+
+export async function generateDailyPost(input: DailyPostInput): Promise<PostVariations> {
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  const prompt = buildDailyPrompt(input);
+
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("Failed to extract JSON object from Gemini response.");
+    }
+
+    const parsedJson = JSON.parse(jsonMatch[0]);
+    return parsedJson as PostVariations;
+  } catch (error) {
+    console.error("Error generating daily content with Gemini:", error);
+    throw new Error("Failed to generate daily content from AI service.");
   }
 }

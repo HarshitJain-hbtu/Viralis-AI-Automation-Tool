@@ -1,6 +1,7 @@
 'use client';
 
-import { Search, SlidersHorizontal, Share2, Plus, LogOut, User, CreditCard, Settings, Sparkles } from "lucide-react";
+import { SlidersHorizontal, Plus, LogOut, User, CreditCard, Settings, Sparkles } from "lucide-react";
+import { ShareCard } from "@/components/dashboard/ShareCard";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/lib/store/authStore";
 import { useRouter, usePathname } from "next/navigation";
@@ -35,11 +36,12 @@ export function Header() {
     const nameMap: Record<string, string> = {
       'ai-brain': 'Voice Lab',
       'settings': 'Settings',
-      'studio': 'Reels Studio',
+
       'competitor-spy': 'Competitor Spy',
       'lead-management': 'Lead Management',
       'growth-plan': 'Growth Plan',
-      'content-board': 'Content Board'
+      'content-board': 'Content Board',
+      'ai-calendar': 'Content Studio',
     };
 
     return segments.map((segment, index) => {
@@ -72,31 +74,12 @@ export function Header() {
 
       {/* Actions */}
       <div className="flex items-center gap-3">
-        <div className="relative group">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-gray-600" />
-          <input
-            type="text"
-            placeholder="Search"
-            className="h-9 pl-9 pr-4 text-sm bg-gray-100/50 border border-transparent rounded-lg w-64 focus:bg-white focus:border-gray-200 focus:outline-none transition-all"
-          />
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
-            <span className="text-[10px] text-gray-400 border border-gray-200 rounded px-1.5 py-0.5">⌘K</span>
-          </div>
-        </div>
 
-        <div className="h-6 w-px bg-gray-200 mx-2" />
 
-        <Button variant="ghost" size="sm" className="text-gray-600 gap-2 h-9 font-medium">
-          <SlidersHorizontal className="w-4 h-4" />
-          Manage
-        </Button>
 
-        <Button variant="ghost" size="sm" className="text-gray-600 gap-2 h-9 font-medium">
-          <Share2 className="w-4 h-4" />
-          Share
-        </Button>
+        <ShareCard />
 
-        <Button 
+        <Button
           onClick={() => router.push('/dashboard/ai-calendar')}
           className="bg-[#1C1C1C] text-white hover:bg-gray-800 h-9 rounded-lg gap-2 px-4 font-medium shadow-sm"
         >
@@ -131,7 +114,7 @@ export function Header() {
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push('/dashboard/settings')} className="cursor-pointer rounded-lg hover:bg-gray-50 focus:bg-gray-50 text-gray-700 px-3 py-2">
               <Settings className="mr-2 h-4 w-4 text-gray-500" />
-              <span>Settings</span>
+              <span>Business</span>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push('/dashboard/billing')} className="cursor-pointer rounded-lg hover:bg-gray-50 focus:bg-gray-50 text-gray-700 px-3 py-2">
               <CreditCard className="mr-2 h-4 w-4 text-gray-500" />

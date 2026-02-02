@@ -451,12 +451,16 @@ export class LeadController {
      */
     static async getInstagramMedia(req: Request, res: Response) {
         try {
+            logger.info('getInstagramMedia called');
             const { limit = 24 } = req.query;
             const igAccountId = await LeadController.getOrDiscoverInstagramAccountId(req);
 
             if (!igAccountId) {
-                return res.status(404).json({
-                    error: 'No Instagram Business Account linked to this token.'
+                logger.warn('No Instagram Business Account linked. Returning empty list.');
+                return res.json({
+                    data: [],
+                    accountId: null,
+                    message: 'No Instagram Business Account linked to this token.'
                 });
             }
 
