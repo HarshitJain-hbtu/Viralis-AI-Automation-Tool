@@ -18,18 +18,18 @@ export default function Hero() {
                 {/* Badge */}
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-600 text-white text-xs font-bold uppercase tracking-wide mb-8 hover:bg-blue-700 transition-colors cursor-pointer shadow-lg shadow-blue-600/20">
                     <Sparkles className="w-3 h-3 text-yellow-300" />
-                    Powered by Gemini 3.0
+                    AI-Powered Growth Engine
                 </div>
 
                 {/* Headline */}
                 <h1 className="text-5xl lg:text-7xl font-serif tracking-tight text-gray-900 leading-[1.1] max-w-4xl mb-6 italic">
-                    Turn Your Content Into <br />
-                    <span className="text-blue-600 font-sans not-italic tracking-tighter">Exponential Growth.</span>
+                    Your AI-Powered <br />
+                    <span className="text-blue-600 font-sans not-italic tracking-tighter">Business Growth Engine.</span>
                 </h1>
 
                 {/* Subheadline */}
                 <p className="text-lg text-gray-500 max-w-2xl leading-relaxed mb-10 mx-auto">
-                    The first AI-powered growth engine that repurposes your content, predicts viral trends, and engages with your audience 24/7.
+                    Create content with AI, automate customer calls with voice agents, spy on competitors, and manage leads—all from one powerful dashboard.
                 </p>
 
                 {/* CTA Button */}

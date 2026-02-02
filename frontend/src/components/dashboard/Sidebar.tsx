@@ -128,10 +128,10 @@ export function Sidebar() {
     <>
       <div className="fixed left-0 top-0 h-full w-64 bg-[#FDFCFF] border-r border-[#EBEBEB] p-4 flex flex-col font-sans">
         {/* Brand */}
-        <div className="flex items-center gap-3 px-2 mb-8 mt-2">
-          <img src="/logo.png" alt="Viralis" className="w-10 h-10 object-contain" />
+        <div className="flex items-center gap-0 px-2 mb-8 mt-2">
+          <img src="/logo.png" alt="V" className="w-8 h-8 object-contain" />
           <div>
-            <h1 className="font-bold text-gray-900 leading-none">Viralis</h1>
+            <h1 className="font-bold text-gray-900 leading-none text-xl">iralis</h1>
             <p className="text-[10px] text-gray-500 font-medium">Auto-Pilot Mode</p>
           </div>
         </div>

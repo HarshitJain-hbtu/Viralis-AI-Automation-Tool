@@ -1,25 +1,48 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import GlassSurface from '@/components/ui/GlassSurface';
 
 export default function Navbar() {
-    const [isScrolled, setIsScrolled] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(false);
+    const lastScrollY = useRef(0);
+    const ticking = useRef(false);
 
     useEffect(() => {
         const handleScroll = () => {
-            // Threshold to trigger the effect
-            setIsScrolled(window.scrollY > 50);
+            if (!ticking.current) {
+                window.requestAnimationFrame(() => {
+                    const currentScrollY = window.scrollY;
+
+                    // At the very top, always show expanded
+                    if (currentScrollY < 50) {
+                        setIsCollapsed(false);
+                    }
+                    // Scrolling DOWN - collapse the navbar
+                    else if (currentScrollY > lastScrollY.current + 5) {
+                        setIsCollapsed(true);
+                    }
+                    // Scrolling UP - expand the navbar
+                    else if (currentScrollY < lastScrollY.current - 5) {
+                        setIsCollapsed(false);
+                    }
+
+                    lastScrollY.current = currentScrollY;
+                    ticking.current = false;
+                });
+                ticking.current = true;
+            }
         };
+
         window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
     return (
         <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
-            <div className={`pointer-events-auto transition-all duration-[800ms] cubic-bezier(0.32, 0.72, 0, 1) ${isScrolled ? 'w-auto' : 'w-auto min-w-[300px]'
+            <div className={`pointer-events-auto transition-all duration-[800ms] cubic-bezier(0.32, 0.72, 0, 1) ${isCollapsed ? 'w-auto' : 'w-auto min-w-[300px]'
                 }`}>
                 <GlassSurface
                     borderRadius={50}
@@ -30,38 +53,37 @@ export default function Navbar() {
                     blur={20}
                     className="shadow-2xl shadow-black/10"
                     style={{
-                        background: 'rgba(255, 255, 255, 0.8)', // Switched to Light Glass to match user's dark text
+                        background: 'rgba(255, 255, 255, 0.8)',
                         backdropFilter: 'blur(20px) saturate(1.8)',
                         border: '1px solid rgba(255, 255, 255, 0.4)'
                     }}
                 >
-                    <div className={`flex items-center transition-all duration-[1200ms] cubic-bezier(0.25, 0.8, 0.25, 1) ${isScrolled ? 'px-3 py-2 gap-3' : 'px-3 py-2 gap-20'
+                    <div className={`flex items-center transition-all duration-[1200ms] cubic-bezier(0.25, 0.8, 0.25, 1) ${isCollapsed ? 'px-3 py-2 gap-3' : 'px-3 py-2 gap-20'
                         }`}>
 
                         {/* Logo Section */}
                         <div className="flex items-center shrink-0 justify-center">
                             {/* Logo Image */}
                             <div className="flex items-center justify-center shrink-0 relative z-20">
-                                <img src="/logo.png" alt="V" className="w-6 h-6 object-contain" />
+                                <img src="/logo.png" alt="V" className="w-8 h-8 object-contain" />
                             </div>
 
                             {/* Collapsible Text Title */}
-                            <div className={`overflow-hidden flex flex-col justify-center transition-all duration-[1000ms] ease-out ${isScrolled ? 'max-w-0 opacity-0' : 'max-w-[150px] opacity-100'
+                            <div className={`overflow-hidden flex flex-col justify-center transition-all duration-[1000ms] ease-out ${isCollapsed ? 'max-w-0 opacity-0' : 'max-w-[150px] opacity-100'
                                 }`}>
-                                <span className="text-blue-600 font-bold text-3xl whitespace-nowrap tracking-tight">
+                                <span className="text-blue-600 font-bold text-xl whitespace-nowrap tracking-tight -ml-0.5">
                                     iralis
                                 </span>
                             </div>
                         </div>
 
                         {/* Links Section - Center Collapsible */}
-                        <div className={`hidden md:flex items-center overflow-hidden transition-all duration-[1200ms] cubic-bezier(0.25, 0.8, 0.25, 1) ${isScrolled ? 'max-w-0 opacity-0' : 'max-w-[600px] opacity-100'
+                        <div className={`hidden md:flex items-center overflow-hidden transition-all duration-[1200ms] cubic-bezier(0.25, 0.8, 0.25, 1) ${isCollapsed ? 'max-w-0 opacity-0' : 'max-w-[600px] opacity-100'
                             }`}>
                             <div className="flex items-center gap-6 text-md font-medium text-gray-500 whitespace-nowrap px-2">
                                 <a href="#features" className="hover:text-blue-600 transition-colors">Features</a>
-                                <a href="#solutions" className="hover:text-blue-600 transition-colors">Solutions</a>
+                                <a href="#solutions" className="hover:text-blue-600 transition-colors">Integrations</a>
                                 <a href="#pricing" className="hover:text-blue-600 transition-colors">Pricing</a>
-                                <a href="#testimonials" className="hover:text-blue-600 transition-colors">Customers</a>
                             </div>
                         </div>
 
@@ -69,11 +91,11 @@ export default function Navbar() {
                         <div className="flex items-center shrink-0 z-20">
                             <Link
                                 href="/register"
-                                className={`flex items-center gap-2 bg-blue-600 text-slate-200 text-sm font-bold rounded-full transition-all duration-500 shadow-lg shadow-black/10 ${isScrolled ? 'px-6 py-2.5' : 'px-6 py-2.5'
+                                className={`flex items-center gap-2 bg-blue-600 text-slate-200 text-sm font-bold rounded-full transition-all duration-500 shadow-lg shadow-black/10 ${isCollapsed ? 'px-6 py-2.5' : 'px-6 py-2.5'
                                     }`}
                             >
                                 <span className="whitespace-nowrap">Get Started</span>
-                                <span className={`overflow-hidden transition-all duration-500 ease-out flex items-center ${isScrolled ? 'max-w-4 ml-1 opacity-100' : 'max-w-0 opacity-0'
+                                <span className={`overflow-hidden transition-all duration-500 ease-out flex items-center ${isCollapsed ? 'max-w-4 ml-1 opacity-100' : 'max-w-0 opacity-0'
                                     }`}>
                                     <ArrowRight className="w-3 h-3" />
                                 </span>

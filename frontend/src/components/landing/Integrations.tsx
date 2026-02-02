@@ -9,10 +9,10 @@ const INTEGRATIONS = [
         name: 'YouTube',
         image: '/icons/youtube.png',
         testimonial: {
-            quote: "Viralis automatically turns my long-form videos into viral shorts. The Gemini integration suggests the best clips.",
-            author: "Casey Neistat",
-            role: "YouTuber & Filmmaker",
-            avatar: "https://i.pravatar.cc/150?u=casey"
+            quote: "Viralis helps me schedule content across all my channels. The AI generates thumbnails and descriptions that actually get views.",
+            author: "Sarah M.",
+            role: "Content Creator",
+            avatar: "https://i.pravatar.cc/150?u=sarah_creator"
         }
     },
     {
@@ -20,10 +20,10 @@ const INTEGRATIONS = [
         name: 'Instagram',
         image: '/icons/instagram.png',
         testimonial: {
-            quote: "Managing DMs and comments used to take hours. Now Viralis handles engagement while I sleep.",
-            author: "Emily Paris",
-            role: "Lifestyle Influencer",
-            avatar: "https://i.pravatar.cc/150?u=emily"
+            quote: "The voice agent handles my DMs and books calls for me. I've never missed a lead since using Viralis.",
+            author: "Mike T.",
+            role: "Business Owner",
+            avatar: "https://i.pravatar.cc/150?u=mike_owner"
         }
     },
     {
@@ -32,10 +32,10 @@ const INTEGRATIONS = [
         image: '/icons/gemini.png',
         isCenter: true,
         testimonial: {
-            quote: "The Gemini Reference model understands my brand voice perfectly. It writes scripts that sound exactly like me.",
-            author: "Alex Hormozi",
-            role: "Entrepreneur",
-            avatar: "https://i.pravatar.cc/150?u=alex"
+            quote: "The AI understands my brand voice perfectly. It writes content that sounds exactly like me but 10x faster.",
+            author: "Lisa Chen",
+            role: "Marketing Director",
+            avatar: "https://i.pravatar.cc/150?u=lisa_marketing"
         }
     },
     {
@@ -43,10 +43,10 @@ const INTEGRATIONS = [
         name: 'TikTok',
         image: '/icons/tiktok.png',
         testimonial: {
-            quote: "We scaled to 1M followers in 3 months using Viralis trends analysis. It tells us exactly what to post.",
-            author: "Sarah Cooper",
-            role: "Viral Creator",
-            avatar: "https://i.pravatar.cc/150?u=sarah"
+            quote: "We grew from 0 to 50k followers in 2 months. The competitor spy feature shows us exactly what's trending.",
+            author: "David K.",
+            role: "Social Media Manager",
+            avatar: "https://i.pravatar.cc/150?u=david_social"
         }
     },
     {
@@ -54,10 +54,10 @@ const INTEGRATIONS = [
         name: 'LinkedIn',
         image: '/icons/linkedin.png',
         testimonial: {
-            quote: "B2B growth on autopilot. Viralis identifies key decision makers and engages with their content smartly.",
-            author: "Reid Hoffman",
-            role: "Venture Capitalist",
-            avatar: "https://i.pravatar.cc/150?u=reid"
+            quote: "B2B lead generation on autopilot. The voice agent qualifies leads and books meetings directly to my calendar.",
+            author: "Jennifer R.",
+            role: "Sales Director",
+            avatar: "https://i.pravatar.cc/150?u=jennifer_sales"
         }
     }
 ];
@@ -84,10 +84,10 @@ export default function Integrations() {
                         Ecosystem
                     </div>
                     <h2 className="text-5xl lg:text-7xl font-serif text-gray-900 mb-6 italic tracking-tight">
-                        Powering your growth engine
+                        Connect All Your Platforms
                     </h2>
                     <p className="text-xl text-gray-500 max-w-2xl mx-auto">
-                        The only platform that deeply integrates with the world's biggest social networks and AI models.
+                        Manage your entire social presence from one dashboard. Viralis integrates with the platforms you already use.
                     </p>
                 </div>
 

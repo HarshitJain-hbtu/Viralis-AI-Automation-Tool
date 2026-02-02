@@ -17,14 +17,14 @@ export default function CTA() {
 
                 {/* Main Headline - Serif & Editorial */}
                 <h2 className="text-6xl md:text-7xl font-serif text-gray-900 mb-8 leading-[1.1] tracking-tight">
-                    Ready to turn content <br />
+                    Ready to automate <br />
                     <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
-                        into currency?&nbsp;&nbsp;
+                        your growth?&nbsp;&nbsp;
                     </span>
                 </h2>
 
                 <p className="text-xl text-gray-500 mb-12 max-w-2xl mx-auto leading-relaxed">
-                    Join the creators and brands who are automating their growth with Viralis.
+                    Join businesses using Viralis to create content, automate calls, and stay ahead of competitors.
                     No credit card required.
                 </p>
 
@@ -55,7 +55,7 @@ export default function CTA() {
                         ))}
                     </div>
                     <p className="text-sm text-gray-500 font-medium">
-                        Trusted by <span className="text-gray-900 font-bold">10,000+</span> creators and brands
+                        Trusted by <span className="text-gray-900 font-bold">5,000+</span> businesses worldwide
                     </p>
                 </div>
             </div>

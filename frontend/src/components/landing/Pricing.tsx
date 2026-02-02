@@ -13,7 +13,7 @@ export default function Pricing() {
                         Pricing
                     </div>
                     <h2 className="text-5xl font-serif text-gray-900 mb-4 tracking-tight italic">Simple, Transparent Pricing</h2>
-                    <p className="text-gray-400 text-lg">AI-powered CRM & Content tools for every business.</p>
+                    <p className="text-gray-400 text-lg">AI-powered voice agents, content creation, and competitor intelligence for every business.</p>
                 </div>
 
                 <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto items-start">
@@ -36,11 +36,11 @@ export default function Pricing() {
 
                         <div className="space-y-4 mt-auto">
                             {[
-                                '1 Content Generation/day',
+                                '1 AI Content Generation/day',
                                 '2 Hours Voice Agent/month',
                                 '1 Social Account',
                                 '10 Leads Storage',
-                                'Basic Analytics',
+                                'Basic Competitor Tracking',
                                 '7 Days Data Retention'
                             ].map((feat) => (
                                 <div key={feat} className="flex items-center gap-3 text-sm text-gray-600 font-medium">
@@ -79,13 +79,13 @@ export default function Pricing() {
 
                         <div className="space-y-4 mt-auto relative z-10">
                             {[
-                                'Unlimited Content Generation',
+                                'Unlimited AI Content Generation',
                                 '10 Hours Voice Agent/month',
-                                '3 Social Accounts',
+                                '5 Social Accounts',
                                 'Unlimited Leads',
                                 'Content Studio (Full Access)',
-                                'Competitor Intelligence',
-                                'AI Insights Dashboard',
+                                'Competitor Spy (3 Competitors)',
+                                'Lead Management Dashboard',
                                 '30 Days Data Retention'
                             ].map((feat) => (
                                 <div key={feat} className="flex items-center gap-3 text-sm text-white font-medium">
@@ -118,12 +118,12 @@ export default function Pricing() {
                             {[
                                 'Everything in Growth',
                                 'Unlimited Voice Agent Hours',
-                                '10 Social Accounts',
+                                '15 Social Accounts',
                                 '5 Team Members',
+                                'Unlimited Competitor Tracking',
                                 'White-label Reports',
                                 'API Access',
-                                'Dedicated Support',
-                                'Unlimited Data Retention'
+                                'Dedicated Support'
                             ].map((feat) => (
                                 <div key={feat} className="flex items-center gap-3 text-sm text-gray-600 font-medium">
                                     <CheckCircle2 className="w-5 h-5 text-gray-900 flex-shrink-0" />

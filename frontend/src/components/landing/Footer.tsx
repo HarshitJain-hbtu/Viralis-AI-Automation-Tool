@@ -12,8 +12,9 @@ export default function Footer() {
                 <div className="grid lg:grid-cols-2 gap-12 mb-24">
                     {/* Left Headings */}
                     <div>
-                        <div className="flex items-center gap-2 mb-6">
-                            <img src="/logo.png" alt="Viralis Logo" className="h-10 w-auto" />
+                        <div className="flex items-center gap-0 mb-6">
+                            <img src="/logo.png" alt="V" className="h-8 w-auto" />
+                            <span className="text-xl font-bold text-gray-900 -ml-0.5">iralis</span>
                         </div>
                         <h2 className="text-5xl font-bold text-gray-900 mb-6 leading-tight">
                             Experience the future <br />
