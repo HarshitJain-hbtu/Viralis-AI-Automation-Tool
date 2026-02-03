@@ -118,7 +118,7 @@ export function SocialConnect() {
                             Linked to FB
                         </Button>
                     ) : (
-                        <Button variant="outline" onClick={() => handleConnect('facebook')}>
+                        <Button variant="outline" className="!bg-white !text-gray-900 !border-gray-200 hover:!bg-gray-50" onClick={() => handleConnect('facebook')}>
                             Connect
                         </Button>
                     )}
