@@ -125,11 +125,11 @@ export function SocialStats() {
                     {socialStats.youtube.recentComments && socialStats.youtube.recentComments.length > 0 && (
                         <div>
                             <h3 className="text-xl font-semibold mb-4">Latest Engagement</h3>
-                            <Card>
+                            <Card className="!bg-white !text-gray-900 !border-gray-200">
                                 <CardContent className="p-0">
                                     <div className="divide-y">
                                         {socialStats.youtube.recentComments.map((comment: YouTubeComment) => (
-                                            <div key={comment.id} className="p-4 flex gap-4 hover:bg-muted/50 transition-colors">
+                                            <div key={comment.id} className="p-4 flex gap-4 hover:bg-gray-50 transition-colors">
                                                 <img
                                                     src={comment.authorProfileImageUrl}
                                                     alt={comment.authorDisplayName}
@@ -137,13 +137,16 @@ export function SocialStats() {
                                                 />
                                                 <div className="flex-1 space-y-1">
                                                     <div className="flex items-center justify-between">
-                                                        <p className="text-sm font-semibold">{comment.authorDisplayName}</p>
-                                                        <span className="text-xs text-muted-foreground">
+                                                        <p className="text-sm font-semibold text-gray-900">{comment.authorDisplayName}</p>
+                                                        <span className="text-xs text-gray-500">
                                                             {new Date(comment.publishedAt).toLocaleDateString()}
                                                         </span>
                                                     </div>
-                                                    <p className="text-sm text-foreground/90 whitespace-pre-wrap line-clamp-2">{comment.textDisplay}</p>
-                                                    <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1">
+                                                    <div
+                                                        className="text-sm text-gray-800 whitespace-pre-wrap line-clamp-2 [&>a]:text-blue-600 [&>a]:hover:underline"
+                                                        dangerouslySetInnerHTML={{ __html: comment.textDisplay }}
+                                                    />
+                                                    <div className="flex items-center gap-4 text-xs text-gray-500 pt-1">
                                                         <span className="flex items-center gap-1">
                                                             👍 {comment.likeCount}
                                                         </span>
