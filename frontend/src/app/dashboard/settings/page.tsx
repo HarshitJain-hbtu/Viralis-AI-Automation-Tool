@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '@/lib/store/authStore';
 import { useBusinessStore } from '@/lib/store/businessStore';
 import { Button } from '@/components/ui/button';
-import { Save, Building2, MapPin, Mic, Upload, X, Image as ImageIcon } from 'lucide-react';
+import { Save, Building2, MapPin, Mic, Upload, X, Image as ImageIcon, Phone } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
