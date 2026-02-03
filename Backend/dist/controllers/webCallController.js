@@ -9,7 +9,9 @@ const axios_1 = __importDefault(require("axios"));
 const sdk_1 = require("@deepgram/sdk");
 const generative_ai_1 = require("@google/generative-ai");
 const dotenv_1 = __importDefault(require("dotenv"));
-dotenv_1.default.config();
+const path_1 = __importDefault(require("path"));
+// Explicitly load .env from Backend root (src/controllers/../..)
+dotenv_1.default.config({ path: path_1.default.resolve(__dirname, '../../.env') });
 // Configuration
 const DEEPGRAM_API_KEY = process.env.DEEPGRAM_API_KEY;
 // Use existing env config or fallback to process.env
@@ -22,8 +24,8 @@ const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${PORT}`;
 if (!DEEPGRAM_API_KEY || !GEMINI_API_KEY) {
     console.warn('❌ Missing API Keys for Voice Service');
 }
-const deepgram = (0, sdk_1.createClient)(DEEPGRAM_API_KEY);
-const genAI = new generative_ai_1.GoogleGenerativeAI(GEMINI_API_KEY);
+const deepgram = DEEPGRAM_API_KEY ? (0, sdk_1.createClient)(DEEPGRAM_API_KEY) : null;
+const genAI = GEMINI_API_KEY ? new generative_ai_1.GoogleGenerativeAI(GEMINI_API_KEY) : null;
 // Phrases that indicate user interest/intent to connect
 const INTEREST_PHRASES = [
     "connect you",
@@ -36,7 +38,19 @@ const INTEREST_PHRASES = [
     "drop your details",
     "get back to you",
     "take a message",
-    "our team will"
+    "our team will",
+    "fill the form",
+    "fill out the form",
+    "provide your details"
+];
+const CLOSING_PHRASES = [
+    "thank you",
+    "thanks",
+    "bye",
+    "goodbye",
+    "see you",
+    "have a great day",
+    "wonderful day"
 ];
 // Helper: Fetch Brand Data from Public Backend API
 async function fetchBrandData(brandId) {
@@ -85,8 +99,9 @@ ${servicesList}
 Guardrails:
 - Keep responses brief (1-2 sentences).
 - Never invent prices. Only quote from the list above.
-- If the user wants to connect with a human or schedule something, say "Thank you for connecting! We'll get back to you very soon. Please drop your details in the form." and then confirm.
-- If you don't know, offer to take a message or have a human call back.
+- If the user wants to **BUY**, **PURCHASE**, **CONNECT**, or **SCHEDULE**, you MUST say: "Great! Please fill out the form so we can assist you with that." or "Please provide your details in the form."
+- If you don't know, offer to take a message.
+- If the user is NOT interested, just say goodbye politely. Do NOT ask for the form.
     `.trim();
 }
 // Helper: Check if response indicates interest
@@ -102,6 +117,7 @@ const handleWebConnection = async (ws, req) => {
     const conversationLog = [];
     let userInterested = false;
     let brandId = null;
+    let disconnectTimer = null;
     // 1. Parse Params
     const url = new URL(req.url, `http://${req.headers.host}`);
     brandId = url.searchParams.get('brandId');
@@ -112,6 +128,12 @@ const handleWebConnection = async (ws, req) => {
     }
     // 2. Fetch Data
     const brand = await fetchBrandData(brandId);
+    // Check if services are available
+    if (!deepgram || !genAI) {
+        console.error('❌ Voice Service unavailable: Missing API Keys');
+        ws.close(1011, 'Voice Service Unavailable (Missing Keys)');
+        return;
+    }
     if (!brand) {
         console.error('❌ Brand not found or API error');
         ws.close(1011, 'Brand Data Unavailable');
@@ -122,7 +144,7 @@ const handleWebConnection = async (ws, req) => {
     const systemPrompt = createSystemPrompt(brand);
     console.log('📝 System Prompt:', systemPrompt);
     // 3. Setup Gemini
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite-preview' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
     const chat = model.startChat({
         history: [
             {
@@ -150,6 +172,12 @@ const handleWebConnection = async (ws, req) => {
         live.on(sdk_1.LiveTranscriptionEvents.Transcript, async (data) => {
             const transcript = data.channel.alternatives[0].transcript;
             if (transcript && data.is_final) {
+                // Clear any pending disconnect if user speaks again
+                if (disconnectTimer) {
+                    clearTimeout(disconnectTimer);
+                    disconnectTimer = null;
+                    console.log('🔄 User spoke, cancelled auto-disconnect.');
+                }
                 console.log(`🗣️ User: ${transcript}`);
                 conversationLog.push(`User: ${transcript}`);
                 // 5. Send to Gemini
@@ -164,12 +192,31 @@ const handleWebConnection = async (ws, req) => {
                         return;
                     }
                     // === INTEREST DETECTION ===
-                    if (detectInterest(responseText)) {
-                        userInterested = true;
-                        console.log('✅ Interest detected! User wants to connect.');
+                    // Check if new interest found OR if we should close (because we already have interest and are saying bye)
+                    const isClosing = userInterested && CLOSING_PHRASES.some(p => responseText.toLowerCase().includes(p));
+                    const isNewInterest = detectInterest(responseText);
+                    if (isNewInterest || isClosing) {
+                        if (isNewInterest) {
+                            userInterested = true;
+                            console.log('✅ Interest detected! User wants to connect.');
+                        }
                         // Send signal to client
                         if (ws.readyState === ws_1.WebSocket.OPEN) {
-                            ws.send(JSON.stringify({ type: 'interest_detected', interested: true }));
+                            // Only send 'interest' event if it's new, but always schedule disconnect
+                            if (isNewInterest) {
+                                ws.send(JSON.stringify({ type: 'interest_detected', interested: true }));
+                            }
+                            // Auto-disconnect after 10 seconds (allow TTS to finish)
+                            // Only set if not already pending
+                            if (!disconnectTimer) {
+                                console.log('⏳ Scheduling auto-disconnect in 10s...');
+                                disconnectTimer = setTimeout(() => {
+                                    if (ws.readyState === ws_1.WebSocket.OPEN) {
+                                        console.log('🤖 Auto-disconnecting call to show form...');
+                                        ws.close(1000, 'Goal Reached');
+                                    }
+                                }, 10000);
+                            }
                         }
                     }
                     // 6. Generate TTS (Speak)

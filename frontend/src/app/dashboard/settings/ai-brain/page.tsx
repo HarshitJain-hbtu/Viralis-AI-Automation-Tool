@@ -194,7 +194,7 @@ export default function AIBrainPage() {
                   <Input
                     value={businessName}
                     onChange={(e) => setBusinessName(e.target.value)}
-                    className="bg-white border-gray-200 text-gray-900 focus:border-purple-500 transition-colors"
+                    className="!bg-white !border-gray-200 !text-gray-900 focus:border-purple-500 transition-colors"
                   />
                 </div>
                 <div className="space-y-2">
@@ -203,7 +203,7 @@ export default function AIBrainPage() {
                     value={formData.contactPhone}
                     onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
                     placeholder="+1 (555) 000-0000"
-                    className="bg-white border-gray-200 focus:border-purple-500 transition-colors"
+                    className="!bg-white !border-gray-200 focus:border-purple-500 transition-colors !text-gray-900"
                   />
                 </div>
               </div>
@@ -214,7 +214,7 @@ export default function AIBrainPage() {
                   value={formData.businessHours}
                   onChange={(e) => setFormData({ ...formData, businessHours: e.target.value })}
                   placeholder="Mon-Fri: 9AM - 6PM"
-                  className="bg-white border-gray-200 focus:border-purple-500 transition-colors"
+                  className="!bg-white !border-gray-200 focus:border-purple-500 transition-colors !text-gray-900"
                 />
               </div>
 
@@ -224,7 +224,7 @@ export default function AIBrainPage() {
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                   placeholder={rootAddress || "Enter full address for the AI..."}
-                  className="bg-white border-gray-200 focus:border-purple-500 transition-colors"
+                  className="!bg-white !border-gray-200 focus:border-purple-500 transition-colors !text-gray-900"
                 />
                 <p className="text-xs text-muted-foreground">
                   Leave empty to use default account address: <span className="text-white/50">{rootAddress || 'N/A'}</span>
@@ -253,7 +253,7 @@ export default function AIBrainPage() {
                     value={newService.name}
                     onChange={(e) => setNewService({ ...newService, name: e.target.value })}
                     placeholder="e.g. Haircut"
-                    className="bg-white border-gray-200 focus:border-green-500 text-gray-900"
+                    className="!bg-white !border-gray-200 focus:border-green-500 !text-gray-900"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') addService();
                     }}
@@ -265,7 +265,7 @@ export default function AIBrainPage() {
                     value={newService.price}
                     onChange={(e) => setNewService({ ...newService, price: e.target.value })}
                     placeholder="$50"
-                    className="bg-white border-gray-200 focus:border-green-500 text-gray-900"
+                    className="!bg-white !border-gray-200 focus:border-green-500 !text-gray-900"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') addService();
                     }}
@@ -340,7 +340,7 @@ export default function AIBrainPage() {
               value={formData.customInstructions}
               onChange={(e) => setFormData({ ...formData, customInstructions: e.target.value })}
               placeholder="e.g. You are a high-energy fitness coach. Always mention our summer sale..."
-              className="min-h-[250px] bg-gray-50 border-gray-200 focus:border-purple-500 text-base leading-relaxed p-6 resize-y font-mono text-sm text-gray-800"
+              className="min-h-[250px] !bg-white !border-gray-200 focus:border-purple-500 text-base leading-relaxed p-6 resize-y font-mono text-sm !text-gray-900"
             />
             <div className="absolute bottom-4 right-4 text-xs text-gray-400">
               Markdown supported

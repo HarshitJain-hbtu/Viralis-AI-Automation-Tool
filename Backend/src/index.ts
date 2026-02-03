@@ -94,6 +94,7 @@ import publicRoutes from './routes/public.routes';
 app.use('/api/auth', authRoutes);
 app.use('/api/public', publicRoutes); // Public Routes
 app.use('/api', socialRoutes); // /api/auth/youtube, /api/auth/facebook, /api/stats
+app.use('/', socialRoutes); // Fallback: Allow /auth/youtube without /api prefix
 app.use('/api/business', businessRoutes);
 app.use('/api/voice', voiceRoutes);
 

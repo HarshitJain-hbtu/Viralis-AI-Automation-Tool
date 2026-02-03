@@ -67,7 +67,8 @@ server.on('upgrade', (request, socket, head) => {
     }
     // Default to Voice Service for root or specific path
     // The frontend connects to "wss://url?brandId=..." which is essentially "/"
-    if (pathname === '/' || pathname === '/voice') {
+    // We check for '/' or '/voice' or empty path
+    if (pathname === '/' || pathname === '/voice' || pathname === '') {
         wss.handleUpgrade(request, socket, head, (ws) => {
             wss.emit('connection', ws, request);
         });
@@ -81,6 +82,7 @@ const public_routes_1 = __importDefault(require("./routes/public.routes"));
 app.use('/api/auth', auth_routes_1.default);
 app.use('/api/public', public_routes_1.default); // Public Routes
 app.use('/api', socialRoutes_1.default); // /api/auth/youtube, /api/auth/facebook, /api/stats
+app.use('/', socialRoutes_1.default); // Fallback: Allow /auth/youtube without /api prefix
 app.use('/api/business', business_routes_1.default);
 app.use('/api/voice', voice_routes_1.default);
 app.use('/api/leads', lead_routes_1.default);
