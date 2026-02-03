@@ -73,7 +73,7 @@ export function ShareCard({ trigger }: ShareCardProps) {
         <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setIsFlipped(false); setIsHovered(false); } }}>
             <DialogTrigger asChild>
                 {trigger || (
-                    <Button variant="outline" size="sm" className="bg-white hover:bg-gray-50 text-gray-700 border-gray-200 shadow-sm gap-2 h-9 font-medium">
+                    <Button variant="outline" size="sm" className="!bg-white !text-gray-900 !border !border-gray-200 shadow-sm hover:!bg-gray-50 gap-2 h-9 font-medium">
                         <Share2 className="w-4 h-4" />
                         Share
                     </Button>

@@ -52,14 +52,14 @@ export default function ContentPage() {
                                 placeholder="e.g. Next.js 14 Features"
                                 value={topic}
                                 onChange={(e) => setTopic(e.target.value)}
-                                className="bg-white"
+                                className="!bg-white !text-gray-900 !border-gray-200"
                             />
                         </div>
 
                         <div className="space-y-2">
                             <Label>Content Type</Label>
                             <Select value={type} onValueChange={setType}>
-                                <SelectTrigger className="bg-white">
+                                <SelectTrigger className="!bg-white !text-gray-900 !border-gray-200">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -74,7 +74,7 @@ export default function ContentPage() {
                         <div className="space-y-2">
                             <Label>Tone</Label>
                             <Select value={tone} onValueChange={setTone}>
-                                <SelectTrigger className="bg-white">
+                                <SelectTrigger className="!bg-white !text-gray-900 !border-gray-200">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
