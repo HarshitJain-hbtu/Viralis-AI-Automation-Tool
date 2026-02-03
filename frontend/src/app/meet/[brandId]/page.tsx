@@ -12,24 +12,34 @@ export const metadata: Metadata = {
 // Fetch data directly in Server Component
 async function getBrandData(brandId: string) {
   try {
-    // In production, use internal service DNS. locally, localhost is fine.
-    // Ensure this URL is reachable from the Next.js server side.
-    const apiUrl = `http://127.0.0.1:5000/api/public/brand/${brandId}?t=${Date.now()}`;
-    console.log(`📡 Fetching Brand Data from: ${apiUrl}`);
+    // Determine the base URL:
+    // 1. Use NEXT_PUBLIC_API_URL if defined (Production/Vercel)
+    // 2. Fallback to 127.0.0.1 for local development (internal networking)
+    let baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000/api';
+
+    // Ensure it's not just a path (like '/api'), must be absolute for server fetch
+    if (baseUrl.startsWith('/')) {
+      // If it's a relative path, we can't easily fetch server-side unless we know the host.
+      // fallback to localhost default if we can't resolve.
+      baseUrl = `http://127.0.0.1:5000${baseUrl}`;
+    }
+
+    const apiUrl = `${baseUrl}/public/brand/${brandId}?t=${Date.now()}`;
+    console.log(`📡 [Server] Fetching Brand Data from: ${apiUrl}`);
 
     const res = await fetch(apiUrl, {
-      cache: 'no-store', // Always fetch fresh
+      cache: 'no-store',
       next: { revalidate: 0 }
     });
 
     if (!res.ok) {
-      console.error(`❌ Brand Fetch Failed: ${res.status} ${res.statusText}`);
+      console.error(`❌ [Server] Brand Fetch Failed: ${res.status} ${res.statusText}`);
       if (res.status === 404) return null;
       throw new Error('Failed to fetch brand data');
     }
 
     const data = await res.json();
-    console.log(`✅ Brand Data Found: ${data.name}`);
+    console.log(`✅ [Server] Brand Data Found: ${data.name}`);
     return data;
   } catch (error) {
     console.error('Error fetching brand:', error);
