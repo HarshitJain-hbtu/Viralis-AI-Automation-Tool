@@ -12,7 +12,6 @@ const morgan_1 = __importDefault(require("morgan"));
 const env_1 = require("./config/env");
 const logger_1 = __importDefault(require("./utils/logger"));
 const mongodb_1 = require("./config/mongodb");
-const redis_1 = require("./config/redis");
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const business_routes_1 = __importDefault(require("./routes/business.routes"));
 const lead_routes_1 = __importDefault(require("./routes/lead.routes"));
@@ -28,7 +27,7 @@ const server = http_1.default.createServer(app);
 app.use(express_1.default.json({ limit: '10mb' }));
 app.use(express_1.default.urlencoded({ limit: '10mb', extended: true }));
 app.use((0, cors_1.default)({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    origin: true, // Allow all origins for Hackathon/Demo purposes
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
@@ -37,8 +36,10 @@ app.use((0, helmet_1.default)());
 app.use((0, morgan_1.default)('dev'));
 // Database Connections
 (0, mongodb_1.connectMongoDB)();
-(0, redis_1.connectRedis)();
 // WebSocket Setup
+const ws_1 = require("ws");
+const webCallController_1 = require("./controllers/webCallController");
+// WebSocket Setup (mix of Socket.IO and Native WS)
 const io = new socket_io_1.Server(server, {
     cors: {
         origin: '*', // Configure this properly in production
@@ -46,10 +47,34 @@ const io = new socket_io_1.Server(server, {
     }
 });
 io.on('connection', (socket) => {
-    logger_1.default.info(`Client connected: ${socket.id}`);
+    logger_1.default.info(`Client connected to Socket.IO: ${socket.id}`);
     socket.on('disconnect', () => {
-        logger_1.default.info(`Client disconnected: ${socket.id}`);
+        logger_1.default.info(`Client disconnected from Socket.IO: ${socket.id}`);
     });
+});
+// Setup Native WebSocket for Voice AI
+const wss = new ws_1.WebSocketServer({ noServer: true });
+server.on('upgrade', (request, socket, head) => {
+    const pathname = request.url ? new URL(request.url, `http://${request.headers.host}`).pathname : '/';
+    // Check if it's a Socket.IO request (Socket.IO handles its own upgrades usually, but we need to be careful not to steal them)
+    // Socket.IO paths usually start with /socket.io/
+    if (pathname.startsWith('/socket.io/')) {
+        // Let Socket.IO handle it (it attaches its own upgrade listener under the hood usually, 
+        // but if we consume the event, we might break it. 
+        // Actually, creating 'io' fetches the upgrade listener.
+        // We will just handle NON-socket.io requests here for our Voice Service.)
+        return;
+    }
+    // Default to Voice Service for root or specific path
+    // The frontend connects to "wss://url?brandId=..." which is essentially "/"
+    if (pathname === '/' || pathname === '/voice') {
+        wss.handleUpgrade(request, socket, head, (ws) => {
+            wss.emit('connection', ws, request);
+        });
+    }
+});
+wss.on('connection', (ws, req) => {
+    (0, webCallController_1.handleWebConnection)(ws, req);
 });
 const public_routes_1 = __importDefault(require("./routes/public.routes"));
 // Routes

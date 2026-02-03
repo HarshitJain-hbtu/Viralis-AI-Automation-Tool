@@ -12,8 +12,6 @@ const envSchema = joi_1.default.object({
     PORT: joi_1.default.number().default(5000),
     // Database
     MONGO_URI: joi_1.default.string().required(),
-    REDIS_HOST: joi_1.default.string().default('localhost'),
-    REDIS_PORT: joi_1.default.number().default(6379),
     // N8N
     N8N_WEBHOOK_URL: joi_1.default.string().optional().default('http://localhost:5678/webhook'),
     // APIs (Optional for now to allow server start, but should be required in prod)

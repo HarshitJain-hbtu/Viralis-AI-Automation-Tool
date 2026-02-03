@@ -40,6 +40,10 @@ connectMongoDB();
 
 
 // WebSocket Setup
+import { WebSocketServer } from 'ws';
+import { handleWebConnection } from './controllers/webCallController';
+
+// WebSocket Setup (mix of Socket.IO and Native WS)
 const io = new Server(server, {
     cors: {
         origin: '*', // Configure this properly in production
@@ -48,11 +52,40 @@ const io = new Server(server, {
 });
 
 io.on('connection', (socket) => {
-    logger.info(`Client connected: ${socket.id}`);
-
+    logger.info(`Client connected to Socket.IO: ${socket.id}`);
     socket.on('disconnect', () => {
-        logger.info(`Client disconnected: ${socket.id}`);
+        logger.info(`Client disconnected from Socket.IO: ${socket.id}`);
     });
+});
+
+// Setup Native WebSocket for Voice AI
+const wss = new WebSocketServer({ noServer: true });
+
+server.on('upgrade', (request, socket, head) => {
+    const pathname = request.url ? new URL(request.url, `http://${request.headers.host}`).pathname : '/';
+
+    // Check if it's a Socket.IO request (Socket.IO handles its own upgrades usually, but we need to be careful not to steal them)
+    // Socket.IO paths usually start with /socket.io/
+    if (pathname.startsWith('/socket.io/')) {
+        // Let Socket.IO handle it (it attaches its own upgrade listener under the hood usually, 
+        // but if we consume the event, we might break it. 
+        // Actually, creating 'io' fetches the upgrade listener.
+        // We will just handle NON-socket.io requests here for our Voice Service.)
+        return;
+    }
+
+    // Default to Voice Service for root or specific path
+    // The frontend connects to "wss://url?brandId=..." which is essentially "/"
+    // We check for '/' or '/voice' or empty path
+    if (pathname === '/' || pathname === '/voice' || pathname === '') {
+        wss.handleUpgrade(request, socket, head, (ws) => {
+            wss.emit('connection', ws, request);
+        });
+    }
+});
+
+wss.on('connection', (ws, req) => {
+    handleWebConnection(ws, req as any);
 });
 
 import publicRoutes from './routes/public.routes';

@@ -73,7 +73,9 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
       setMicPermission(true);
 
       // 2. Connect WebSocket
-      const wsUrl = `ws://localhost:8080?brandId=${brandId}`;
+      // 2. Connect WebSocket
+      const voiceUrl = process.env.NEXT_PUBLIC_VOICE_URL || 'ws://localhost:5000';
+      const wsUrl = `${voiceUrl}?brandId=${brandId}`;
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
@@ -101,6 +103,11 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
             if (msg.type === 'interest_detected' && msg.interested) {
               console.log('📩 Interest signal received from server');
               setUserInterested(true);
+              // Show form immediately so user doesn't have to wait for call to end
+              if (!showLeadForm) {
+                setShowLeadForm(true);
+                toast.success('Interest detected! Form opened.');
+              }
             }
           } catch {
             console.log('Received text:', event.data);
