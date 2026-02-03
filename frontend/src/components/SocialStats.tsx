@@ -52,7 +52,7 @@ export function SocialStats() {
 
                     {/* KPI Grid */}
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                        <Card>
+                        <Card className="!bg-white !text-gray-900 !border-gray-200">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">Subscribers</CardTitle>
                                 <Youtube className="h-4 w-4 text-red-600" />
@@ -61,7 +61,7 @@ export function SocialStats() {
                                 <div className="text-2xl font-bold">{socialStats.youtube.subscriberCount || 'N/A'}</div>
                             </CardContent>
                         </Card>
-                        <Card>
+                        <Card className="!bg-white !text-gray-900 !border-gray-200">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">Total Views</CardTitle>
                                 <Activity className="h-4 w-4 text-muted-foreground" />
@@ -70,7 +70,7 @@ export function SocialStats() {
                                 <div className="text-2xl font-bold">{parseInt(socialStats.youtube.viewCount || '0').toLocaleString()}</div>
                             </CardContent>
                         </Card>
-                        <Card>
+                        <Card className="!bg-white !text-gray-900 !border-gray-200">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">Video Count</CardTitle>
                                 <Activity className="h-4 w-4 text-muted-foreground" />
@@ -79,7 +79,7 @@ export function SocialStats() {
                                 <div className="text-2xl font-bold">{socialStats.youtube.videoCount || 0}</div>
                             </CardContent>
                         </Card>
-                        <Card>
+                        <Card className="!bg-white !text-gray-900 !border-gray-200">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">Avg. Views / Video</CardTitle>
                                 <Activity className="h-4 w-4 text-muted-foreground" />
@@ -100,18 +100,18 @@ export function SocialStats() {
                             <h3 className="text-xl font-semibold mb-4">Recent Video Performance</h3>
                             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
                                 {socialStats.youtube.recentVideos.map((video: YouTubeVideo) => (
-                                    <Card key={video.id} className="overflow-hidden">
+                                    <Card key={video.id} className="overflow-hidden !bg-white !text-gray-900 !border-gray-200">
                                         <div className="aspect-video w-full overflow-hidden">
                                             <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover" />
                                         </div>
                                         <CardContent className="p-4">
-                                            <h4 className="font-medium line-clamp-2 mb-2 h-12">{video.title}</h4>
-                                            <div className="flex justify-between text-sm text-muted-foreground">
+                                            <h4 className="font-medium line-clamp-2 mb-2 h-12 !text-gray-900">{video.title}</h4>
+                                            <div className="flex justify-between text-sm text-gray-500">
                                                 <div className="flex items-center gap-1">
-                                                    <span className="font-semibold text-foreground">{parseInt(video.viewCount).toLocaleString()}</span> views
+                                                    <span className="font-semibold text-gray-900">{parseInt(video.viewCount).toLocaleString()}</span> views
                                                 </div>
                                                 <div className="flex items-center gap-1">
-                                                    <span className="font-semibold text-foreground">{parseInt(video.likeCount).toLocaleString()}</span> likes
+                                                    <span className="font-semibold text-gray-900">{parseInt(video.likeCount).toLocaleString()}</span> likes
                                                 </div>
                                             </div>
                                         </CardContent>
@@ -296,7 +296,7 @@ export function SocialStats() {
                             <h3 className="text-xl font-semibold mb-4">Recent Media</h3>
                             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
                                 {socialStats.instagram.recentMedia.map((media: InstagramMedia) => (
-                                    <Card key={media.id} className="overflow-hidden">
+                                    <Card key={media.id} className="overflow-hidden !bg-white !text-gray-900 !border-gray-200">
                                         <div className="aspect-square w-full overflow-hidden bg-gray-100 relative">
                                             {media.media_type === 'VIDEO' && (
                                                 <span className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">Reel</span>
@@ -307,14 +307,14 @@ export function SocialStats() {
                                             <p className="text-sm text-gray-700 line-clamp-2 mb-3 h-10">
                                                 {media.caption || 'No caption'}
                                             </p>
-                                            <div className="flex justify-between text-sm text-muted-foreground border-t pt-2">
+                                            <div className="flex justify-between text-sm text-gray-500 border-t pt-2">
                                                 <div className="flex items-center gap-1">
-                                                    <span className="font-semibold text-foreground">
+                                                    <span className="font-semibold text-gray-900">
                                                         {media.like_count}
                                                     </span> Likes
                                                 </div>
                                                 <div className="flex items-center gap-1">
-                                                    <span className="font-semibold text-foreground">
+                                                    <span className="font-semibold text-gray-900">
                                                         {media.comments_count}
                                                     </span> Comments
                                                 </div>

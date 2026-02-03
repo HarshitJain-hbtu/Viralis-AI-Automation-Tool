@@ -69,7 +69,7 @@ export default function InboxPage() {
                     <p className="text-muted-foreground mt-1">Manage comments and community interactions from one place.</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" className="gap-2">
+                    <Button variant="outline" className="gap-2 !bg-white !border-gray-200 !text-gray-900 hover:!bg-gray-50">
                         <Filter className="w-4 h-4" /> Filter
                     </Button>
                     <Button className="bg-red-600 hover:bg-red-700 text-white gap-2">
@@ -102,7 +102,7 @@ export default function InboxPage() {
                         </div>
                         <div className="relative w-64">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input placeholder="Search comments..." className="pl-9 h-9 bg-gray-50 border-transparent focus:bg-white focus:border-gray-200 transition-all" />
+                            <Input placeholder="Search comments..." className="pl-9 h-9 !bg-white border-gray-200 focus:!bg-white focus:border-gray-200 transition-all !text-gray-900 placeholder:!text-gray-400" />
                         </div>
                     </CardHeader>
 
