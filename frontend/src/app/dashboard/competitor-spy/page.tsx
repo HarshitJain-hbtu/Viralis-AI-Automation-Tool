@@ -21,7 +21,13 @@ import {
     Target,
     BarChart2,
     Sparkles,
-    Play
+    Play,
+    Share2,
+    MoreHorizontal,
+    Download,
+    Cpu,
+    Activity,
+    FileText
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -54,215 +60,221 @@ export default function CompetitorSpyPage() {
         if (e.key === 'Enter') handleAnalyze();
     };
 
+    // Derived state for transitions
+    const hasData = !!data || isAnalyzing;
+
     return (
         <div className="min-h-screen bg-[#FDFDFD] pb-20 font-sans text-slate-900 selection:bg-slate-200 selection:text-slate-900">
-            {/* Subtle background gradience - distinctive for premium SaaS */}
-            <div className="fixed inset-0 pointer-events-none -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-50 via-white to-white opacity-40" />
 
-            <main className="max-w-[1280px] mx-auto px-6 py-16">
+            <main className="max-w-[1280px] mx-auto px-6 pt-8">
 
-                {/* Hero / Header Section */}
-                <div className="mb-20 text-center max-w-2xl mx-auto">
-                    <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
-                    >
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-slate-200 bg-white/50 backdrop-blur-sm text-[11px] font-medium uppercase tracking-widest text-slate-500 mb-6 shadow-sm">
-                            <Sparkles className="w-3 h-3 text-slate-400" />
-                            <span>Competitive Intelligence</span>
+                {/* Hard-coded Page Title Section - Part of Layout Flow */}
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 bg-slate-900 rounded-md flex items-center justify-center text-white shadow-sm">
+                            <Target className="w-3.5 h-3.5" />
+                        </div>
+                        <div className="h-4 w-px bg-slate-200 mx-1"></div>
+                        <h1 className="text-sm font-semibold text-slate-900">Competitor Intelligence</h1>
+                        <span className="hidden md:inline-block text-xs text-slate-400 font-medium ml-2">v2.1</span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <span className="text-[11px] text-slate-400 font-medium hidden md:block">
+                            Analyze any public profile
+                        </span>
+                    </div>
+                </div>
+
+                {/* Command Interface */}
+                <div className={`transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${hasData ? 'mb-8' : 'max-w-2xl mx-auto mt-[5vh]'}`}>
+
+                    {/* Input Label (Only in empty state) */}
+                    {!hasData && (
+                        <div className="mb-4 flex items-center justify-between">
+                            <label className="text-sm font-medium text-slate-700">Target Profile</label>
+                        </div>
+                    )}
+
+                    {/* The Command Bar */}
+                    <div className={`
+                        relative group flex flex-col md:flex-row p-1.5 rounded-xl border transition-all duration-200 shadow-sm
+                        ${isAnalyzing
+                            ? 'bg-slate-50 border-slate-200 opacity-80 cursor-wait'
+                            : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-md ring-0 focus-within:ring-2 focus-within:ring-slate-100 focus-within:border-slate-400'
+                        }
+                    `}>
+
+                        {/* Platform Toggle - Segmented Control Style */}
+                        <div className="flex p-1 bg-slate-100/50 rounded-lg md:mr-2 border border-slate-100">
+                            <button
+                                onClick={() => setPlatform('instagram')}
+                                className={`flex-1 md:flex-none px-3 py-1.5 rounded-md text-[11px] font-semibold transition-all ${platform === 'instagram' ? 'bg-white text-slate-900 border border-slate-200/50 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                Instagram
+                            </button>
+                            <button
+                                onClick={() => setPlatform('youtube')}
+                                className={`flex-1 md:flex-none px-3 py-1.5 rounded-md text-[11px] font-semibold transition-all ${platform === 'youtube' ? 'bg-white text-slate-900 border border-slate-200/50 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                YouTube
+                            </button>
                         </div>
 
-                        <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 mb-4 leading-[1.1]">
-                            Analyze what wins <br className="hidden md:block" /> in your niche.
-                        </h1>
-
-                        <p className="text-lg text-slate-500 mb-10 leading-relaxed max-w-lg mx-auto font-medium">
-                            Reverse-engineer viral content in seconds. Uncover hidden patterns and content gaps you can exploit.
-                        </p>
-                    </motion.div>
-
-                    {/* Premium Search Module */}
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.98 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.4, delay: 0.1 }}
-                        className="relative z-20 mx-auto max-w-xl group"
-                    >
-                        <div className={`
-                            flex items-center gap-1 p-1.5 pl-2 rounded-2xl bg-white border transition-all duration-200 shadow-xl shadow-slate-200/40
-                            ${isAnalyzing
-                                ? 'border-slate-300 ring-4 ring-slate-100'
-                                : 'border-slate-200 hover:border-slate-300 focus-within:border-slate-400 focus-within:ring-4 focus-within:ring-slate-100'
-                            }
-                        `}>
-                            {/* Platform Select */}
-                            <div className="flex bg-slate-50 rounded-xl p-1 border border-slate-100/50">
-                                <button
-                                    onClick={() => setPlatform('instagram')}
-                                    className={`
-                                        p-2 rounded-lg transition-all duration-200 
-                                        ${platform === 'instagram'
-                                            ? 'bg-white shadow-sm text-pink-600 border border-slate-100'
-                                            : 'text-slate-400 hover:text-slate-600 hover:bg-slate-200/50'
-                                        }
-                                    `}
-                                >
-                                    <Instagram className="w-4 h-4" />
-                                </button>
-                                <button
-                                    onClick={() => setPlatform('youtube')}
-                                    className={`
-                                        p-2 rounded-lg transition-all duration-200
-                                        ${platform === 'youtube'
-                                            ? 'bg-white shadow-sm text-red-600 border border-slate-100'
-                                            : 'text-slate-400 hover:text-slate-600 hover:bg-slate-200/50'
-                                        }
-                                    `}
-                                >
-                                    <Youtube className="w-4 h-4" />
-                                </button>
-                            </div>
-
-                            {/* Input */}
+                        {/* Input Field */}
+                        <div className="flex-1 relative">
                             <Input
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 onKeyDown={handleKeyDown}
-                                placeholder={platform === 'instagram' ? "Enter username (e.g. @hormozi)" : "Enter Channel URL"}
-                                className="border-0 shadow-none focus-visible:ring-0 text-[15px] font-medium flex-1 bg-transparent placeholder:text-slate-400 text-slate-900 h-10 px-3"
+                                placeholder={platform === 'instagram' ? "e.g. alexhormozi" : "e.g. tubeBuddy"}
+                                className="h-10 md:h-full w-full border-0 bg-transparent shadow-none focus-visible:ring-0 text-base font-medium placeholder:text-slate-300 text-slate-900 px-3"
+                                autoFocus={!hasData}
                             />
+                        </div>
 
-                            {/* Action Button */}
-                            <Button
-                                onClick={handleAnalyze}
-                                disabled={isAnalyzing || !username}
-                                className={`
-                                    h-11 px-6 rounded-xl font-semibold text-white shadow-md transition-all duration-200 flex items-center gap-2
-                                    ${isAnalyzing
-                                        ? 'bg-slate-800'
-                                        : 'bg-slate-900 hover:bg-slate-800 hover:-translate-y-0.5 hover:shadow-lg'
-                                    }
-                                `}
-                            >
-                                {isAnalyzing ? <Loader2 className="w-4 h-4 animate-spin text-slate-400" /> : <span className="text-sm">Analyze</span>}
-                            </Button>
-                        </div>
-                    </motion.div>
-                </div>
-
-                {/* Content Area */}
-                {isAnalyzing ? (
-                    <div className="max-w-6xl mx-auto space-y-8 animate-pulse">
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                            {[1, 2, 3, 4].map(i => (
-                                <div key={i} className="h-32 bg-slate-100 rounded-xl border border-slate-200/50"></div>
-                            ))}
-                        </div>
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                            <div className="lg:col-span-4 space-y-6">
-                                <div className="h-72 bg-slate-100 rounded-2xl border border-slate-200/50"></div>
-                                <div className="h-48 bg-slate-100 rounded-2xl border border-slate-200/50"></div>
-                            </div>
-                            <div className="lg:col-span-8">
-                                <div className="h-[500px] bg-slate-100 rounded-2xl border border-slate-200/50"></div>
-                            </div>
-                        </div>
-                    </div>
-                ) : !data ? (
-                    <div className="grid grid-cols-1 gap-6 max-w-4xl mx-auto">
-                        {/* Empty State / Quick Suggest */}
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.2 }}
-                            className="bg-white rounded-2xl border border-dashed border-slate-200 p-12 text-center"
+                        {/* Execute Action */}
+                        <Button
+                            onClick={handleAnalyze}
+                            disabled={isAnalyzing || !username}
+                            className={`
+                                mt-2 md:mt-0 px-6 rounded-lg font-semibold text-white shadow-sm transition-all duration-200
+                                ${isAnalyzing ? 'bg-slate-100 text-slate-400' : 'bg-slate-900 hover:bg-slate-800 hover:shadow active:scale-[0.98]'}
+                            `}
                         >
-                            <div className="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center mx-auto mb-4 text-slate-400">
-                                <Target className="w-6 h-6" />
-                            </div>
-                            <h3 className="text-base font-semibold text-slate-900 mb-2">Research a market leader</h3>
-                            <p className="text-sm text-slate-500 mb-8 max-w-sm mx-auto">
-                                Start by analyzing a top creator to see their content strategy.
-                            </p>
-                            <div className="flex flex-wrap justify-center gap-2">
-                                {['@alexhormozi', '@garyvee', '@codie_sanchez', '@mrbeast'].map((item) => (
-                                    <button
-                                        key={item}
-                                        onClick={() => setUsername(item.replace('@', ''))}
-                                        className="text-xs font-medium px-4 py-2 rounded-lg bg-slate-50 border border-slate-100 text-slate-600 hover:border-slate-200 hover:bg-slate-100 transition-all hover:-translate-y-0.5"
-                                    >
-                                        {item}
-                                    </button>
-                                ))}
-                            </div>
-                        </motion.div>
+                            {isAnalyzing ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                                <span className="flex items-center gap-2 text-xs tracking-wide">
+                                    RUN ANALYSIS <ArrowRight className="w-3 h-3 opacity-50" />
+                                </span>
+                            )}
+                        </Button>
                     </div>
-                ) : (
-                    <AnimatePresence mode="wait">
+
+                    {/* Educational Empty State (Only shows when no data) */}
+                    {!hasData && (
                         <motion.div
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="max-w-[1240px] mx-auto space-y-8"
+                            transition={{ delay: 0.1 }}
+                            className="mt-12"
                         >
-                            {/* Key Stats Grid - Enterprise Style */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                <StatsCard
-                                    label="Total Followers"
-                                    value={data.profile.followers.toLocaleString()}
-                                    icon={Users}
-                                    trend="Top 1%"
-                                />
-                                <StatsCard
-                                    label="Avg Views"
-                                    value={data.profile.avgViews.toLocaleString()}
-                                    icon={Eye}
-                                    subtext="Last 30 posts"
-                                />
-                                <StatsCard
-                                    label="Engagement"
-                                    value={data.profile.engagementRate}
-                                    icon={TrendingUp}
-                                />
-                                <StatsCard
-                                    label="Growth Velocity"
-                                    value={data.profile.growthVelocity}
-                                    icon={Zap}
-                                    highlight
-                                />
+                            <div className="flex items-center gap-2 mb-6">
+                                <span className="h-px flex-1 bg-slate-100"></span>
+                                <span className="text-[10px] uppercase font-bold tracking-widest text-slate-300">Intelligence Capabilities</span>
+                                <span className="h-px flex-1 bg-slate-100"></span>
                             </div>
 
-                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                                {/* Left Column: Intelligence */}
-                                <div className="lg:col-span-4 space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="p-5 rounded-lg border border-slate-100 bg-white hover:border-slate-200 transition-colors group">
+                                    <div className="w-8 h-8 rounded bg-blue-50 flex items-center justify-center text-blue-600 mb-3 group-hover:scale-110 transition-transform">
+                                        <Cpu className="w-4 h-4" />
+                                    </div>
+                                    <h3 className="text-sm font-semibold text-slate-900 mb-1">Pattern Recognition</h3>
+                                    <p className="text-xs text-slate-500 leading-relaxed">Systematically identify recurring content structures and visual formats that drive engagement.</p>
+                                </div>
+                                <div className="p-5 rounded-lg border border-slate-100 bg-white hover:border-slate-200 transition-colors group">
+                                    <div className="w-8 h-8 rounded bg-emerald-50 flex items-center justify-center text-emerald-600 mb-3 group-hover:scale-110 transition-transform">
+                                        <Activity className="w-4 h-4" />
+                                    </div>
+                                    <h3 className="text-sm font-semibold text-slate-900 mb-1">Performance Velocity</h3>
+                                    <p className="text-xs text-slate-500 leading-relaxed">Analyze growth rate and view acceleration to detect breakout content vs. steady growth.</p>
+                                </div>
+                                <div className="p-5 rounded-lg border border-slate-100 bg-white hover:border-slate-200 transition-colors group">
+                                    <div className="w-8 h-8 rounded bg-purple-50 flex items-center justify-center text-purple-600 mb-3 group-hover:scale-110 transition-transform">
+                                        <FileText className="w-4 h-4" />
+                                    </div>
+                                    <h3 className="text-sm font-semibold text-slate-900 mb-1">Hook Extraction</h3>
+                                    <p className="text-xs text-slate-500 leading-relaxed">Log and categorize opening lines and visual hooks for replication in your content strategy.</p>
+                                </div>
+                            </div>
 
-                                    {/* Viral Patterns */}
-                                    <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-                                        <div className="flex items-center gap-2.5 mb-6">
-                                            <div className="p-1.5 bg-blue-50/50 rounded-md text-blue-600 border border-blue-100">
-                                                <Target className="w-4 h-4" />
-                                            </div>
-                                            <h3 className="text-[15px] font-semibold text-slate-900">Viral Patterns</h3>
+                            <div className="mt-10">
+                                <h4 className="text-[11px] font-semibold text-slate-400 mb-3 uppercase tracking-wide">Example Analyses</h4>
+                                <div className="flex flex-wrap gap-2">
+                                    {['@hormozi', '@mrbeast', '@thinkmedia', '@cleo'].map(tag => (
+                                        <button
+                                            key={tag}
+                                            onClick={() => setUsername(tag.replace('@', ''))}
+                                            className="px-3 py-1.5 rounded bg-slate-50 border border-slate-100 text-xs font-medium text-slate-600 hover:bg-white hover:border-slate-300 hover:text-slate-900 transition-all"
+                                        >
+                                            {tag}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </div>
+
+                {/* Loading State */}
+                {isAnalyzing && (
+                    <div className="max-w-6xl mx-auto mt-12 space-y-8 animate-pulse opacity-50">
+                        <div className="h-8 bg-slate-200 w-1/3 rounded"></div>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            {[1, 2, 3, 4].map(i => (
+                                <div key={i} className="h-24 bg-slate-100 rounded-lg border border-slate-200"></div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Results View - Precise & Dense */}
+                {data && !isAnalyzing && (
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.3 }}
+                            className="max-w-[1280px] mx-auto pb-20"
+                        >
+                            <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
+                                <div>
+                                    <h2 className="text-lg font-bold text-slate-900">{data.profile.username}</h2>
+                                    <p className="text-xs text-slate-500 font-mono mt-0.5">ID: {data.profile.followers.toString().slice(0, 3)}... • REPORT GENERATED {new Date().toLocaleDateString()}</p>
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button variant="outline" size="sm" className="h-8 text-xs bg-white hover:bg-slate-50 text-slate-600 border-slate-200">
+                                        <Download className="w-3.5 h-3.5 mr-2" /> Export CSV
+                                    </Button>
+                                </div>
+                            </div>
+
+                            {/* Key Stats - Minimal Cards */}
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                                <StatBox label="Audience Size" value={data.profile.followers.toLocaleString()} icon={Users} />
+                                <StatBox label="Avg Views / Post" value={data.profile.avgViews.toLocaleString()} icon={Eye} sub="Based on last 30" />
+                                <StatBox label="Engagement Rate" value={data.profile.engagementRate} icon={TrendingUp} sub="High Performance" highlight />
+                                <StatBox label="Growth Velocity" value={data.profile.growthVelocity} icon={Zap} />
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                                {/* Analysis Column */}
+                                <div className="lg:col-span-1 space-y-6">
+                                    <div className="bg-white rounded-lg border border-slate-200 p-5 shadow-sm">
+                                        <div className="mb-4">
+                                            <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                                                <Target className="w-4 h-4 text-slate-400" /> Viral Patterns
+                                            </h3>
                                         </div>
-
-                                        <div className="space-y-6">
+                                        <div className="space-y-4">
                                             <div>
-                                                <h4 className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-3">Winning Hooks</h4>
-                                                <div className="space-y-2.5">
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase">Identified Hooks</span>
+                                                <ul className="mt-2 space-y-2">
                                                     {data.analysis.viralPatterns.hooks.map((hook: string, i: number) => (
-                                                        <div key={i} className="flex gap-3 text-sm text-slate-700 leading-snug">
-                                                            <span className="flex-shrink-0 w-5 h-5 bg-slate-50 rounded-full flex items-center justify-center text-[10px] font-bold text-slate-400 border border-slate-100">{i + 1}</span>
-                                                            <span className="font-medium">{hook}</span>
-                                                        </div>
+                                                        <li key={i} className="text-xs text-slate-700 bg-slate-50 p-2 rounded border border-slate-100/50">
+                                                            "{hook}"
+                                                        </li>
                                                     ))}
-                                                </div>
+                                                </ul>
                                             </div>
-
-                                            <div className="pt-4 border-t border-slate-100">
-                                                <h4 className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-3">Visual Style</h4>
-                                                <div className="flex flex-wrap gap-1.5">
+                                            <div>
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase">Visual Elements</span>
+                                                <div className="mt-2 flex flex-wrap gap-1">
                                                     {data.analysis.viralPatterns.visuals.map((visual: string, i: number) => (
-                                                        <span key={i} className="inline-flex items-center px-2.5 py-1 rounded-md bg-slate-50 border border-slate-200/60 text-[11px] font-medium text-slate-600">
+                                                        <span key={i} className="px-2 py-1 bg-white border border-slate-200 rounded text-[10px] text-slate-600">
                                                             {visual}
                                                         </span>
                                                     ))}
@@ -271,120 +283,54 @@ export default function CompetitorSpyPage() {
                                         </div>
                                     </div>
 
-                                    {/* Why It Works - Dark Card (Premium Focus) */}
-                                    <div className="bg-slate-900 rounded-xl p-6 shadow-lg text-white relative overflow-hidden group">
-                                        <div className="absolute top-0 right-0 w-64 h-64 bg-slate-800 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-50 pointer-events-none"></div>
-
-                                        <div className="flex items-center gap-2.5 mb-5 relative z-10">
-                                            <Sparkles className="w-4 h-4 text-yellow-300" />
-                                            <h3 className="text-[15px] font-semibold">The Logic</h3>
+                                    <div className="bg-slate-900 rounded-lg p-5 shadow-lg text-white">
+                                        <div className="flex items-center gap-2 mb-4">
+                                            <Sparkles className="w-4 h-4 text-yellow-400" />
+                                            <h3 className="text-sm font-semibold">Strategic Insight</h3>
                                         </div>
-
-                                        <div className="space-y-5 text-sm relative z-10">
-                                            <div>
-                                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Psychology</p>
-                                                <p className="text-slate-200 leading-relaxed opacity-90">{data.analysis.whyItWorks.psychology}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Structure</p>
-                                                <p className="text-slate-200 leading-relaxed opacity-90">{data.analysis.whyItWorks.structure}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Opportunities */}
-                                    <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-                                        <div className="flex items-center gap-2.5 mb-6">
-                                            <div className="p-1.5 bg-emerald-50/50 rounded-md text-emerald-600 border border-emerald-100">
-                                                <Lightbulb className="w-4 h-4" />
-                                            </div>
-                                            <h3 className="text-[15px] font-semibold text-slate-900">Opportunities</h3>
-                                        </div>
-                                        <div className="space-y-3">
-                                            {data.analysis.opportunities.map((opp: any, i: number) => (
-                                                <div key={i} className="p-4 bg-slate-50/50 rounded-xl border border-slate-100 hover:bg-white hover:border-emerald-200/50 hover:shadow-sm transition-all group">
-                                                    <div className="flex justify-between items-start mb-1.5">
-                                                        <h4 className="font-semibold text-slate-900 text-sm">{opp.title}</h4>
-                                                        <span className="px-1.5 py-0.5 rounded text-[10px] bg-emerald-50 text-emerald-700 font-medium border border-emerald-100">{opp.difficulty}</span>
-                                                    </div>
-                                                    <p className="text-xs text-slate-500 leading-relaxed mb-3">{opp.description}</p>
-                                                    <button
-                                                        onClick={() => router.push(`/dashboard/studio?prompt=Create a reel about ${opp.title}`)}
-                                                        className="text-[11px] font-bold text-emerald-600 flex items-center gap-1 group-hover:gap-1.5 transition-all"
-                                                    >
-                                                        Generate this <ArrowRight className="w-3 h-3" />
-                                                    </button>
-                                                </div>
-                                            ))}
+                                        <div className="space-y-4 text-xs leading-relaxed text-slate-300">
+                                            <p><strong className="text-white block mb-1">Psychology:</strong> {data.analysis.whyItWorks.psychology}</p>
+                                            <p><strong className="text-white block mb-1">Structure:</strong> {data.analysis.whyItWorks.structure}</p>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Right Column: Content Grid */}
-                                <div className="lg:col-span-8 space-y-6">
-                                    <div className="flex items-center justify-between px-1">
-                                        <div className="flex items-center gap-2">
-                                            <h3 className="font-semibold text-slate-900 text-base">Top Performing Content</h3>
-                                            <Badge variant="secondary" className="bg-slate-100 text-slate-500 hover:bg-slate-100 border-none font-normal">Last 30 Days</Badge>
-                                        </div>
-
-                                        <div className="flex gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200/50">
-                                            <button className="px-3 py-1 bg-white rounded-md shadow-sm border border-slate-200/50 text-xs font-medium text-slate-900">Views</button>
-                                            <button className="px-3 py-1 text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors">Recent</button>
+                                {/* Content Grid */}
+                                <div className="lg:col-span-2">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-sm font-semibold text-slate-900">Top Performing Content</h3>
+                                        <div className="flex gap-1">
+                                            <button className="px-2 py-1 text-[10px] font-medium bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition-colors">ListView</button>
+                                            <button className="px-2 py-1 text-[10px] font-medium bg-white border border-slate-200 text-slate-400 rounded hover:text-slate-900 transition-colors">GridView</button>
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                        {data.profile.posts.slice(0, 6).map((post: any) => (
-                                            <div key={post.id} className="group bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-[0_4px_20px_-12px_rgba(0,0,0,0.1)] transition-all duration-200">
-                                                {/* Thumbnail */}
-                                                <div className="h-48 bg-slate-100 relative overflow-hidden border-b border-slate-100">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        {data.profile.posts.map((post: any) => (
+                                            <div key={post.id} className="bg-white rounded-lg border border-slate-200 overflow-hidden hover:border-slate-300 transition-colors group">
+                                                <div className="h-40 bg-slate-100 relative group-hover:opacity-90 transition-opacity">
                                                     {post.thumbnail ? (
-                                                        <div className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" style={{ backgroundImage: `url(${post.thumbnail})` }}></div>
+                                                        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${post.thumbnail})` }}></div>
                                                     ) : (
-                                                        <div className="absolute inset-0 bg-slate-50 flex items-center justify-center text-slate-300">
-                                                            <Play className="w-10 h-10 opacity-20" />
+                                                        <div className="absolute inset-0 flex items-center justify-center">
+                                                            <Play className="w-8 h-8 text-slate-300" />
                                                         </div>
                                                     )}
-
-                                                    {/* Hover Overlay */}
-                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
-                                                        <button className="w-10 h-10 bg-white/20 backdrop-blur rounded-full flex items-center justify-center text-white border border-white/40 hover:bg-white hover:text-black transition-colors">
-                                                            <Play className="w-4 h-4 ml-0.5" />
-                                                        </button>
-                                                    </div>
-
-                                                    <div className="absolute top-3 right-3">
-                                                        <div className="bg-black/60 backdrop-blur-sm text-white text-[10px] font-medium px-2 py-0.5 rounded flex items-center gap-1 border border-white/10">
-                                                            <Eye className="w-3 h-3" /> {formatNumber(post.views)}
-                                                        </div>
+                                                    <div className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded font-mono">
+                                                        {formatNumber(post.views)}
                                                     </div>
                                                 </div>
-
-                                                {/* Body */}
-                                                <div className="p-5">
-                                                    {/* Insight Badge */}
-                                                    {post.whyWorked && (
-                                                        <div className="mb-3 inline-flex items-center gap-1.5 px-2 py-1 rounded bg-indigo-50 text-indigo-700 text-[10px] font-semibold border border-indigo-100">
-                                                            <Sparkles className="w-3 h-3" />
-                                                            {post.whyWorked}
-                                                        </div>
-                                                    )}
-
-                                                    <p className="text-sm text-slate-800 font-medium line-clamp-2 leading-relaxed mb-4 group-hover:text-indigo-600 transition-colors">
-                                                        {post.caption}
-                                                    </p>
-
-                                                    <div className="flex items-center gap-4 text-xs text-slate-500 font-medium">
-                                                        <span className="flex items-center gap-1.5">
-                                                            <Heart className="w-3.5 h-3.5" /> {formatNumber(post.likes)}
-                                                        </span>
-                                                        <span className="flex items-center gap-1.5">
-                                                            <MessageCircle className="w-3.5 h-3.5" /> {formatNumber(post.comments)}
-                                                        </span>
-                                                        <span className="ml-auto text-slate-400 font-normal">
-                                                            {new Date(post.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                                                        </span>
+                                                <div className="p-3">
+                                                    <div className="flex items-start justify-between gap-2 mb-2">
+                                                        <p className="text-xs font-medium text-slate-900 line-clamp-2 leading-snug">{post.caption}</p>
+                                                        {post.whyWorked && (
+                                                            <span className="shrink-0 w-2 h-2 rounded-full bg-indigo-500" title="High Insight"></span>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-3 text-[10px] text-slate-500">
+                                                        <span className="flex items-center gap-1"><Heart className="w-3 h-3" /> {formatNumber(post.likes)}</span>
+                                                        <span className="flex items-center gap-1"><MessageCircle className="w-3 h-3" /> {formatNumber(post.comments)}</span>
+                                                        <span className="ml-auto text-slate-400">{new Date(post.date).toLocaleDateString()}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -401,25 +347,21 @@ export default function CompetitorSpyPage() {
     );
 }
 
-function StatsCard({ label, value, icon: Icon, subtext, highlight }: any) {
+function StatBox({ label, value, icon: Icon, sub, highlight }: any) {
     return (
         <div className={`
-            p-5 rounded-xl border transition-all duration-200
-            ${highlight
-                ? 'bg-slate-900 border-slate-900 text-white shadow-md'
-                : 'bg-white border-slate-200 text-slate-900 shadow-sm hover:border-slate-300'
-            }
+            p-4 rounded-lg border transition-all
+            ${highlight ? 'bg-white border-indigo-100 ring-1 ring-indigo-50 shadow-sm' : 'bg-white border-slate-100 text-slate-900'}
         `}>
-            <div className="flex justify-between items-start mb-4">
-                <div className={`p-2 rounded-lg ${highlight ? 'bg-white/10 text-white' : 'bg-slate-50 text-slate-500'}`}>
-                    <Icon className="w-4 h-4" />
-                </div>
+            <div className="flex justify-between items-start mb-2">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{label}</p>
+                <Icon className={`w-3.5 h-3.5 ${highlight ? 'text-indigo-500' : 'text-slate-300'}`} />
             </div>
-            <div>
-                <h4 className={`text-2xl font-bold mb-1 tracking-tight ${highlight ? 'text-white' : 'text-slate-900'}`}>{value}</h4>
-                <p className={`text-[11px] font-bold uppercase tracking-wider ${highlight ? 'text-slate-400' : 'text-slate-500'}`}>{label}</p>
-                {subtext && <p className={`text-[11px] mt-1 ${highlight ? 'text-slate-500' : 'text-slate-400'}`}>{subtext}</p>}
+            <div className="flex items-baseline gap-2">
+                <h4 className="text-xl font-bold text-slate-900 tracking-tight">{value}</h4>
+                {highlight && <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1 rounded">▲ 12%</span>}
             </div>
+            {sub && <p className="text-[10px] text-slate-400 mt-1">{sub}</p>}
         </div>
     );
 }
