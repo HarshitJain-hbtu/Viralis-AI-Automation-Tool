@@ -161,7 +161,7 @@ export default function AIBrainPage() {
               {typeof window !== 'undefined' ? `${window.location.origin}/meet/${businessId}` : `.../meet/${businessId}`}
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="border-gray-200 hover:bg-gray-50 text-gray-700 font-medium" onClick={() => window.open(`/meet/${businessId}`, '_blank')}>
+              <Button variant="outline" size="sm" className="!bg-white !border-gray-200 hover:!bg-gray-50 !text-gray-900 font-medium" onClick={() => window.open(`/meet/${businessId}`, '_blank')}>
                 <ExternalLink className="w-4 h-4 mr-2" />
                 Test
               </Button>

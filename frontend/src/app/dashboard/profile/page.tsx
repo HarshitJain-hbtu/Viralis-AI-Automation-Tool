@@ -80,7 +80,7 @@ export default function ProfilePage() {
                                     type="button"
                                     variant="outline"
                                     onClick={() => document.getElementById('avatar-upload')?.click()}
-                                    className="border-gray-200 bg-gray-50 text-gray-700 hover:bg-white"
+                                    className="!border-gray-200 !bg-white !text-gray-900 hover:!bg-gray-50"
                                 >
                                     Choose Image
                                 </Button>
