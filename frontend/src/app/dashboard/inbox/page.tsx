@@ -145,7 +145,10 @@ export default function InboxPage() {
                                                     </Button>
                                                 </div>
 
-                                                <p className="text-gray-800 text-sm leading-relaxed">{comment.textDisplay}</p>
+                                                <div
+                                                    className="text-gray-800 text-sm leading-relaxed whitespace-pre-wrap [&>a]:text-blue-600 [&>a]:hover:underline"
+                                                    dangerouslySetInnerHTML={{ __html: comment.textDisplay }}
+                                                />
 
                                                 {/* Local Reply Display */}
                                                 {localReplies[comment.id] && (
@@ -171,7 +174,10 @@ export default function InboxPage() {
                                                                     <span className="text-xs font-semibold text-gray-900">{reply.authorDisplayName}</span>
                                                                     <span className="text-[10px] text-muted-foreground">{new Date(reply.publishedAt).toLocaleDateString()}</span>
                                                                 </div>
-                                                                <p className="text-sm text-gray-700">{reply.textDisplay}</p>
+                                                                <div
+                                                                    className="text-sm text-gray-700 whitespace-pre-wrap [&>a]:text-blue-600 [&>a]:hover:underline"
+                                                                    dangerouslySetInnerHTML={{ __html: reply.textDisplay }}
+                                                                />
                                                             </div>
                                                         ))}
                                                     </div>
