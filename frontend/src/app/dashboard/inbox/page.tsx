@@ -82,7 +82,7 @@ export default function InboxPage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-12rem)]">
 
                 {/* Comment List */}
-                <Card className="lg:col-span-12 h-full flex flex-col border-gray-200 shadow-sm">
+                <Card className="lg:col-span-12 h-full flex flex-col border-gray-200 shadow-sm bg-white">
                     <CardHeader className="border-b px-6 py-4 flex flex-row items-center justify-between space-y-0">
                         <div className="flex items-center gap-4">
                             <Button

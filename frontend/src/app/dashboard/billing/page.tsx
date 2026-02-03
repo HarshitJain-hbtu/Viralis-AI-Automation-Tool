@@ -27,7 +27,7 @@ export default function BillingPage() {
                 <div className="grid lg:grid-cols-3 gap-8 items-start">
 
                     {/* Free Plan */}
-                    <Card className={`relative border-2 transition-all ${currentTier === 'Free' ? 'border-primary ring-4 ring-primary/10 shadow-xl' : 'border-gray-100 shadow-sm hover:shadow-md'}`}>
+                    <Card className={`relative border-2 transition-all bg-white ${currentTier === 'Free' ? 'border-primary ring-4 ring-primary/10 shadow-xl' : 'border-gray-100 shadow-sm hover:shadow-md'}`}>
                         {currentTier === 'Free' && (
                             <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">
                                 Current Plan
@@ -69,7 +69,7 @@ export default function BillingPage() {
                     </Card>
 
                     {/* Growth Plan */}
-                    <Card className={`relative border-2 transition-all ${currentTier === 'Growth' ? 'border-blue-600 ring-4 ring-blue-600/10 shadow-xl' : 'border-blue-100/50 shadow-md hover:shadow-lg bg-blue-50/10'}`}>
+                    <Card className={`relative border-2 transition-all bg-white ${currentTier === 'Growth' ? 'border-blue-600 ring-4 ring-blue-600/10 shadow-xl' : 'border-blue-100/50 shadow-md hover:shadow-lg'}`}>
                         {currentTier === 'Growth' && (
                             <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">
                                 Current Plan
@@ -120,7 +120,7 @@ export default function BillingPage() {
                     </Card>
 
                     {/* Agency Plan */}
-                    <Card className={`relative border-2 transition-all ${currentTier === 'Agency' ? 'border-primary ring-4 ring-primary/10 shadow-xl' : 'border-gray-100 shadow-sm hover:shadow-md'}`}>
+                    <Card className={`relative border-2 transition-all bg-white ${currentTier === 'Agency' ? 'border-primary ring-4 ring-primary/10 shadow-xl' : 'border-gray-100 shadow-sm hover:shadow-md'}`}>
                         {currentTier === 'Agency' && (
                             <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">
                                 Current Plan

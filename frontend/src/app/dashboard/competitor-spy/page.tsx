@@ -128,7 +128,7 @@ export default function CompetitorSpyPage() {
                                 onChange={(e) => setUsername(e.target.value)}
                                 onKeyDown={handleKeyDown}
                                 placeholder={platform === 'instagram' ? "e.g. alexhormozi" : "e.g. tubeBuddy"}
-                                className="h-10 md:h-full w-full border-0 bg-transparent shadow-none focus-visible:ring-0 text-base font-medium placeholder:text-slate-300 text-slate-900 px-3"
+                                className="h-10 md:h-full w-full border-0 bg-white shadow-none focus-visible:ring-0 text-base font-medium placeholder:text-slate-300 text-slate-900 px-3"
                                 autoFocus={!hasData}
                             />
                         </div>
