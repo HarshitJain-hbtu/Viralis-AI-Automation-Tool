@@ -50,7 +50,7 @@ export function SocialConnect() {
     const isFacebookConnected = !!socialStats?.facebook;
 
     return (
-        <Card>
+        <Card className='bg-white'>
             <CardHeader>
                 <CardTitle>Connect Social Accounts</CardTitle>
                 <CardDescription>Connect your accounts to view analytics.</CardDescription>

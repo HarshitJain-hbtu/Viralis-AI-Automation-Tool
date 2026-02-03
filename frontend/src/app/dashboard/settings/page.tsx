@@ -190,7 +190,7 @@ export default function SettingsPage() {
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                className="max-w-md bg-white border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                                className="max-w-md !bg-white text-gray-900 border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="e.g. Acme Corp"
                             />
                         </div>
@@ -206,7 +206,7 @@ export default function SettingsPage() {
                                 <select
                                     value={industryMode}
                                     onChange={(e) => setIndustryMode(e.target.value)}
-                                    className="block w-full max-w-md pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg border bg-white text-gray-900"
+                                    className="block w-full max-w-md pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg border !bg-white text-gray-900"
                                 >
                                     <option value="Dentist">Dentist</option>
                                     <option value="Gym">Gym</option>
@@ -221,7 +221,7 @@ export default function SettingsPage() {
                                         type="text"
                                         value={customIndustry}
                                         onChange={(e) => setCustomIndustry(e.target.value)}
-                                        className="max-w-md bg-white border-gray-300 focus:ring-blue-500 focus:border-blue-500 animate-in fade-in slide-in-from-top-1"
+                                        className="max-w-md !bg-white text-gray-900 border-gray-300 focus:ring-blue-500 focus:border-blue-500 animate-in fade-in slide-in-from-top-1"
                                         placeholder="Enter your specific industry (e.g., SaaS, E-commerce)"
                                     />
                                 )}
@@ -239,7 +239,7 @@ export default function SettingsPage() {
                                 type="text"
                                 value={city}
                                 onChange={(e) => setCity(e.target.value)}
-                                className="max-w-md bg-white border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                                className="max-w-md !bg-white text-gray-900 border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="e.g. New York, NY"
                             />
                         </div>
@@ -254,7 +254,7 @@ export default function SettingsPage() {
                                 type="text"
                                 value={phone}
                                 onChange={(e) => setPhone(e.target.value)}
-                                className="max-w-md bg-white border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                                className="max-w-md !bg-white text-gray-900 border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="e.g. +1 234 567 8900"
                             />
                             <p className="mt-1 text-xs text-gray-400">Used by the AI Agent to transfer calls or provide contact info.</p>
@@ -288,7 +288,7 @@ export default function SettingsPage() {
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                                 rows={4}
-                                className="max-w-xl bg-white"
+                                className="max-w-xl !bg-white text-gray-900 border-gray-300"
                                 placeholder="Describe your business services and unique selling points..."
                             />
                         </div>

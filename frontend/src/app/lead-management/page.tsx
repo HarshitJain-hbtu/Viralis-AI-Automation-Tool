@@ -406,7 +406,7 @@ export default function LeadManagement() {
                                 <input
                                     required
                                     type="text"
-                                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none !bg-white text-gray-900"
                                     value={newLead.name}
                                     onChange={e => setNewLead({ ...newLead, name: e.target.value })}
                                     placeholder="John Doe"
@@ -416,7 +416,7 @@ export default function LeadManagement() {
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">Email Address</label>
                                 <input
                                     type="email"
-                                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none !bg-white text-gray-900"
                                     value={newLead.email}
                                     onChange={e => setNewLead({ ...newLead, email: e.target.value })}
                                     placeholder="john@example.com"
@@ -426,7 +426,7 @@ export default function LeadManagement() {
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">Phone Number</label>
                                 <input
                                     type="tel"
-                                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none !bg-white text-gray-900"
                                     value={newLead.phone}
                                     onChange={e => setNewLead({ ...newLead, phone: e.target.value })}
                                     placeholder="+1 (555) 000-0000"
@@ -436,7 +436,7 @@ export default function LeadManagement() {
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-1">Source</label>
                                     <select
-                                        className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                                        className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none !bg-white text-gray-900"
                                         value={newLead.source}
                                         onChange={e => setNewLead({ ...newLead, source: e.target.value })}
                                     >
@@ -449,7 +449,7 @@ export default function LeadManagement() {
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-1">Status</label>
                                     <select
-                                        className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                                        className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none !bg-white text-gray-900"
                                         value={newLead.status}
                                         onChange={e => setNewLead({ ...newLead, status: e.target.value as any })}
                                     >
