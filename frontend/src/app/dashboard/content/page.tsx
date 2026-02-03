@@ -117,7 +117,7 @@ export default function ContentPage() {
                             <CardDescription>Your AI-crafted content will appear here.</CardDescription>
                         </div>
                         {generatedResult && (
-                            <Button variant="outline" size="sm" onClick={handleCopy} className="gap-2">
+                            <Button variant="outline" size="sm" onClick={handleCopy} className="gap-2 !bg-white !text-gray-900 !border-gray-200 hover:!bg-gray-50">
                                 {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
                                 {copied ? 'Copied' : 'Copy'}
                             </Button>
