@@ -9,8 +9,7 @@ const envSchema = Joi.object({
 
     // Database
     MONGO_URI: Joi.string().required(),
-    REDIS_HOST: Joi.string().default('localhost'),
-    REDIS_PORT: Joi.number().default(6379),
+
 
     // N8N
     N8N_WEBHOOK_URL: Joi.string().optional().default('http://localhost:5678/webhook'),

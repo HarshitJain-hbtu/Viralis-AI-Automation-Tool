@@ -7,7 +7,7 @@ import morgan from 'morgan';
 import { env } from './config/env';
 import logger from './utils/logger';
 import { connectMongoDB } from './config/mongodb';
-import { connectRedis } from './config/redis';
+
 import authRoutes from './routes/auth.routes';
 import businessRoutes from './routes/business.routes';
 import leadRoutes from './routes/lead.routes';
@@ -37,7 +37,7 @@ app.use(morgan('dev'));
 
 // Database Connections
 connectMongoDB();
-connectRedis();
+
 
 // WebSocket Setup
 const io = new Server(server, {
