@@ -246,7 +246,7 @@ export default function AiCalendarPage() {
                     <Button
                       variant={"outline"}
                       className={cn(
-                        "w-full justify-start text-left font-normal h-11 bg-gray-50/50 border-gray-200 hover:bg-gray-50 transition-colors rounded-lg",
+                        "w-full justify-start text-left font-normal h-11 !bg-white border-gray-200 hover:!bg-gray-50 transition-colors rounded-lg !text-gray-900",
                         !field.value && "text-muted-foreground"
                       )}
                     >
@@ -271,13 +271,13 @@ export default function AiCalendarPage() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="niche" className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Niche</Label>
-              <Input id="niche" {...register("niche")} placeholder="SaaS, Fitness..." className="bg-gray-50/50 border-gray-200 h-11 rounded-lg" />
+              <Input id="niche" {...register("niche")} placeholder="SaaS, Fitness..." className="!bg-white border-gray-200 h-11 rounded-lg !text-gray-900" />
               {errors.niche && <p className="text-red-500 text-xs">{errors.niche.message}</p>}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="city" className="text-xs font-semibold text-gray-500 uppercase tracking-wider">City</Label>
-              <Input id="city" {...register("city")} placeholder="New York..." className="bg-gray-50/50 border-gray-200 h-11 rounded-lg" />
+              <Input id="city" {...register("city")} placeholder="New York..." className="!bg-white border-gray-200 h-11 rounded-lg !text-gray-900" />
               {errors.city && <p className="text-red-500 text-xs">{errors.city.message}</p>}
             </div>
           </div>
@@ -289,7 +289,7 @@ export default function AiCalendarPage() {
               control={control}
               render={({ field }) => (
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <SelectTrigger className="bg-gray-50/50 border-gray-200 text-gray-900 h-11 rounded-lg"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="!bg-white border-gray-200 !text-gray-900 h-11 rounded-lg"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Instagram">Instagram</SelectItem>
                     <SelectItem value="Instagram Reels">Instagram Reels</SelectItem>
@@ -303,7 +303,7 @@ export default function AiCalendarPage() {
 
           <div className="space-y-2">
             <Label htmlFor="description" className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Context (Optional)</Label>
-            <Textarea id="description" {...register("description")} placeholder="Specific topic or focus..." className="bg-gray-50/50 border-gray-200 min-h-[100px] resize-none rounded-lg p-3" />
+            <Textarea id="description" {...register("description")} placeholder="Specific topic or focus..." className="!bg-white border-gray-200 min-h-[100px] resize-none rounded-lg p-3 !text-gray-900" />
           </div>
 
           <Button type="submit" disabled={isLoading} className="w-full bg-slate-900 text-white hover:bg-slate-800 h-12 shadow-sm transition-all font-medium rounded-lg text-sm mt-2">

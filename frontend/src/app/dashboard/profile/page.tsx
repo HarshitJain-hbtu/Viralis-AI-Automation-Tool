@@ -67,7 +67,7 @@ export default function ProfilePage() {
                                     id="name"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    className="pl-9 bg-white border-gray-200 transition-colors h-11"
+                                    className="pl-9 !bg-white border-gray-200 transition-colors h-11 !text-gray-900"
                                 />
                             </div>
                         </div>
@@ -119,7 +119,7 @@ export default function ProfilePage() {
                                     id="email"
                                     value={user?.email || ''}
                                     disabled
-                                    className="pl-9 bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed h-11"
+                                    className="pl-9 !bg-gray-100 border-gray-200 !text-gray-500 cursor-not-allowed h-11"
                                 />
                             </div>
                             <p className="text-xs text-gray-400">Email cannot be changed.</p>
