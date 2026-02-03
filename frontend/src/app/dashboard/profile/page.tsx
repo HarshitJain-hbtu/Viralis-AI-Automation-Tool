@@ -67,7 +67,6 @@ export default function ProfilePage() {
                                     id="name"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    onChange={(e) => setName(e.target.value)}
                                     className="pl-9 !bg-white !border-gray-200 transition-colors h-11 !text-gray-900 shadow-sm"
                                 />
                             </div>
