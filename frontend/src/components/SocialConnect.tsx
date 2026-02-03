@@ -67,11 +67,11 @@ export function SocialConnect() {
                         </div>
                     </div>
                     {isYoutubeConnected ? (
-                        <Button variant="outline" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleDisconnect('youtube')}>
+                        <Button variant="outline" className="!bg-white !text-red-600 hover:!text-red-700 hover:!bg-red-50 !border-gray-200" onClick={() => handleDisconnect('youtube')}>
                             Disconnect
                         </Button>
                     ) : (
-                        <Button variant="outline" onClick={() => handleConnect('youtube')}>
+                        <Button variant="outline" className="!bg-white !text-gray-900 !border-gray-200 hover:!bg-gray-50" onClick={() => handleConnect('youtube')}>
                             Connect
                         </Button>
                     )}
@@ -92,11 +92,11 @@ export function SocialConnect() {
                         </div>
                     </div>
                     {isFacebookConnected ? (
-                        <Button variant="outline" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleDisconnect('facebook')}>
+                        <Button variant="outline" className="!bg-white !text-red-600 hover:!text-red-700 hover:!bg-red-50 !border-gray-200" onClick={() => handleDisconnect('facebook')}>
                             Disconnect
                         </Button>
                     ) : (
-                        <Button variant="outline" onClick={() => handleConnect('facebook')}>
+                        <Button variant="outline" className="!bg-white !text-gray-900 !border-gray-200 hover:!bg-gray-50" onClick={() => handleConnect('facebook')}>
                             Connect
                         </Button>
                     )}
