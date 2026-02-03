@@ -1,7 +1,29 @@
 import axios from 'axios';
 
+const getBaseUrl = () => {
+    // If we have a configured API URL, use it
+    let url = process.env.NEXT_PUBLIC_API_URL;
+
+    // Default to local backend if not set
+    if (!url) {
+        return 'http://localhost:5000/api';
+    }
+
+    // Ensure no trailing slash
+    if (url.endsWith('/')) {
+        url = url.slice(0, -1);
+    }
+
+    // Check if it already has /api (avoid double /api/api)
+    if (!url.endsWith('/api')) {
+        url += '/api';
+    }
+
+    return url;
+};
+
 const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api',
+    baseURL: getBaseUrl(),
     headers: {
         'Content-Type': 'application/json',
     },
