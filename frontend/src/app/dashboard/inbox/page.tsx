@@ -188,7 +188,7 @@ export default function InboxPage() {
                                                     <div className="flex-1 max-w-2xl flex gap-2">
                                                         <Input
                                                             placeholder="Write a reply..."
-                                                            className="h-8 text-xs bg-white"
+                                                            className="h-8 text-xs !bg-white !text-gray-900 !border-gray-200"
                                                             value={replyText[comment.id] || ''}
                                                             onChange={(e) => handleReplyChange(comment.id, e.target.value)}
                                                             onKeyDown={(e) => e.key === 'Enter' && handleSendReply(comment.id)}
