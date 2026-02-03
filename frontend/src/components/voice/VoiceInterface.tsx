@@ -42,6 +42,16 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
   const callStartTimeRef = useRef<number>(0);
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  const endCall = () => {
+    wsRef.current?.close();
+    mediaStreamRef.current?.getTracks().forEach(track => track.stop());
+    audioContextRef.current?.close();
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+    }
+    setStatus('IDLE');
+  };
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -197,15 +207,7 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
     }
   };
 
-  const endCall = () => {
-    wsRef.current?.close();
-    mediaStreamRef.current?.getTracks().forEach(track => track.stop());
-    audioContextRef.current?.close();
-    if (timerIntervalRef.current) {
-      clearInterval(timerIntervalRef.current);
-    }
-    setStatus('IDLE');
-  };
+
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);

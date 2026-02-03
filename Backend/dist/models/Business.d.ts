@@ -1,8 +1,9 @@
 import mongoose, { Document } from 'mongoose';
 export interface IBusiness extends Document {
     name: string;
+    logo?: string;
     industry?: string;
-    industryMode?: 'Dentist' | 'Gym' | 'Real Estate' | 'Salon' | 'Cafe' | 'Other';
+    industryMode?: string;
     website?: string;
     description?: string;
     location?: {
@@ -68,6 +69,7 @@ export interface IBusiness extends Document {
         }>;
         customInstructions?: string;
     };
+    subscriptionTier: 'Free' | 'Starter' | 'Business';
     createdAt: Date;
     updatedAt: Date;
 }

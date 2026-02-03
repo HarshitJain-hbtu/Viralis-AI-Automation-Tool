@@ -41,10 +41,10 @@ const contentSchema = new mongoose_1.Schema({
     body: { type: String, required: true },
     type: {
         type: String,
-        enum: ['post', 'article', 'email', 'tweet'],
+        enum: ['post', 'article', 'email', 'tweet', 'video'],
         required: true
     },
-    platform: { type: String, enum: ['twitter', 'linkedin', 'email', 'blog'] },
+    platform: { type: String, enum: ['twitter', 'linkedin', 'email', 'blog', 'instagram', 'youtube'] },
     status: {
         type: String,
         enum: ['draft', 'scheduled', 'published', 'failed'],
@@ -53,6 +53,10 @@ const contentSchema = new mongoose_1.Schema({
     },
     scheduledFor: { type: Date },
     aiGenerated: { type: Boolean, default: false },
+    videoUrl: { type: String },
+    platformPostId: { type: String, index: true },
+    platformAnalyzed: { type: Boolean, default: false },
+    analyzedAt: { type: Date },
     meta: { type: mongoose_1.Schema.Types.Mixed },
 }, { timestamps: true });
 exports.Content = mongoose_1.default.model('Content', contentSchema);

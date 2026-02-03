@@ -22,21 +22,44 @@ class BusinessController {
     // Update business profile
     static async updateProfile(req, res) {
         try {
-            const { industryMode, description, location, brandVoice, visualStyle, competitors, voiceAgent, onboardingStep, knowledgeBase // Add knowledgeBase
-             } = req.body;
+            const { name, logo, // Add logo field
+            industryMode, description, location, brandVoice, visualStyle, competitors, voiceAgent, onboardingStep, knowledgeBase } = req.body;
+            console.log(`📝 [Update Profile] Updating Business: ${req.user?.businessId}`);
+            console.log('📦 Payload:', JSON.stringify({ ...req.body, logo: logo ? '[BASE64 IMAGE]' : undefined }, null, 2));
+            // Sanitization Helper
+            const removeEmpty = (obj) => {
+                if (!obj || typeof obj !== 'object')
+                    return obj;
+                Object.keys(obj).forEach(key => {
+                    if (obj[key] === "" || obj[key] === null) {
+                        delete obj[key];
+                    }
+                    else if (typeof obj[key] === 'object') {
+                        removeEmpty(obj[key]);
+                    }
+                });
+                return obj;
+            };
+            // Deep copy and clean specific objects prone to enum errors
+            const cleanBrandVoice = brandVoice ? removeEmpty(JSON.parse(JSON.stringify(brandVoice))) : undefined;
+            const cleanLocation = location ? removeEmpty(JSON.parse(JSON.stringify(location))) : undefined;
             const business = await Business_1.Business.findByIdAndUpdate(req.user?.businessId, {
                 $set: {
+                    ...(name && { name }),
+                    ...(logo !== undefined && { logo }), // Allow setting or clearing logo
                     ...(industryMode && { industryMode }),
                     ...(description && { description }),
-                    ...(location && { location }),
-                    ...(brandVoice && { brandVoice }),
+                    ...(cleanLocation && Object.keys(cleanLocation).length > 0 && { location: cleanLocation }),
+                    ...(cleanBrandVoice && Object.keys(cleanBrandVoice).length > 0 && { brandVoice: cleanBrandVoice }),
                     ...(visualStyle && { visualStyle }),
                     ...(competitors && { competitors }),
                     ...(voiceAgent && { voiceAgent }),
                     ...(onboardingStep !== undefined && { onboardingStep }),
-                    ...(knowledgeBase && { knowledgeBase }), // Update knowledgeBase
+                    ...(knowledgeBase && { knowledgeBase }),
+                    ...(req.body.subscriptionTier && { subscriptionTier: req.body.subscriptionTier }),
                 }
             }, { new: true, runValidators: true });
+            console.log(`✅ [Update Profile] Result Name: ${business?.name}`);
             if (!business)
                 return res.status(404).json({ error: 'Business not found' });
             return res.json(business);
@@ -50,12 +73,14 @@ class BusinessController {
     static async getPublicProfile(req, res) {
         try {
             const { brandId } = req.params;
+            console.log(`🔍 [Public API] Fetching Brand Profile: ${brandId}`);
             // Validate ID format
             if (!brandId.match(/^[0-9a-fA-F]{24}$/)) {
                 return res.status(400).json({ error: 'Invalid Brand ID' });
             }
             const business = await Business_1.Business.findById(brandId)
-                .select('name businessHours knowledgeBase location industry');
+                .select('name businessHours knowledgeBase location industry industryMode brandVoice description');
+            console.log(`✅ [Public API] Found Business: ${business?.name}`);
             if (!business)
                 return res.status(404).json({ error: 'Business not found' });
             return res.json(business);

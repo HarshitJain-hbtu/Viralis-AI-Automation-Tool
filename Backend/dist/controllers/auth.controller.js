@@ -73,6 +73,22 @@ class AuthController {
             return res.status(500).json({ error: 'Server error' });
         }
     }
+    // Update user profile
+    static async updateUser(req, res) {
+        try {
+            const userId = req.user?.userId;
+            const { name, avatar } = req.body;
+            const user = await User_1.User.findByIdAndUpdate(userId, { $set: { name, avatar } }, { new: true, runValidators: true }).populate('businessId');
+            if (!user) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+            return res.json(user);
+        }
+        catch (error) {
+            logger_1.default.error('Update user error:', error);
+            return res.status(500).json({ error: 'Failed to update profile' });
+        }
+    }
 }
 exports.AuthController = AuthController;
 //# sourceMappingURL=auth.controller.js.map

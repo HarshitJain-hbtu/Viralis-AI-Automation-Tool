@@ -15,17 +15,24 @@ const mongodb_1 = require("./config/mongodb");
 const redis_1 = require("./config/redis");
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const business_routes_1 = __importDefault(require("./routes/business.routes"));
-const business_controller_1 = require("./controllers/business.controller");
+const lead_routes_1 = __importDefault(require("./routes/lead.routes"));
 const aiContentRoutes_1 = __importDefault(require("./routes/aiContentRoutes"));
 const socialRoutes_1 = __importDefault(require("./routes/socialRoutes"));
 const aiRoutes_1 = __importDefault(require("./routes/aiRoutes"));
+const voice_routes_1 = __importDefault(require("./routes/voice.routes"));
 require("./config/passport"); // Initialize Passport Config
 // Initialize App
 const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
 // Middleware
-app.use(express_1.default.json());
-app.use((0, cors_1.default)());
+app.use(express_1.default.json({ limit: '10mb' }));
+app.use(express_1.default.urlencoded({ limit: '10mb', extended: true }));
+app.use((0, cors_1.default)({
+    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use((0, helmet_1.default)());
 app.use((0, morgan_1.default)('dev'));
 // Database Connections
@@ -50,13 +57,15 @@ app.use('/api/auth', auth_routes_1.default);
 app.use('/api/public', public_routes_1.default); // Public Routes
 app.use('/api', socialRoutes_1.default); // /api/auth/youtube, /api/auth/facebook, /api/stats
 app.use('/api/business', business_routes_1.default);
+app.use('/api/voice', voice_routes_1.default);
+app.use('/api/leads', lead_routes_1.default);
 app.use('/api/ai', aiRoutes_1.default);
+app.use('/api/ai-content', aiContentRoutes_1.default); // Corrected and moved
+const dashboard_routes_1 = __importDefault(require("./routes/dashboard.routes"));
+app.use('/api/dashboard', dashboard_routes_1.default);
 app.get('/', (_req, res) => {
     res.send('🚀 VIRALIS Backend is Running (TypeScript)!');
 });
-// Temporary Seed Route
-app.get('/api/seed-db', business_controller_1.BusinessController.seedDatabase);
-app.use('/api', aiContentRoutes_1.default);
 // Start Server
 server.listen(env_1.env.PORT, () => {
     logger_1.default.info(`

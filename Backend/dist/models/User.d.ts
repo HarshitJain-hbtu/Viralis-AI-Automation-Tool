@@ -4,6 +4,7 @@ export interface IUser extends Document {
     password?: string;
     googleId?: string;
     name: string;
+    avatar?: string;
     role: 'admin' | 'user';
     businessId: mongoose.Types.ObjectId;
     socialAccounts?: {

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.postYouTubeReply = exports.getSocialStats = exports.mockFacebookAuth = exports.facebookCallback = exports.youtubeCallback = void 0;
+exports.disconnectSocial = exports.postYouTubeReply = exports.getSocialStats = exports.mockFacebookAuth = exports.facebookCallback = exports.youtubeCallback = void 0;
 const User_1 = require("../models/User");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 // Helper to verify JWT from state
@@ -35,11 +35,35 @@ const youtubeCallback = async (req, res, _next) => {
         // Initialize socialAccounts if needed
         if (!user.socialAccounts)
             user.socialAccounts = {};
+        // Fetch initial stats immediately
+        let initialStats = {};
+        try {
+            const oauth2Client = new googleapis_1.google.auth.OAuth2();
+            oauth2Client.setCredentials({ access_token: userPayload.accessToken });
+            const youtube = googleapis_1.google.youtube({ version: 'v3', auth: oauth2Client });
+            const channelResponse = await youtube.channels.list({
+                part: ['statistics', 'snippet'],
+                mine: true
+            });
+            if (channelResponse.data.items && channelResponse.data.items.length > 0) {
+                const channel = channelResponse.data.items[0];
+                initialStats = {
+                    viewCount: channel.statistics?.viewCount || '0',
+                    subscriberCount: channel.statistics?.subscriberCount || '0',
+                    videoCount: channel.statistics?.videoCount || '0',
+                    channelTitle: channel.snippet?.title,
+                    avatarUrl: channel.snippet?.thumbnails?.default?.url
+                };
+            }
+        }
+        catch (statErr) {
+            console.error('Failed to fetch initial YT stats:', statErr);
+        }
         user.socialAccounts.youtube = {
             accessToken: userPayload.accessToken,
             refreshToken: userPayload.refreshToken,
-            channelId: userPayload.profile.id, // Assuming channel ID is the profile ID for now
-            stats: {} // Will be populated later
+            channelId: userPayload.profile.id,
+            stats: initialStats
         };
         await user.save();
         res.redirect(`${process.env.FRONTEND_URL}/dashboard?social_connected=youtube`);
@@ -372,4 +396,38 @@ const postYouTubeReply = async (req, res) => {
     }
 };
 exports.postYouTubeReply = postYouTubeReply;
+const disconnectSocial = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { provider } = req.params;
+        const user = await User_1.User.findById(userId);
+        if (!user)
+            return res.status(404).json({ error: 'User not found' });
+        if (!user.socialAccounts) {
+            return res.json({ message: 'No accounts connected' });
+        }
+        if (provider === 'youtube') {
+            user.socialAccounts.youtube = undefined;
+        }
+        else if (provider === 'facebook') {
+            user.socialAccounts.facebook = undefined;
+            // Instagram is usually linked to FB, so might want to clear it too or handle separately
+            user.socialAccounts.instagram = undefined;
+        }
+        else if (provider === 'instagram') {
+            user.socialAccounts.instagram = undefined;
+        }
+        else {
+            return res.status(400).json({ error: 'Invalid provider' });
+        }
+        user.markModified('socialAccounts');
+        await user.save();
+        return res.json({ message: `Disconnected ${provider}`, socialAccounts: user.socialAccounts });
+    }
+    catch (error) {
+        console.error('Disconnect Error:', error);
+        return res.status(500).json({ error: 'Disconnect failed' });
+    }
+};
+exports.disconnectSocial = disconnectSocial;
 //# sourceMappingURL=socialController.js.map

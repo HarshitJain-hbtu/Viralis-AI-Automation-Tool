@@ -1,60 +1,145 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generate30DayCalendar = generate30DayCalendar;
+exports.generateDailyPost = generateDailyPost;
 const generative_ai_1 = require("@google/generative-ai");
 const genAI = new generative_ai_1.GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-async function generate30DayCalendar(input) {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-    const prompt = `
-You are VIRALIS AI, an expert social media content strategist.
+function buildPrompt(input) {
+    const { niche, platform, city, description, brandName } = input;
+    return `
+    You are VIRALIS AI, an expert social media content strategist.
+    Your task is to generate a detailed 30-day social media content calendar, returned as a valid JSON array.
 
-Generate a 30-day content calendar for:
-- Niche: ${input.niche}
-- Platform: ${input.platform}
-- Location: ${input.city}
-- Brand Name: ${input.brandName || "Local Business"}
-- Additional Details: ${input.description || "None provided"}
+    INPUTS:
+    - Niche: "${niche}"
+    - Platform: "${platform}"
+    - Location: "${city}"
+    - Brand Name: "${brandName || 'the brand'}"
+    - Extra Description: "${description || 'No extra description provided.'}"
 
-For EACH of the 30 days, generate:
-1. **hook**: Attention-grabbing opening line (max 10 words)
-2. **caption**: Engaging post caption (50-100 words, include emojis)
-3. **hashtags**: Array of 8-12 relevant hashtags (trending + niche-specific)
-4. **visual_prompt**: Detailed image generation prompt for Gemini (include: scene, lighting, colors, mood, style, aspect ratio 1:1 for Instagram/9:16 for Reels, include "${input.brandName || "brand logo"}" text overlay, photorealistic style)
-5. **post_type**: "carousel" | "reel" | "story" | "static"
-6. **best_time**: Optimal posting time for ${input.platform}
-7. **cta**: Call-to-action phrase
+    REQUIREMENTS FOR EACH OF THE 30 DAYS:
+    1.  day: day number (1–30)
+    2.  hook: an attention-grabbing first line (max 10 words).
+    3.  caption: a 50–120 word caption. It must be conversational and use emojis and clear line breaks for readability.
+    4.  hashtags: an array of 8–12 relevant hashtags. Mix niche, local ("${city}"), and broad hashtags. Do not include spaces or '#' in the strings.
+    5.  post_type: one of ["carousel", "reel", "story", "static"].
+    6.  best_time: a human-readable time window in the local timezone (e.g., "6–8 PM", "11 AM - 1 PM").
+    7.  cta: a short, clear call-to-action sentence.
+    8.  visual_prompt: A TEXT description of the ideal visual for the post. This is a suggestion for a human designer, not for an image generation AI.
 
-Make each day UNIQUE with different themes:
-- Day 1-5: Introduction & brand story
-- Day 6-10: Product/service highlights
-- Day 11-15: Behind-the-scenes & team
-- Day 16-20: Customer testimonials & UGC ideas
-- Day 21-25: Tips, tutorials & value content
-- Day 26-30: Promotions, events & engagement posts
+    THEMES TO FOLLOW:
+    - Days 1–5: Focus on the brand's story, mission, and the 'why' behind the business.
+    - Days 6–10: Highlight hero products/services, their benefits, and use cases.
+    - Days 11–15: Show behind-the-scenes content, introduce the team, and explain the process.
+    - Days 16–20: Use testimonials, social proof, and user-generated content (UGC) ideas.
+    - Days 21–25: Provide educational tips, how-tos, and solve common problems for the audience.
+    - Days 26–30: Focus on offers, promotions, and engaging content like polls, questions, or contests.
 
-Return ONLY valid JSON array with exactly 30 objects:
-[
-  {
-    "day": 1,
-    "hook": "...",
-    "caption": "...",
-    "hashtags": ["#...", "#..."],
-    "visual_prompt": "...",
-    "post_type": "...",
-    "best_time": "...",
-    "cta": "..."
-  },
-  ...
-]
-`;
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
-    // Extract JSON from response
-    const jsonMatch = text.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) {
-        throw new Error("Failed to parse 30-day calendar");
+    OUTPUT FORMAT:
+    Return ONLY a valid JSON array containing exactly 30 objects. Do not include any extra text, markdown, or explanations before or after the JSON array. The structure of each object must be:
+    {
+      "day": number,
+      "hook": "string",
+      "caption": "string",
+      "hashtags": ["string"],
+      "post_type": "carousel" | "reel" | "story" | "static",
+      "best_time": "string",
+      "cta": "string",
+      "visual_prompt": "string"
     }
-    const calendar = JSON.parse(jsonMatch[0]);
-    return calendar;
+  `;
+}
+/**
+ * Generates a 30-day social media calendar using the Gemini API.
+ * @param input - The user's requirements for the calendar.
+ * @returns A promise that resolves to an array of 30 DayPost objects.
+ */
+async function generate30DayCalendar(input) {
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const prompt = buildPrompt(input);
+    try {
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+        // Extract the JSON array from the response text, which might be wrapped in markdown
+        const jsonMatch = text.match(/\[[\s\S]*\]/);
+        if (!jsonMatch) {
+            throw new Error("Failed to extract JSON array from Gemini response.");
+        }
+        const parsedJson = JSON.parse(jsonMatch[0]);
+        if (!Array.isArray(parsedJson) || parsedJson.length !== 30) {
+            throw new Error(`Validation failed: Expected 30 items, but got ${parsedJson.length}.`);
+        }
+        // Simple validation of the first item to increase confidence
+        const firstItem = parsedJson[0];
+        if (!firstItem.day || !firstItem.hook || !firstItem.caption) {
+            throw new Error("Validation failed: The first item in the array has a missing property.");
+        }
+        return parsedJson;
+    }
+    catch (error) {
+        console.error("Error generating content with Gemini:", error);
+        throw new Error("Failed to generate content from AI service.");
+    }
+}
+function buildDailyPrompt(input) {
+    const { niche, platform, city, description, brandName, date, context } = input;
+    return `
+    You are VIRALIS AI, an expert social media content strategist.
+    Your task is to generate THREE distinct social media post variations for a specific date, tailored to the brand's positioning and recent performance.
+
+    INPUTS:
+    - Target Date: "${date}"
+    - Brand: "${brandName || 'the brand'}" (${niche})
+    - Platform: "${platform}"
+    - Location: "${city}"
+    - Extra Context: "${description || ''}"
+
+    STRATEGIC CONTEXT:
+    - Brand Positioning: "${context.brandPositioning}"
+    - Recent Performance: "${context.recentStats}"
+
+    GENERATE 3 VARIATIONS:
+    1. "Viral Factor": High energy, controversial or surprising hook, short & punchy caption, aimed at maximum shareability.
+    2. "Most Reach": Broad appeal, relatable content, uses trending audio/concepts, aimed at new eyeballs.
+    3. "Niche Special": Deep dive, industry specific, educational or authority-building, aimed at high engagement from core audience.
+
+    OUTPUT FORMAT:
+    Return ONLY a valid JSON object with keys "viral", "reach", and "niche". Do not include markdown. Structure:
+    {
+      "viral": {
+        "day": "${date}",
+        "hook": "string",
+        "caption": "string",
+        "hashtags": ["string"],
+        "post_type": "carousel" | "reel" | "story" | "static",
+        "best_time": "string",
+        "cta": "string",
+        "visual_prompt": "string",
+        "script": "string"
+      },
+      "reach": { ...same structure },
+      "niche": { ...same structure }
+    }
+  `;
+}
+async function generateDailyPost(input) {
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const prompt = buildDailyPrompt(input);
+    try {
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+            throw new Error("Failed to extract JSON object from Gemini response.");
+        }
+        const parsedJson = JSON.parse(jsonMatch[0]);
+        return parsedJson;
+    }
+    catch (error) {
+        console.error("Error generating daily content with Gemini:", error);
+        throw new Error("Failed to generate daily content from AI service.");
+    }
 }
 //# sourceMappingURL=aiContentService.js.map

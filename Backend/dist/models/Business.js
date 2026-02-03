@@ -37,10 +37,10 @@ exports.Business = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const businessSchema = new mongoose_1.Schema({
     name: { type: String, required: true },
+    logo: { type: String }, // Base64 logo image
     industry: { type: String },
     industryMode: {
         type: String,
-        enum: ['Dentist', 'Gym', 'Real Estate', 'Salon', 'Cafe', 'Other'],
         default: 'Other'
     },
     website: { type: String },
@@ -102,6 +102,11 @@ const businessSchema = new mongoose_1.Schema({
         services: [{ name: String, price: String }],
         customInstructions: String
     },
+    subscriptionTier: {
+        type: String,
+        enum: ['Free', 'Starter', 'Business'],
+        default: 'Free'
+    }
 }, { timestamps: true });
 const Business = mongoose_1.default.model('Business', businessSchema);
 exports.Business = Business;

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { generate30DayCalendar, generateDailyContent } from '../utils/aiContentService';
+import { generate30DayCalendar, generateDailyPost } from '../utils/aiContentService';
 import logger from '../utils/logger';
 
 export async function create30DayCalendar(req: Request, res: Response) {
@@ -29,6 +29,7 @@ export async function create30DayCalendar(req: Request, res: Response) {
 export async function createAiContent(req: Request, res: Response) {
   try {
     const { niche, city, platform } = req.body;
+    // Note: 'date' and 'context' would typically come from request or DB. Using defaults for now.
 
     if (!niche || !city || !platform) {
       return res
@@ -36,7 +37,7 @@ export async function createAiContent(req: Request, res: Response) {
         .json({ error: 'niche, city, and platform are required' });
     }
 
-    const result = await generateDailyContent({ niche, city, platform });
+    const result = await generateDailyPost({ niche, city, platform, date: new Date().toISOString().split('T')[0], context: { last7DaysContent: [], recentStats: 'No stats available', brandPositioning: 'Generic' } });
 
     return res.json(result);
   } catch (error: any) {

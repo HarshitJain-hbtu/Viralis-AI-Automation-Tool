@@ -44,6 +44,7 @@ const userSchema = new mongoose_1.Schema({
     password: { type: String, select: false },
     googleId: { type: String },
     name: { type: String, required: true },
+    avatar: { type: String }, // Optional custom avatar URL
     role: { type: String, enum: ['admin', 'user'], default: 'user' },
     businessId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Business', required: true },
     socialAccounts: {

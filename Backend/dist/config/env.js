@@ -22,6 +22,15 @@ const envSchema = joi_1.default.object({
     TWILIO_ACCOUNT_SID: joi_1.default.string().optional(),
     TWILIO_AUTH_TOKEN: joi_1.default.string().optional(),
     TWILIO_PHONE_NUMBER: joi_1.default.string().optional(),
+    // External Platform APIs
+    OPENAI_API_KEY: joi_1.default.string().optional(),
+    INSTAGRAM_ACCESS_TOKEN: joi_1.default.string().optional(),
+    YOUTUBE_API_KEY: joi_1.default.string().optional(),
+    // Facebook/Instagram App Credentials
+    FB_APP_ID: joi_1.default.string().optional(),
+    FB_APP_SECRET: joi_1.default.string().optional(),
+    // Scheduled Task Time (HH:mm format, e.g., "18:00" for 6 PM)
+    ANALYSIS_SCHEDULE_TIME: joi_1.default.string().default('18:00'),
     // JWT
     JWT_SECRET: joi_1.default.string().default('dev-secret'),
     // Logging

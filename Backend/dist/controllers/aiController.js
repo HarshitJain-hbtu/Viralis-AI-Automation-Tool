@@ -9,7 +9,7 @@ const generateContent = async (req, res) => {
         if (!topic || !type) {
             return res.status(400).json({ error: 'Topic and Type are required' });
         }
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
         let prompt = "";
         switch (type) {
             case 'video_ideas':
