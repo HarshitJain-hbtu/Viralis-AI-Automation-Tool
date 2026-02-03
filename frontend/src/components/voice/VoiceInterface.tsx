@@ -74,7 +74,20 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
 
       // 2. Connect WebSocket
       // 2. Connect WebSocket
-      const voiceUrl = process.env.NEXT_PUBLIC_VOICE_URL || 'ws://localhost:5000';
+      let voiceUrl = process.env.NEXT_PUBLIC_VOICE_URL;
+
+      // Smart Fallback: Derive WS URL from API URL if explicit Voice URL is missing
+      if (!voiceUrl) {
+        // Default to localhost if neither is set
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+        // transform https://.../api -> wss://...
+        // transform http://.../api -> ws://...
+        voiceUrl = apiUrl
+          .replace(/^http/, 'ws')       // http->ws, https->wss
+          .replace(/\/api\/?$/, '');    // remove '/api' suffix
+      }
+
+      console.log('🔌 Connecting to Voice Server:', voiceUrl);
       const wsUrl = `${voiceUrl}?brandId=${brandId}`;
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
