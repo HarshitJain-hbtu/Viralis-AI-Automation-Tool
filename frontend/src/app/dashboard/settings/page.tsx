@@ -21,6 +21,7 @@ export default function SettingsPage() {
     const [industryMode, setIndustryMode] = useState('');
     const [customIndustry, setCustomIndustry] = useState('');
     const [city, setCity] = useState('');
+    const [phone, setPhone] = useState(''); // Added Phone State
     const [tone, setTone] = useState('');
     const [description, setDescription] = useState('');
 
@@ -48,6 +49,9 @@ export default function SettingsPage() {
             }
 
             setCity(business.location?.city || '');
+            // Load Phone from KnowledgeBase
+            setPhone(business.knowledgeBase?.contactPhone || '');
+
             setTone(business.brandVoice?.tone || 'Professional');
             setDescription(business.description || '');
         }
@@ -88,6 +92,14 @@ export default function SettingsPage() {
         setIsSaving(true);
         setMessage('');
         try {
+            // Merge existing KnowledgeBase with new Phone
+            const currentBusiness = user?.businessId as any;
+            const existingKb = currentBusiness?.knowledgeBase || {};
+            const updatedKb = {
+                ...existingKb,
+                contactPhone: phone
+            };
+
             await updateProfile({
                 name,
                 logo,
@@ -95,11 +107,14 @@ export default function SettingsPage() {
                 location: { city },
                 brandVoice: { tone },
                 description,
+                knowledgeBase: updatedKb // Send updated KB
             });
             await checkAuth();
+            toast.success('Settings saved successfully!');
             setMessage('Settings saved successfully!');
             setTimeout(() => setMessage(''), 3000);
         } catch (error) {
+            toast.error('Failed to save settings.');
             setMessage('Failed to save settings.');
         } finally {
             setIsSaving(false);
@@ -171,11 +186,11 @@ export default function SettingsPage() {
                                 <Building2 className="w-4 h-4 text-gray-400" />
                                 Business Name
                             </label>
-                            <input
+                            <Input
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                className="block w-full max-w-md px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                className="max-w-md bg-white border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="e.g. Acme Corp"
                             />
                         </div>
@@ -187,10 +202,11 @@ export default function SettingsPage() {
                                 Industry Mode (The AI Brain)
                             </label>
                             <div className="space-y-3">
+                                {/* Use standard HTML Select with explicit bg-white for robustness, or refactor to Radix Select later if needed for complex UI */}
                                 <select
                                     value={industryMode}
                                     onChange={(e) => setIndustryMode(e.target.value)}
-                                    className="block w-full max-w-md pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg border"
+                                    className="block w-full max-w-md pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg border bg-white text-gray-900"
                                 >
                                     <option value="Dentist">Dentist</option>
                                     <option value="Gym">Gym</option>
@@ -201,11 +217,11 @@ export default function SettingsPage() {
                                 </select>
 
                                 {industryMode === 'Other' && (
-                                    <input
+                                    <Input
                                         type="text"
                                         value={customIndustry}
                                         onChange={(e) => setCustomIndustry(e.target.value)}
-                                        className="block w-full max-w-md px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 sm:text-sm animate-in fade-in slide-in-from-top-1"
+                                        className="max-w-md bg-white border-gray-300 focus:ring-blue-500 focus:border-blue-500 animate-in fade-in slide-in-from-top-1"
                                         placeholder="Enter your specific industry (e.g., SaaS, E-commerce)"
                                     />
                                 )}
@@ -223,9 +239,25 @@ export default function SettingsPage() {
                                 type="text"
                                 value={city}
                                 onChange={(e) => setCity(e.target.value)}
-                                className="max-w-md bg-white"
+                                className="max-w-md bg-white border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="e.g. New York, NY"
                             />
+                        </div>
+
+                        {/* Phone Number */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                <Phone className="w-4 h-4 text-gray-400" />
+                                Business Mobile Number
+                            </label>
+                            <Input
+                                type="text"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                                className="max-w-md bg-white border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="e.g. +1 234 567 8900"
+                            />
+                            <p className="mt-1 text-xs text-gray-400">Used by the AI Agent to transfer calls or provide contact info.</p>
                         </div>
 
                         {/* Brand Voice */}
