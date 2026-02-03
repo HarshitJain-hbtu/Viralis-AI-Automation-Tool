@@ -14,14 +14,14 @@ export function SocialStats() {
 
     if (!socialStats) {
         return (
-            <Card>
+            <Card className="!bg-white !text-gray-900 !border-gray-200">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Activity className="w-5 h-5" /> Analytics
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-muted-foreground">Connect accounts to see stats.</p>
+                    <p className="!text-gray-500">Connect accounts to see stats.</p>
                 </CardContent>
             </Card>
         );

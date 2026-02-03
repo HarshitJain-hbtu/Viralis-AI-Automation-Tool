@@ -11,7 +11,7 @@ interface RichStatsCardProps {
 
 export function RichStatsCard({ title, total, subStats, chart }: RichStatsCardProps) {
     return (
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-[0_2px_4px_rgba(0,0,0,0.02)]">
+        <div className="!bg-white p-5 rounded-2xl border border-gray-100 shadow-[0_2px_4px_rgba(0,0,0,0.02)]">
             <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-2 text-gray-900 font-semibold">
                     <div className="w-2 h-2 rounded-full bg-gray-900" />

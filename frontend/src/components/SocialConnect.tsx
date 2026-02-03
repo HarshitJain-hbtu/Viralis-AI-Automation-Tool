@@ -50,18 +50,18 @@ export function SocialConnect() {
     const isFacebookConnected = !!socialStats?.facebook;
 
     return (
-        <Card className='bg-white'>
+        <Card className='!bg-white !text-gray-900 !border-gray-200'>
             <CardHeader>
-                <CardTitle>Connect Social Accounts</CardTitle>
-                <CardDescription>Connect your accounts to view analytics.</CardDescription>
+                <CardTitle className="!text-gray-900">Connect Social Accounts</CardTitle>
+                <CardDescription className="!text-gray-500">Connect your accounts to view analytics.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex items-center gap-3">
                         <Youtube className="w-6 h-6 text-red-600" />
                         <div>
-                            <p className="font-medium">YouTube</p>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="font-medium !text-gray-900">YouTube</p>
+                            <p className="text-sm !text-gray-500">
                                 {isYoutubeConnected ? `Connected as ${socialStats?.youtube?.channelTitle || 'YouTube Channel'}` : 'Connect channel'}
                             </p>
                         </div>
@@ -85,8 +85,8 @@ export function SocialConnect() {
                     <div className="flex items-center gap-3">
                         <div className="w-6 h-6 bg-blue-600 rounded-sm flex items-center justify-center text-white text-[14px] font-bold">f</div>
                         <div>
-                            <p className="font-medium">Facebook Page</p>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="font-medium !text-gray-900">Facebook Page</p>
+                            <p className="text-sm !text-gray-500">
                                 {isFacebookConnected ? `Connected as ${socialStats.facebook?.pageName || ''}` : 'Connect business page'}
                             </p>
                         </div>
@@ -109,8 +109,8 @@ export function SocialConnect() {
                             <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" className="w-4 h-4" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
                         </div>
                         <div>
-                            <p className="font-medium">Instagram Business</p>
-                            <p className="text-sm text-muted-foreground">Connect via Facebook</p>
+                            <p className="font-medium !text-gray-900">Instagram Business</p>
+                            <p className="text-sm !text-gray-500">Connect via Facebook</p>
                         </div>
                     </div>
                     {isFacebookConnected ? (
