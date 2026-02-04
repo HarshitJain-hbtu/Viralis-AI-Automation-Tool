@@ -58,7 +58,6 @@ export function ActionCenter() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
-                transition={{ delay: index * 0.1 }}
                 className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-white border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all cursor-pointer group gap-4 sm:gap-0"
               >
                 <div className="flex items-center gap-4">
