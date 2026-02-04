@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store/authStore';
 import { Sidebar } from '@/components/dashboard/Sidebar';
-import { MobileSidebar } from '@/components/dashboard/MobileSidebar';
 import { Header } from '@/components/dashboard/Headers';
 
 export default function DashboardLayout({
