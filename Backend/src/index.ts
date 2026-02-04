@@ -105,6 +105,11 @@ app.use('/api/ai-content', aiContentRoutes); // Corrected and moved
 import dashboardRoutes from './routes/dashboard.routes';
 app.use('/api/dashboard', dashboardRoutes);
 
+// Health check endpoint for Koyeb
+app.get('/health', (_req, res) => {
+    res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
+});
+
 app.get('/', (_req, res) => {
     res.send('🚀 VIRALIS Backend is Running (TypeScript)!');
 });
