@@ -56,7 +56,7 @@ export function CommandMenu({ open, setOpen }: { open: boolean, setOpen: (open: 
             items: [
                 { icon: Inbox, name: "Inbox", action: () => router.push("/dashboard/inbox") },
                 { icon: FileText, name: "Content Board", action: () => router.push("/dashboard/content-board") },
-                { icon: User, name: "Leads", action: () => router.push("/lead-management") },
+                { icon: User, name: "Leads", action: () => router.push("/dashboard/lead-management") },
             ]
         },
         {
