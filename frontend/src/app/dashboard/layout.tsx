@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store/authStore';
 import { Sidebar } from '@/components/dashboard/Sidebar';
+import { MobileSidebar } from '@/components/dashboard/MobileSidebar';
 import { Header } from '@/components/dashboard/Headers';
 
 export default function DashboardLayout({
@@ -40,10 +41,17 @@ export default function DashboardLayout({
 
     return (
         <div className="flex min-h-screen bg-gray-50">
+            {/* Desktop Sidebar */}
             <div className="hidden md:block">
                 <Sidebar />
             </div>
-            <main className="flex-1 flex flex-col h-screen overflow-hidden md:ml-64">
+
+            <main className="flex-1 flex flex-col h-screen overflow-hidden md:ml-64 relative">
+                {/* Mobile Header Overlay or integration point */}
+                <div className="md:hidden absolute top-4 left-4 z-50">
+                    <MobileSidebar />
+                </div>
+
                 <Header />
                 <div className="flex-1 overflow-y-auto">
                     {children}
