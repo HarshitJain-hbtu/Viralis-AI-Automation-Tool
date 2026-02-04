@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CommandMenu } from "@/components/dashboard/CommandMenu";
+import { MobileSidebar } from "@/components/dashboard/MobileSidebar";
 
 export function Header() {
   const { user, logout } = useAuthStore();
@@ -63,9 +64,10 @@ export function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 h-14 px-6 flex items-center justify-between border-b border-slate-200/60 bg-white/80 backdrop-blur-xl">
-        {/* Breadcrumbs */}
-        <div className="flex items-center">
+      <header className="sticky top-0 z-40 h-14 px-4 md:px-6 flex items-center justify-between border-b border-slate-200/60 bg-white/80 backdrop-blur-xl">
+        {/* Left: Mobile Sidebar + Breadcrumbs */}
+        <div className="flex items-center gap-2">
+          <MobileSidebar />
           {getBreadcrumbs()}
         </div>
 

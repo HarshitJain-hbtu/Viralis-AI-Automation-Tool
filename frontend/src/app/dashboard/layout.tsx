@@ -46,12 +46,7 @@ export default function DashboardLayout({
                 <Sidebar />
             </div>
 
-            <main className="flex-1 flex flex-col h-screen overflow-hidden md:ml-64 relative">
-                {/* Mobile Header Overlay or integration point */}
-                <div className="md:hidden absolute top-4 left-4 z-50">
-                    <MobileSidebar />
-                </div>
-
+            <main className="flex-1 flex flex-col h-screen overflow-hidden md:ml-64">
                 <Header />
                 <div className="flex-1 overflow-y-auto">
                     {children}
