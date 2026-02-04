@@ -81,34 +81,36 @@ export default function LeadManagement() {
     return (
         <div className="min-h-screen bg-[#FAFAFA]">
 
-            <main className="px-8 py-6 max-w-[1600px] mx-auto">
+            <main className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 max-w-[1600px] mx-auto">
                 {/* Page Header */}
-                <div className="mb-8 flex justify-between items-start">
+                <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Lead Management</h1>
-                        <p className="text-gray-500 mt-1">
+                        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Lead Management</h1>
+                        <p className="text-sm sm:text-base text-gray-500 mt-1">
                             {activeTab === 'analytics' ? 'Video Performance & Analysis' : 'Manage your contact database'}
                         </p>
                     </div>
-                    <div className="flex gap-4">
+                    <div className="flex flex-wrap gap-2 sm:gap-4">
                         {activeTab === 'analytics' && (
                             <button
                                 onClick={() => fetchInstagramMedia(true)}
-                                className="flex items-center gap-2 px-4 py-2 bg-pink-600 text-white font-medium rounded-xl hover:bg-pink-700 transition-colors shadow-sm"
+                                className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-pink-600 text-white font-medium rounded-xl hover:bg-pink-700 transition-colors shadow-sm text-sm"
                                 title="Force refresh recent posts from your Instagram account"
                             >
                                 <TrendingUp className="w-4 h-4" />
-                                Sync Instagram
+                                <span className="hidden sm:inline">Sync Instagram</span>
+                                <span className="sm:hidden">Sync</span>
                             </button>
                         )}
                         {activeTab === 'database' && (
                             <button
                                 onClick={() => setIsAddModalOpen(true)}
-                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-colors shadow-sm"
+                                className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-colors shadow-sm text-sm"
                                 title="Manually add a lead who contacted you outside of social media"
                             >
                                 <Plus className="w-4 h-4" />
-                                Add Lead
+                                <span className="hidden sm:inline">Add Lead</span>
+                                <span className="sm:hidden">Add</span>
                             </button>
                         )}
                         <button
@@ -120,16 +122,16 @@ export default function LeadManagement() {
                                     fetchLeads(true);
                                 }
                             }}
-                            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-white rounded-lg transition-colors border border-transparent hover:border-gray-200"
+                            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-white rounded-lg transition-colors border border-transparent hover:border-gray-200"
                         >
                             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                            Refresh
+                            <span className="hidden sm:inline">Refresh</span>
                         </button>
                     </div>
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-8 border-b border-gray-200 mb-8">
+                <div className="flex gap-4 sm:gap-8 border-b border-gray-200 mb-6 sm:mb-8 overflow-x-auto">
                     <button
                         onClick={() => setActiveTab('analytics')}
                         className={`pb-4 text-sm font-semibold transition-colors relative ${activeTab === 'analytics' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
@@ -153,7 +155,7 @@ export default function LeadManagement() {
                 ) : activeTab === 'analytics' ? (
                     /* ANALYTICS VIEW */
                     <>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
                             <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm relative group">
                                 <div className="flex items-center gap-2 text-gray-600 font-semibold mb-2">
                                     <Eye className="w-4 h-4 text-blue-500" />
@@ -190,12 +192,12 @@ export default function LeadManagement() {
                         </div>
 
                         {/* RAW MEDIA FEED (PRIMARY) */}
-                        <div className="mb-12">
-                            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                        <div className="mb-8 sm:mb-12">
+                            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
                                 <TrendingUp className="w-5 h-5 text-pink-600" />
                                 Your Recent Instagram Posts
                             </h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                                 {instagramMedia.length > 0 ? (
                                     instagramMedia.map(media => (
                                         <div key={media.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden group hover:shadow-md transition-all">
@@ -320,76 +322,80 @@ export default function LeadManagement() {
                     </>
                 ) : (
                     /* DATABASE VIEW */
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead className="bg-[#F8F9FA] border-b border-gray-100">
-                                    <tr>
-                                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Lead Name</th>
-                                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Contact</th>
-                                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Status</th>
-                                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Source</th>
-                                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Score</th>
-                                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Date</th>
-                                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase"></th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-50">
-                                    {leads.map(lead => (
-                                        <tr key={lead._id} className="hover:bg-gray-50 transition-colors">
-                                            <td className="px-6 py-4">
-                                                <div className="font-semibold text-gray-900">{lead.name}</div>
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-gray-600">
-                                                <div className="flex flex-col gap-1">
-                                                    {lead.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {lead.email}</span>}
-                                                    {lead.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> {lead.phone}</span>}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <select
-                                                    value={lead.status}
-                                                    onChange={(e) => updateLeadStatus(lead._id, e.target.value)}
-                                                    className={`px-2 py-1 text-xs font-bold rounded-lg border-none focus:ring-2 focus:ring-blue-500 cursor-pointer ${lead.status === 'qualified' ? 'bg-green-100 text-green-700' :
-                                                        lead.status === 'contacted' ? 'bg-blue-100 text-blue-700' :
-                                                            lead.status === 'closed' ? 'bg-purple-100 text-purple-700' :
-                                                                'bg-gray-100 text-gray-700'
-                                                        }`}
-                                                >
-                                                    <option value="new">New</option>
-                                                    <option value="qualified">Qualified</option>
-                                                    <option value="contacted">Contacted</option>
-                                                    <option value="closed">Closed</option>
-                                                    <option value="archived">Archived</option>
-                                                </select>
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-gray-600">
-                                                <span className="px-2 py-1 bg-gray-100 rounded-lg text-xs font-medium">
-                                                    {lead.source}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className="font-bold text-gray-900">{lead.score}</span>
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-gray-500">
-                                                {new Date(lead.createdAt).toLocaleDateString()}
-                                            </td>
-                                            <td className="px-6 py-4 text-right text-gray-400">
-                                                <button className="hover:text-gray-600">
-                                                    <MoreVertical className="w-4 h-4" />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    {leads.length === 0 && (
-                                        <tr>
-                                            <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                                                No leads found. Start by adding one manually or via video analysis.
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
+                    <div className="bg-white rounded-xl sm:rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                        <div className="overflow-x-auto -mx-4 sm:mx-0">
+                            <div className="inline-block min-w-full align-middle">
+                                <div className="overflow-hidden">
+                                    <table className="w-full text-left">
+                                        <thead className="bg-[#F8F9FA] border-b border-gray-100">
+                                            <tr>
+                                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Lead Name</th>
+                                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Contact</th>
+                                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Status</th>
+                                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Source</th>
+                                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Score</th>
+                                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Date</th>
+                                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-50">
+                                            {leads.map(lead => (
+                                                <tr key={lead._id} className="hover:bg-gray-50 transition-colors">
+                                                    <td className="px-6 py-4">
+                                                        <div className="font-semibold text-gray-900">{lead.name}</div>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm text-gray-600">
+                                                        <div className="flex flex-col gap-1">
+                                                            {lead.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {lead.email}</span>}
+                                                            {lead.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> {lead.phone}</span>}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <select
+                                                            value={lead.status}
+                                                            onChange={(e) => updateLeadStatus(lead._id, e.target.value)}
+                                                            className={`px-2 py-1 text-xs font-bold rounded-lg border-none focus:ring-2 focus:ring-blue-500 cursor-pointer ${lead.status === 'qualified' ? 'bg-green-100 text-green-700' :
+                                                                lead.status === 'contacted' ? 'bg-blue-100 text-blue-700' :
+                                                                    lead.status === 'closed' ? 'bg-purple-100 text-purple-700' :
+                                                                        'bg-gray-100 text-gray-700'
+                                                                }`}
+                                                        >
+                                                            <option value="new">New</option>
+                                                            <option value="qualified">Qualified</option>
+                                                            <option value="contacted">Contacted</option>
+                                                            <option value="closed">Closed</option>
+                                                            <option value="archived">Archived</option>
+                                                        </select>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm text-gray-600">
+                                                        <span className="px-2 py-1 bg-gray-100 rounded-lg text-xs font-medium">
+                                                            {lead.source}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <span className="font-bold text-gray-900">{lead.score}</span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm text-gray-500">
+                                                        {new Date(lead.createdAt).toLocaleDateString()}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right text-gray-400">
+                                                        <button className="hover:text-gray-600">
+                                                            <MoreVertical className="w-4 h-4" />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                            {leads.length === 0 && (
+                                                <tr>
+                                                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                                                        No leads found. Start by adding one manually or via video analysis.
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}
