@@ -57,7 +57,7 @@ export default function Dashboard() {
 
                 {/* Top Actions: AI Advisor */}
                 <div className="mb-8">
-                    <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-[0_2px_4px_rgba(0,0,0,0.02)]">
+                    <div className="bg-white p-4 md:p-6 rounded-2xl border border-gray-100 shadow-[0_2px_4px_rgba(0,0,0,0.02)]">
                         <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Daily Gemini 3 Actions</h3>
                         <ActionCenter />
                     </div>
@@ -160,7 +160,7 @@ export default function Dashboard() {
                         </h2>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
                         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
                             <div>
                                 <p className="text-gray-500 text-sm font-medium">Scheduled</p>

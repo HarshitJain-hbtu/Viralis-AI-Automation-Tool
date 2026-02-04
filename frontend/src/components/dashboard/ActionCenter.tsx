@@ -58,20 +58,21 @@ export function ActionCenter() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="flex items-center justify-between p-4 rounded-xl bg-white border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all cursor-pointer group"
+                transition={{ delay: index * 0.1 }}
+                className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-white border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all cursor-pointer group gap-4 sm:gap-0"
               >
                 <div className="flex items-center gap-4">
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${action.priority === 'HIGH' ? 'bg-blue-50 text-blue-600' :
-                      action.priority === 'MEDIUM' ? 'bg-purple-50 text-purple-600' :
-                        'bg-gray-50 text-gray-600'
+                    action.priority === 'MEDIUM' ? 'bg-purple-50 text-purple-600' :
+                      'bg-gray-50 text-gray-600'
                     }`}>
                     <Icon className="w-5 h-5" />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-gray-900">{action.text}</p>
                     <span className={`text-[10px] uppercase font-bold tracking-wider ${action.priority === 'HIGH' ? 'text-blue-600' :
-                        action.priority === 'MEDIUM' ? 'text-purple-600' :
-                          'text-gray-400'
+                      action.priority === 'MEDIUM' ? 'text-purple-600' :
+                        'text-gray-400'
                       }`}>
                       Priority: {action.priority}
                     </span>
