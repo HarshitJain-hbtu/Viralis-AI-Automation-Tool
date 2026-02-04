@@ -22,7 +22,9 @@ import {
     Sheet,
     SheetContent,
     SheetTrigger,
+    SheetTitle,
 } from "@/components/ui/sheet";
+import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 
 const navItems = [
     { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
@@ -90,6 +92,9 @@ export function MobileSidebar() {
                 </Button>
             </SheetTrigger>
             <SheetContent side="left" className="p-0 w-72">
+                <VisuallyHidden.Root>
+                    <SheetTitle>Navigation Menu</SheetTitle>
+                </VisuallyHidden.Root>
                 <div className="h-full flex flex-col bg-[#FDFCFF] font-sans">
 
                     {/* Brand */}
