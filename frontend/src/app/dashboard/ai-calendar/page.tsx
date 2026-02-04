@@ -226,9 +226,9 @@ export default function AiCalendarPage() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row h-[calc(100vh-64px)] overflow-hidden bg-white">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-white">
       {/* Sidebar - Controls */}
-      <aside className="w-full lg:w-[400px] border-r border-gray-100 bg-white p-6 lg:p-8 overflow-y-auto">
+      <aside className="w-full lg:w-[400px] border-b lg:border-b-0 lg:border-r border-gray-100 bg-white p-4 sm:p-6 lg:p-8">
         <div className="mb-8">
           <h1 className="text-xl font-bold text-gray-900">Content Studio</h1>
           <p className="text-sm text-gray-500 mt-1">AI-powered content generation.</p>
@@ -323,8 +323,8 @@ export default function AiCalendarPage() {
       </aside>
 
       {/* Main Content - Results */}
-      <main className="flex-1 overflow-y-auto bg-gray-50/30 p-6 lg:p-10">
-        <div className="max-w-4xl mx-auto h-full flex flex-col">
+      <main className="flex-1 bg-gray-50/30 p-4 sm:p-6 lg:p-10">
+        <div className="max-w-4xl mx-auto">
           {error && (
             <Alert variant="destructive" className="mb-6">
               <AlertCircle className="h-4 w-4" />
