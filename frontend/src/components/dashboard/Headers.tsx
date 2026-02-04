@@ -72,8 +72,8 @@ export function Header() {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-3">
-          {/* Search Trigger */}
+        <div className="flex items-center gap-1 md:gap-3">
+          {/* Search Trigger - Desktop Only */}
           <button
             onClick={() => setOpenCommand(true)}
             className="hidden md:flex items-center gap-2 px-2 py-1.5 rounded-md text-xs font-medium text-slate-500 bg-slate-50 hover:bg-slate-100 border border-slate-200/50 transition-colors mr-2 w-48 justify-between"
@@ -87,20 +87,26 @@ export function Header() {
             </kbd>
           </button>
 
-          <div className="h-4 w-px bg-slate-200 mx-1" />
+          {/* Divider - Desktop Only */}
+          <div className="hidden md:block h-4 w-px bg-slate-200 mx-1" />
 
-          <ShareCard />
+          {/* Share - Desktop Only */}
+          <div className="hidden sm:block">
+            <ShareCard />
+          </div>
 
+          {/* Create Content Button */}
           <Button
             onClick={() => router.push('/dashboard/ai-calendar')}
             size="sm"
-            className="bg-slate-900 hover:bg-slate-800 text-white h-8 px-3 rounded-lg text-xs font-medium shadow-sm flex items-center gap-1.5 transition-all"
+            className="bg-slate-900 hover:bg-slate-800 text-white h-8 px-2 md:px-3 rounded-lg text-xs font-medium shadow-sm flex items-center gap-1.5 transition-all"
           >
             <Sparkles className="w-3.5 h-3.5 text-slate-300" />
-            Create content
+            <span className="hidden sm:inline">Create content</span>
           </Button>
 
-          <div className="h-4 w-px bg-slate-200 mx-1" />
+          {/* Divider - Desktop Only */}
+          <div className="hidden md:block h-4 w-px bg-slate-200 mx-1" />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
