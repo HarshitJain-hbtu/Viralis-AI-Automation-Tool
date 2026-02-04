@@ -12,15 +12,16 @@ export const metadata: Metadata = {
 // Fetch data directly in Server Component
 async function getBrandData(brandId: string) {
   try {
-    // Determine the base URL:
-    // 1. Use NEXT_PUBLIC_API_URL if defined (Production/Vercel)
-    // 2. Fallback to 127.0.0.1 for local development (internal networking)
     let baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000/api';
 
-    // Ensure it's not just a path (like '/api'), must be absolute for server fetch
+    // Normalization: Ensure baseUrl ends with '/api'
+    if (!baseUrl.endsWith('/api')) {
+      // Handle cases like 'http://localhost:5000/' or 'http://localhost:5000'
+      baseUrl = baseUrl.replace(/\/+$/, '') + '/api';
+    }
+
+    // Ensure it's absolute for server-side usage
     if (baseUrl.startsWith('/')) {
-      // If it's a relative path, we can't easily fetch server-side unless we know the host.
-      // fallback to localhost default if we can't resolve.
       baseUrl = `http://127.0.0.1:5000${baseUrl}`;
     }
 
