@@ -84,18 +84,18 @@ export default function InboxPage() {
                 {/* Comment List */}
                 <Card className="lg:col-span-12 h-full flex flex-col border-gray-200 shadow-sm bg-white">
                     <CardHeader className="border-b px-6 py-4 flex flex-row items-center justify-between space-y-0">
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 bg-gray-100/50 p-1 rounded-full">
                             <Button
                                 variant={activeTab === 'all' ? 'secondary' : 'ghost'}
                                 onClick={() => setActiveTab('all')}
-                                className="rounded-full px-4 h-8 text-sm font-medium"
+                                className={`rounded-full px-4 h-8 text-sm font-medium transition-all ${activeTab === 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900 hover:bg-transparent'}`}
                             >
                                 All Comments
                             </Button>
                             <Button
                                 variant={activeTab === 'unanswered' ? 'secondary' : 'ghost'}
                                 onClick={() => setActiveTab('unanswered')}
-                                className="rounded-full px-4 h-8 text-sm font-medium text-muted-foreground"
+                                className={`rounded-full px-4 h-8 text-sm font-medium transition-all ${activeTab === 'unanswered' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900 hover:bg-transparent'}`}
                             >
                                 Unanswered
                             </Button>

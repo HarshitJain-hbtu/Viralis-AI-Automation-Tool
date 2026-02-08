@@ -235,32 +235,55 @@ export function ContentCalendar() {
             </div>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className="sm:max-w-xl">
+                <DialogContent className="sm:max-w-xl max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden bg-white text-gray-900 border-gray-200">
                     {viewingPost ? (
-                        <>
-                            <DialogHeader>
-                                <div className="flex items-center gap-2 mb-2">
-                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setViewingPost(null)}>
-                                        <ArrowLeft className="h-4 w-4" />
-                                    </Button>
-                                    <DialogTitle>Post Details</DialogTitle>
+                        <div className="flex flex-col h-full max-h-[90vh]">
+                            <DialogHeader className="px-6 py-4 border-b border-gray-100 flex flex-row items-center space-y-0 gap-3 bg-gray-50/50">
+                                <Button variant="ghost" size="icon" className="h-8 w-8 -ml-2 rounded-full hover:bg-white hover:text-gray-900 text-gray-500" onClick={() => setViewingPost(null)}>
+                                    <ArrowLeft className="h-4 w-4" />
+                                </Button>
+                                <div>
+                                    <DialogTitle className="text-base font-semibold text-gray-900">Post Details</DialogTitle>
+                                    <DialogDescription className="text-xs mt-0.5 flex items-center gap-1.5 text-gray-500">
+                                        <span>{viewingPost.date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                                        <span className="w-1 h-1 rounded-full bg-gray-300" />
+                                        <span className="capitalize font-medium text-gray-700">{viewingPost.platform}</span>
+                                    </DialogDescription>
                                 </div>
-                                <DialogDescription>
-                                    {viewingPost.date.toDateString()} • <span className="capitalize">{viewingPost.platform}</span>
-                                </DialogDescription>
                             </DialogHeader>
 
-                            <div className="py-4 space-y-6 max-h-[60vh] overflow-y-auto pr-2">
+                            <div className="p-6 flex-1 overflow-y-auto space-y-6 bg-white">
                                 <div>
-                                    <h3 className="text-lg font-semibold text-gray-900 leading-snug">"{viewingPost.title}"</h3>
+                                    <h3 className="text-xl font-bold text-gray-900 leading-snug tracking-tight">"{viewingPost.title}"</h3>
+                                    <div className="flex flex-wrap gap-2 mt-3">
+                                        {/* Badge for Strategy */}
+                                        {viewingPost.strategyType && (
+                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                                                {getStrategyIcon(viewingPost.strategyType)}
+                                                <span className="capitalize">{viewingPost.strategyType}</span>
+                                            </span>
+                                        )}
+                                        {/* Status Badge */}
+                                        <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border",
+                                            viewingPost.status === 'posted' ? "bg-green-50 text-green-700 border-green-200" :
+                                                viewingPost.status === 'scheduled' ? "bg-blue-50 text-blue-700 border-blue-200" :
+                                                    "bg-gray-100 text-gray-700 border-gray-200"
+                                        )}>
+                                            <span className={cn("w-1.5 h-1.5 rounded-full",
+                                                viewingPost.status === 'posted' ? "bg-green-500" :
+                                                    viewingPost.status === 'scheduled' ? "bg-blue-500" : "bg-gray-500"
+                                            )} />
+                                            <span className="capitalize">{viewingPost.status}</span>
+                                        </span>
+                                    </div>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Caption</h4>
-                                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+                                <div className="space-y-3">
+                                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-widest">Caption</h4>
+                                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-sm text-gray-800 whitespace-pre-wrap leading-relaxed shadow-sm">
                                         {viewingPost.caption || "No caption available."}
                                     </div>
-                                    <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-6 px-2" onClick={() => {
+                                    <Button variant="ghost" size="sm" className="text-xs h-7 px-2 text-gray-500 hover:text-gray-900" onClick={() => {
                                         navigator.clipboard.writeText(viewingPost.caption || "");
                                     }}>
                                         <Copy className="h-3 w-3 mr-1.5" /> Copy Caption
@@ -268,83 +291,96 @@ export function ContentCalendar() {
                                 </div>
 
                                 {viewingPost.visual_prompt && (
-                                    <div className="space-y-2">
-                                        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+                                    <div className="space-y-3">
+                                        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-widest flex items-center gap-1.5">
                                             <ImageIcon className="h-3 w-3" /> Visual Prompt
                                         </h4>
-                                        <p className="text-sm text-gray-600 italic bg-gray-50 p-3 rounded-md">
+                                        <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 text-sm italic text-gray-700">
                                             {viewingPost.visual_prompt}
-                                        </p>
+                                        </div>
                                     </div>
                                 )}
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
+                                    <div className="space-y-3">
+                                        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-widest flex items-center gap-1.5">
                                             <Hash className="h-3 w-3" /> Hashtags
                                         </h4>
-                                        <div className="flex flex-wrap gap-1.5">
-                                            {viewingPost.hashtags?.map(tag => (
-                                                <span key={tag} className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">#{tag}</span>
-                                            ))}
+                                        <div className="flex flex-wrap gap-2">
+                                            {viewingPost.hashtags?.length ? viewingPost.hashtags.map(tag => (
+                                                <span key={tag} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-md border border-gray-200">#{tag}</span>
+                                            )) : <span className="text-xs text-gray-400 italic">None</span>}
                                         </div>
                                     </div>
                                     {viewingPost.best_time && (
-                                        <div className="space-y-2">
-                                            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+                                        <div className="space-y-3">
+                                            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-widest flex items-center gap-1.5">
                                                 <Clock className="h-3 w-3" /> Best Time
                                             </h4>
-                                            <p className="text-sm font-medium text-gray-700">{viewingPost.best_time}</p>
+                                            <p className="text-sm font-medium text-gray-900 bg-gray-100 px-3 py-1.5 rounded-md inline-block border border-gray-200">
+                                                {viewingPost.best_time}
+                                            </p>
                                         </div>
                                     )}
                                 </div>
                             </div>
-                        </>
+                        </div>
                     ) : (
-                        <>
-                            <DialogHeader>
-                                <DialogTitle>{selectedDate?.toDateString()}</DialogTitle>
-                                <DialogDescription>
+                        <div className="flex flex-col h-full max-h-[90vh]">
+                            <DialogHeader className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+                                <DialogTitle className="text-gray-900">{selectedDate?.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}</DialogTitle>
+                                <DialogDescription className="text-gray-500">
                                     Manage your content tasks for this day.
                                 </DialogDescription>
                             </DialogHeader>
-                            <div className="space-y-3 py-4">
+                            <div className="p-6 overflow-y-auto bg-white">
                                 {selectedDayContent.length === 0 ? (
-                                    <div className="text-center text-gray-500 py-8 text-sm">
-                                        No tasks scheduled for this day.
+                                    <div className="flex flex-col items-center justify-center py-12 text-center text-gray-500 dashed border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/30">
+                                        <p className="text-sm">No tasks scheduled for this day.</p>
+                                        <Button variant="link" size="sm" className="mt-2 text-blue-600" onClick={() => router.push('/dashboard/ai-calendar')}>
+                                            Schedule Content
+                                        </Button>
                                     </div>
                                 ) : (
-                                    selectedDayContent.map(item => (
-                                        <div key={item.id} className="group flex items-start space-x-3 p-3 rounded-lg border border-gray-100 bg-gray-50/50 hover:bg-gray-100 transition-colors cursor-pointer" onClick={() => setViewingPost(item)}>
-                                            <div onClick={(e) => e.stopPropagation()}>
-                                                <Checkbox
-                                                    id={item.id}
-                                                    checked={item.status === 'posted'}
-                                                    onCheckedChange={() => toggleTaskStatus(item.id, item.status)}
-                                                />
-                                            </div>
-                                            <div className="grid gap-1.5 leading-none flex-1">
-                                                <label
-                                                    htmlFor={item.id}
-                                                    className={cn(
-                                                        "text-sm font-medium leading-none cursor-pointer",
-                                                        item.status === 'posted' && "line-through text-gray-500"
-                                                    )}
-                                                >
-                                                    {item.title}
-                                                </label>
-                                                <div className="text-xs text-muted-foreground flex items-center gap-2">
-                                                    {getStrategyIcon(item.strategyType)}
-                                                    <span className="capitalize">{item.strategyType || 'Post'}</span>
-                                                    <span>•</span>
-                                                    <span className="capitalize">{item.platform}</span>
+                                    <div className="space-y-3">
+                                        {selectedDayContent.map(item => (
+                                            <div key={item.id} className="group flex items-start space-x-3 p-4 rounded-xl border border-gray-100 bg-white hover:bg-gray-50 hover:border-gray-200 transition-all cursor-pointer shadow-sm" onClick={() => setViewingPost(item)}>
+                                                <div onClick={(e) => e.stopPropagation()} className="mt-0.5">
+                                                    <Checkbox
+                                                        id={item.id}
+                                                        checked={item.status === 'posted'}
+                                                        onCheckedChange={() => toggleTaskStatus(item.id, item.status)}
+                                                    />
                                                 </div>
+                                                <div className="grid gap-1.5 leading-none flex-1">
+                                                    <label
+                                                        htmlFor={item.id}
+                                                        className={cn(
+                                                            "text-sm font-semibold leading-tight cursor-pointer text-gray-900",
+                                                            item.status === 'posted' && "line-through text-gray-400"
+                                                        )}
+                                                    >
+                                                        {item.title}
+                                                    </label>
+                                                    <div className="text-xs text-gray-500 flex items-center gap-2 mt-1">
+                                                        <span className="flex items-center gap-1">
+                                                            {getStrategyIcon(item.strategyType)}
+                                                            <span className="capitalize">{item.strategyType || 'Post'}</span>
+                                                        </span>
+                                                        <span className="w-1 h-1 rounded-full bg-gray-300" />
+                                                        <span className="capitalize flex items-center gap-1">
+                                                            {getPlatformIcon(item.platform)}
+                                                            {item.platform}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <ChevronRight className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity self-center" />
                                             </div>
-                                        </div>
-                                    ))
+                                        ))}
+                                    </div>
                                 )}
                             </div>
-                        </>
+                        </div>
                     )}
                 </DialogContent>
             </Dialog>
