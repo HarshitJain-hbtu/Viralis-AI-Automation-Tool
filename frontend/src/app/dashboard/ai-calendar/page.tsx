@@ -6,6 +6,7 @@ import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { DayPost } from "@/lib/types/aiContent";
+import api from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -173,52 +174,44 @@ export default function AiCalendarPage() {
     setSelectedDate(formattedDate);
 
     try {
-      const response = await fetch("http://localhost:5000/api/ai/generate-daily", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          ...data,
-          date: formattedDate
-        }),
+      // Use api client which handles base URL and auth tokens automatically
+      const response = await api.post("/ai/generate-daily", {
+        ...data,
+        date: formattedDate,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to generate content.");
-      }
+      // Axios returns data directly in response.data, but our api client interceptor might return the response object
+      // Let's assume standard axios behavior or the client wrapper behavior.
+      // If api.post returns the response object (which it usually does in axios unless intercepted to return data),
+      // then response.data is what we want.
 
-      const result = await response.json();
+      // Based on typical usage of the `api` client in this project (implied), let's check response structure.
+      // Usually axios response has .data.
+      const result = response.data;
       setVariations(result.variations);
 
     } catch (err: any) {
-      setError(err.message || "An unexpected error occurred.");
+      console.error(err);
+      setError(err.response?.data?.message || err.message || "An unexpected error occurred.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSavePost = async (post: DayPost, type: 'viral' | 'reach' | 'niche') => {
+  /* Refactored to use api client */
+  const handleSavePost = async (post: DayPost, type: "viral" | "reach" | "niche") => {
     setIsSaving(true);
     try {
-      const response = await fetch("http://localhost:5000/api/ai/save-post", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          post,
-          date: selectedDate,
-          type
-        }),
+      // Use api client which handles base URL and auth tokens automatically
+      await api.post("/ai/save-post", {
+        post,
+        date: selectedDate,
+        type,
       });
 
-      if (!response.ok) throw new Error("Failed to save post");
       toast.success("Saved to Content Board");
     } catch (err) {
+      console.error("Failed to save post", err);
       toast.error("Failed to save post");
     } finally {
       setIsSaving(false);

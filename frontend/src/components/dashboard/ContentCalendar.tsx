@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import api from '@/lib/api/client';
 import { ChevronLeft, ChevronRight, Plus, Instagram, Youtube, Twitter, Zap, BarChart3, Target, ArrowLeft, Clock, Copy, Hash, Image as ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -36,13 +37,12 @@ export function ContentCalendar() {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const response = await fetch("http://localhost:5000/api/ai/get-posts", {
-                    headers: {
-                        "Authorization": `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-                if (response.ok) {
-                    const data = await response.json();
+                // Use api client
+                const response = await api.get("/ai/get-posts");
+                // Axios response.data contains the body
+                const data = response.data;
+
+                if (data && data.posts) {
                     const formattedPosts = data.posts.map((post: any) => ({
                         id: post.id || Math.random().toString(),
                         title: post.hook || "Untitled Post",
@@ -116,14 +116,7 @@ export function ContentCalendar() {
         setContent(prev => prev.map(c => c.id === id ? { ...c, status: newStatus } : c));
 
         try {
-            await fetch("http://localhost:5000/api/ai/update-status", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify({ postId: id, status: newStatus })
-            });
+            await api.post("/ai/update-status", { postId: id, status: newStatus });
         } catch (error) {
             console.error("Failed to update status", error);
             // Revert on failure

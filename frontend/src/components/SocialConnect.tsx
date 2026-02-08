@@ -24,9 +24,12 @@ export function SocialConnect() {
     const handleConnect = async (provider: 'youtube' | 'facebook' | 'facebook-mock') => {
         if (!token) return;
 
+        // Dynamic import to avoid circular dependencies if any, though likely safe here.
+        // Better to import at top level if possible, but let's stick to the pattern or just import 'api'.
+        const { default: api } = await import('@/lib/api/client');
+
         if (provider === 'facebook-mock') {
             try {
-                const { default: api } = await import('@/lib/api/client');
                 await api.post('/auth/facebook/mock');
                 fetchSocialStats();
                 router.replace('/dashboard?social_connected=facebook-mock');
@@ -36,8 +39,14 @@ export function SocialConnect() {
             return;
         }
 
-        const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-        window.location.href = `${backendUrl}/auth/${provider}?token=${token}`;
+        // Use the configured baseURL from the axio instance + /auth/provider
+        // This ensures we use the same URL that API calls usage.
+        const backendUrl = api.defaults.baseURL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+
+        // Ensure no double slashes if baseURL ends with / (axios usually doesn't, but good to be safe)
+        const cleanBaseUrl = backendUrl.replace(/\/+$/, '');
+
+        window.location.href = `${cleanBaseUrl}/auth/${provider}?token=${token}`;
     };
 
     const handleDisconnect = async (provider: string) => {
