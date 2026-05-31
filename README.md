@@ -6,7 +6,7 @@
 
 **One platform to automate content, calls, and competitor tracking**
 
-[Live Demo](https://viralis.io) • [Video Demo](https://youtu.be/gaeAeZhMcSE) • [Pitch Deck](https://docs.google.com/presentation/d/viralis)
+[Live Demo](https://viralis.vercel.app/) • [Video Demo](https://youtu.be/gaeAeZhMcSE) 
 
 <img src="frontend/public/hero.png" alt="Viralis Platform" width="90%" />
 
@@ -155,6 +155,6 @@ MIT License - feel free to use this for your own projects!
 
 **🏆 Built for Hackathon 2026**
 
-[Try the Demo](https://viralis.io) | [Watch Video](https://youtu.be/gaeAeZhMcSE) | [GitHub](https://github.com/sanyamhbtu/viralis)
+[Try the Demo](https://viralis.vercel.app/) | [Watch Video](https://youtu.be/gaeAeZhMcSE) | [GitHub](https://github.com/sanyamhbtu/viralis)
 
 </div>
