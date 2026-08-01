@@ -151,6 +151,8 @@ MIT License - feel free to use this for your own projects!
 
 ---
 
+<div align="center">
+
 [Try the Demo](https://viralis.vercel.app/) | [Watch Video](https://youtu.be/gaeAeZhMcSE) | [GitHub](https://github.com/HarshitJain-hbtu/viralis)
 
 </div>
