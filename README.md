@@ -98,7 +98,7 @@ Every business gets a unique URL (`viralis.io/meet/your-brand`) that customers c
 
 ```bash
 # Clone the repo
-git clone https://github.com/ravixalgorithm/viralis.git
+git clone https://github.com/HarshitJain-hbtu/viralis.git
 cd viralis
 
 # Install dependencies
@@ -151,10 +151,6 @@ MIT License - feel free to use this for your own projects!
 
 ---
 
-<div align="center">
-
-**🏆 Built for Hackathon 2026**
-
-[Try the Demo](https://viralis.vercel.app/) | [Watch Video](https://youtu.be/gaeAeZhMcSE) | [GitHub](https://github.com/sanyamhbtu/viralis)
+[Try the Demo](https://viralis.vercel.app/) | [Watch Video](https://youtu.be/gaeAeZhMcSE) | [GitHub](https://github.com/HarshitJain-hbtu/viralis)
 
 </div>
