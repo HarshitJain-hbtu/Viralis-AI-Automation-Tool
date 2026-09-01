@@ -8,6 +8,10 @@ import { env } from './config/env';
 import logger from './utils/logger';
 import { connectMongoDB } from './config/mongodb';
 
+import { errorHandler, notFoundHandler } from './middleware/errorHandler';
+import { apiLimiter } from './middleware/rateLimiter';
+import { disconnectMongoDB } from './config/mongodb';
+
 import authRoutes from './routes/auth.routes';
 import businessRoutes from './routes/business.routes';
 import leadRoutes from './routes/lead.routes';
@@ -23,17 +27,38 @@ import './config/passport'; // Initialize Passport Config
 const app = express();
 const server = http.createServer(app);
 
+// Trust the platform proxy (Koyeb/Vercel) so rate limiting & secure cookies see real client IPs.
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
+// CORS — use an explicit allowlist when CORS_ORIGINS is configured,
+// otherwise fall back to allowing all origins (dev/demo convenience).
+const allowedOrigins = env.CORS_ORIGINS
+    ? env.CORS_ORIGINS.split(',').map((o: string) => o.trim()).filter(Boolean)
+    : [];
+
 app.use(cors({
-    origin: true, // Allow all origins for Hackathon/Demo purposes
+    origin: allowedOrigins.length
+        ? (origin, callback) => {
+            // Allow same-origin/non-browser requests (no Origin header) and allowlisted origins.
+            if (!origin || allowedOrigins.includes(origin)) {
+                return callback(null, true);
+            }
+            return callback(new Error(`Origin ${origin} not allowed by CORS`));
+        }
+        : true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(helmet());
 app.use(morgan('dev'));
+
+// Global rate limiting for all API routes.
+app.use('/api', apiLimiter);
 
 // Database Connections
 connectMongoDB();
@@ -114,6 +139,12 @@ app.get('/', (_req, res) => {
     res.send('🚀 VIRALIS Backend is Running (TypeScript)!');
 });
 
+// 404 for any unmatched route (must come after all routes).
+app.use(notFoundHandler);
+
+// Centralized error handler (must be the last middleware).
+app.use(errorHandler);
+
 
 // Start Server
 server.listen(env.PORT, () => {
@@ -123,3 +154,39 @@ server.listen(env.PORT, () => {
   ################################################
   `);
 });
+
+// --- Process-level safety nets ---------------------------------------------
+
+process.on('unhandledRejection', (reason: unknown) => {
+    logger.error('Unhandled Promise Rejection:', reason);
+});
+
+process.on('uncaughtException', (error: Error) => {
+    logger.error('Uncaught Exception:', error);
+    // An uncaught exception leaves the process in an undefined state — exit and
+    // let the platform (Koyeb) restart it cleanly.
+    gracefulShutdown('uncaughtException', 1);
+});
+
+let shuttingDown = false;
+function gracefulShutdown(signal: string, exitCode = 0) {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    logger.info(`Received ${signal}. Shutting down gracefully...`);
+
+    // Stop accepting new connections, then close DB.
+    server.close(async () => {
+        await disconnectMongoDB();
+        logger.info('Shutdown complete.');
+        process.exit(exitCode);
+    });
+
+    // Force-exit if graceful shutdown stalls.
+    setTimeout(() => {
+        logger.error('Forced shutdown after timeout.');
+        process.exit(exitCode || 1);
+    }, 10000).unref();
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
