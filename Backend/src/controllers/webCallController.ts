@@ -185,7 +185,7 @@ export const handleWebConnection = async (ws: WebSocket, req: Request) => {
     console.log('📝 System Prompt:', systemPrompt);
 
     // 3. Setup Gemini
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash-lite' });
     const chat = model.startChat({
         history: [
             {

@@ -76,7 +76,7 @@ function buildPrompt(input: CalendarInput): string {
  * @returns A promise that resolves to an array of 30 DayPost objects.
  */
 export async function generate30DayCalendar(input: CalendarInput): Promise<DayPost[]> {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
   const prompt = buildPrompt(input);
 
   try {
@@ -170,7 +170,7 @@ function buildDailyPrompt(input: DailyPostInput): string {
 }
 
 export async function generateDailyPost(input: DailyPostInput): Promise<PostVariations> {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
   const prompt = buildDailyPrompt(input);
 
   try {
