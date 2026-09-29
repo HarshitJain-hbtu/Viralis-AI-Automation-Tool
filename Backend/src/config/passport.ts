@@ -21,43 +21,44 @@ passport.deserializeUser(async (id: string, done) => {
 });
 
 // Google Strategy
-passport.use(
-    new GoogleStrategy(
-        {
-            clientID: process.env.GOOGLE_CLIENT_ID || '',
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-            callbackURL: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/auth/youtube/callback`,
-            passReqToCallback: true,
-        },
-        async (_req, accessToken, refreshToken, profile, done) => {
-            // We expect the user to be logged in and the JWT middleware to have attached the user to req.user
-            // However, passport-google-oauth20 might not preserve req.user if session is false and we don't handle it carefully.
-            // For connecting accounts, we usually pass a state parameter with the user's JWT or ID, or rely on a session cookie if available.
-            // Since we are JWT based, we might need a workaround.
-            // A common pattern for "Connect Account" is:
-            // 1. Frontend sends JWT in "state" parameter.
-            // 2. Callback decodes "state" to find user.
+const googleClientId = process.env.GOOGLE_CLIENT_ID;
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
-            // For now, we will return the tokens and profile, and handle the user update in the controller callback.
-            return done(null, { profile, accessToken, refreshToken });
-        }
-    )
-);
+if (googleClientId && googleClientSecret) {
+    passport.use(
+        new GoogleStrategy(
+            {
+                clientID: googleClientId,
+                clientSecret: googleClientSecret,
+                callbackURL: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/auth/youtube/callback`,
+                passReqToCallback: true,
+            },
+            async (_req, accessToken, refreshToken, profile, done) => {
+                return done(null, { profile, accessToken, refreshToken });
+            }
+        )
+    );
+}
 
 // Facebook Strategy
-passport.use(
-    new FacebookStrategy(
-        {
-            clientID: process.env.FACEBOOK_APP_ID || '',
-            clientSecret: process.env.FACEBOOK_APP_SECRET || '',
-            callbackURL: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/auth/facebook/callback`,
-            passReqToCallback: true,
-            profileFields: ['id', 'displayName', 'emails', 'photos'],
-        },
-        async (_req, accessToken, refreshToken, profile, done) => {
-            return done(null, { profile, accessToken, refreshToken });
-        }
-    )
-);
+const fbAppId = process.env.FACEBOOK_APP_ID || process.env.FB_APP_ID;
+const fbAppSecret = process.env.FACEBOOK_APP_SECRET || process.env.FB_APP_SECRET;
+
+if (fbAppId && fbAppSecret) {
+    passport.use(
+        new FacebookStrategy(
+            {
+                clientID: fbAppId,
+                clientSecret: fbAppSecret,
+                callbackURL: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/auth/facebook/callback`,
+                passReqToCallback: true,
+                profileFields: ['id', 'displayName', 'emails', 'photos'],
+            },
+            async (_req, accessToken, refreshToken, profile, done) => {
+                return done(null, { profile, accessToken, refreshToken });
+            }
+        )
+    );
+}
 
 export default passport;

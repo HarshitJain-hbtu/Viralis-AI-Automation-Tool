@@ -43,22 +43,46 @@ const auth_middleware_1 = require("../middleware/auth.middleware");
 const router = express_1.default.Router();
 // Google/YouTube
 router.get('/auth/youtube', (req, res, next) => {
+    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+        return res.redirect('/dashboard?error=google_oauth_not_configured');
+    }
     const state = req.query.token; // We expect token to be passed as query param from frontend
     passport_1.default.authenticate('google', {
         scope: ['profile', 'email', 'https://www.googleapis.com/auth/youtube.readonly', 'https://www.googleapis.com/auth/youtube.force-ssl'],
         state: state
     })(req, res, next);
 });
-router.get('/auth/youtube/callback', passport_1.default.authenticate('google', { session: false, failureRedirect: '/dashboard?error=auth_failed' }), socialController_1.youtubeCallback);
+router.get('/auth/youtube/callback', (req, res, next) => {
+    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+        return res.redirect('/dashboard?error=google_oauth_not_configured');
+    }
+    passport_1.default.authenticate('google', { session: false, failureRedirect: '/dashboard?error=auth_failed' })(req, res, () => {
+        (0, socialController_1.youtubeCallback)(req, res, next);
+    });
+});
 // Facebook
 router.get('/auth/facebook', (req, res, next) => {
+    const fbAppId = process.env.FACEBOOK_APP_ID || process.env.FB_APP_ID;
+    const fbAppSecret = process.env.FACEBOOK_APP_SECRET || process.env.FB_APP_SECRET;
+    if (!fbAppId || !fbAppSecret) {
+        return res.redirect('/dashboard?error=facebook_oauth_not_configured');
+    }
     const state = req.query.token;
     passport_1.default.authenticate('facebook', {
         scope: ['email', 'public_profile'],
         state: state
     })(req, res, next);
 });
-router.get('/auth/facebook/callback', passport_1.default.authenticate('facebook', { session: false, failureRedirect: '/dashboard?error=auth_failed' }), socialController_1.facebookCallback);
+router.get('/auth/facebook/callback', (req, res, next) => {
+    const fbAppId = process.env.FACEBOOK_APP_ID || process.env.FB_APP_ID;
+    const fbAppSecret = process.env.FACEBOOK_APP_SECRET || process.env.FB_APP_SECRET;
+    if (!fbAppId || !fbAppSecret) {
+        return res.redirect('/dashboard?error=facebook_oauth_not_configured');
+    }
+    passport_1.default.authenticate('facebook', { session: false, failureRedirect: '/dashboard?error=auth_failed' })(req, res, () => {
+        (0, socialController_1.facebookCallback)(req, res, next);
+    });
+});
 // Stats
 router.get('/stats', auth_middleware_1.authMiddleware, socialController_1.getSocialStats);
 // Actions
