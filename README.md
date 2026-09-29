@@ -6,7 +6,7 @@
 
 **One platform to automate content, calls, and competitor tracking**
 
-[Live Demo](https://viralis.vercel.app/) • [Video Demo](https://youtu.be/gaeAeZhMcSE) 
+[Live Demo](https://viralis-ai-automation-tool.vercel.app/) • [Video Demo](https://youtu.be/gaeAeZhMcSE) 
 
 <img src="frontend/public/hero.png" alt="Viralis Platform" width="90%" />
 
@@ -153,6 +153,6 @@ MIT License - feel free to use this for your own projects!
 
 <div align="center">
 
-[Try the Demo](https://viralis.vercel.app/) | [Watch Video](https://youtu.be/gaeAeZhMcSE) | [GitHub](https://github.com/HarshitJain-hbtu/viralis)
+[Try the Demo](https://viralis-ai-automation-tool.vercel.app/) | [Watch Video](https://youtu.be/gaeAeZhMcSE) | [GitHub](https://github.com/HarshitJain-hbtu/Viralis-AI-Automation-Tool)
 
 </div>
