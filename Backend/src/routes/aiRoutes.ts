@@ -1,14 +1,13 @@
 import express from 'express';
 import { generateContent } from '../controllers/aiController';
-import { generateDayContent, savePost, getPosts, updatePostStatus } from '../controllers/aiCalendarController';
+import { generateDayContent, savePost, getPosts, updatePostStatus, regenerateImage } from '../controllers/aiCalendarController';
 import { authMiddleware } from '../middleware/auth.middleware';
 
 const router = express.Router();
 
-
 router.post('/generate', authMiddleware, generateContent);
 router.post('/generate-daily', authMiddleware, generateDayContent as any);
-
+router.post('/regenerate-image', authMiddleware, regenerateImage as any);
 
 router.post('/save-post', authMiddleware, savePost as any);
 router.get('/get-posts', authMiddleware, getPosts as any);

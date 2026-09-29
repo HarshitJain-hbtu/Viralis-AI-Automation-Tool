@@ -10,6 +10,7 @@ const auth_middleware_1 = require("../middleware/auth.middleware");
 const router = express_1.default.Router();
 router.post('/generate', auth_middleware_1.authMiddleware, aiController_1.generateContent);
 router.post('/generate-daily', auth_middleware_1.authMiddleware, aiCalendarController_1.generateDayContent);
+router.post('/regenerate-image', auth_middleware_1.authMiddleware, aiCalendarController_1.regenerateImage);
 router.post('/save-post', auth_middleware_1.authMiddleware, aiCalendarController_1.savePost);
 router.get('/get-posts', auth_middleware_1.authMiddleware, aiCalendarController_1.getPosts);
 router.post('/update-status', auth_middleware_1.authMiddleware, aiCalendarController_1.updatePostStatus);

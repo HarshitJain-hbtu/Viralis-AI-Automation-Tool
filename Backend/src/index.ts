@@ -99,10 +99,9 @@ server.on('upgrade', (request, socket, head) => {
         return;
     }
 
-    // Default to Voice Service for root or specific path
-    // The frontend connects to "wss://url?brandId=..." which is essentially "/"
-    // We check for '/' or '/voice' or empty path
-    if (pathname === '/' || pathname === '/voice' || pathname === '') {
+    // Default to Voice Service for root or specific paths
+    // The frontend connects to "wss://url?brandId=..." or "wss://url/voice?brandId=..." or "wss://url/api?brandId=..."
+    if (pathname === '/' || pathname === '/voice' || pathname === '' || pathname === '/api' || pathname.startsWith('/voice')) {
         wss.handleUpgrade(request, socket, head, (ws) => {
             wss.emit('connection', ws, request);
         });

@@ -1,39 +1,6 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRecentPosts = exports.getCalendarStats = exports.updatePostStatus = exports.getPosts = exports.savePost = exports.generateDayContent = exports.getCalendar = exports.generateCalendar = void 0;
+exports.getRecentPosts = exports.getCalendarStats = exports.updatePostStatus = exports.getPosts = exports.savePost = exports.regenerateImage = exports.generateDayContent = exports.getCalendar = exports.generateCalendar = void 0;
 const uuid_1 = require("uuid");
 const aiContentService_1 = require("../utils/aiContentService");
 // In-memory store for this prototype. In production, use a database like Redis or a persistent DB.
@@ -83,105 +50,224 @@ const getCalendar = (req, res) => {
     });
 };
 exports.getCalendar = getCalendar;
-// In-memory store for saved posts (Mock Database)
+const Business_1 = require("../models/Business");
+const Content_1 = require("../models/Content");
+const contentStudioService_1 = require("../services/contentStudioService");
+const imageService_1 = require("../services/imageService");
+// In-memory fallback store for backward compatibility
 const savedPostsStore = [];
 /**
- * Generates content for a single specific day with context.
+ * Generates content for a single specific day with real business context & AI images
  */
 const generateDayContent = async (req, res) => {
     const { niche, platform, city, description, brandName, date } = req.body;
-    // TODO: Fetch these from the actual database based on the authenticated user/brand
-    const mockContext = {
-        brandPositioning: "We are a premium, high-tech brand focused on efficiency and style.",
-        last7DaysContent: [
-            "Tip about productivity",
-            "Behind the scenes of our office",
-            "Customer testimonial video"
-        ],
-        recentStats: "Engagement is up 20% on Reels, but static posts are flat."
-    };
-    if (!niche || !platform || !city || !date) {
-        return res.status(400).json({ error: "Missing required fields: niche, platform, city, and date are required." });
+    if (!niche || !platform || !date) {
+        return res.status(400).json({ error: "Missing required fields: niche, platform, and date are required." });
     }
     try {
-        // Dynamically import to ensure we get the latest version if hot-reloading
-        const variations = await Promise.resolve().then(() => __importStar(require("../utils/aiContentService"))).then(m => m.generateDailyPost({
-            niche,
-            platform,
-            city,
-            description,
-            brandName,
-            date,
-            context: mockContext
-        }));
+        // 1. Fetch the real business profile from MongoDB
+        let businessProfile = null;
+        const businessId = req.user?.businessId;
+        if (businessId) {
+            businessProfile = await Business_1.Business.findById(businessId).lean();
+        }
+        // 2. Build rich, truthful business context
+        const businessContext = {
+            name: brandName || businessProfile?.name || "Our Business",
+            niche: niche || businessProfile?.industryMode || "Service",
+            description: description || businessProfile?.description || "",
+            location: city || businessProfile?.location?.city || businessProfile?.location?.address || "",
+            services: businessProfile?.knowledgeBase?.services || [],
+            brandVoiceTone: businessProfile?.brandVoice?.tone || "Professional",
+            customContext: description || ""
+        };
+        console.log(`🚀 [Content Studio] Generating content for ${businessContext.name} (${platform}) on ${date}`);
+        // 3. Generate high-quality platform-specific variations + AI images
+        const variations = await (0, contentStudioService_1.generateStudioContent)(platform, businessContext, date);
         return res.status(200).json({
-            variations, // Return the object with { viral, reach, niche }
-            message: "Content generated successfully for " + date
+            variations,
+            message: `Content generated successfully for ${date}`
         });
     }
     catch (error) {
-        const err = error;
-        console.error("Error in generateDayContent controller:", err);
-        return res.status(500).json({ error: "Internal server error.", details: err.message });
+        console.error("Error in generateDayContent controller:", error);
+        return res.status(500).json({
+            error: "Failed to generate content",
+            details: error.message
+        });
     }
 };
 exports.generateDayContent = generateDayContent;
 /**
- * Saves a selected post to the calendar/board.
+ * Regenerates an AI image with a new seed or modified prompt
+ */
+const regenerateImage = async (req, res) => {
+    try {
+        const { prompt, platform, seed } = req.body;
+        if (!prompt) {
+            return res.status(400).json({ error: "Image prompt is required." });
+        }
+        const imageUrl = (0, imageService_1.generateImageUrl)({
+            prompt,
+            platform: platform || "Instagram Post",
+            seed: seed || Math.floor(Math.random() * 1000000)
+        });
+        return res.status(200).json({
+            success: true,
+            imageUrl
+        });
+    }
+    catch (error) {
+        console.error("Error regenerating image:", error);
+        return res.status(500).json({ error: "Failed to regenerate image", details: error.message });
+    }
+};
+exports.regenerateImage = regenerateImage;
+/**
+ * Saves a selected post to the Content Board in MongoDB
  */
 const savePost = async (req, res) => {
     const { post, date, type } = req.body;
+    const businessId = req.user?.businessId;
     if (!post || !date) {
         return res.status(400).json({ error: "Post data and date are required." });
     }
-    // Add metadata
-    const savedPost = {
-        ...post,
-        id: (0, uuid_1.v4)(),
-        savedAt: new Date().toISOString(),
-        scheduledDate: date,
-        strategyType: type // viral, reach, or niche
-    };
-    savedPostsStore.push(savedPost);
-    return res.status(200).json({
-        success: true,
-        message: "Post saved to calendar",
-        post: savedPost
-    });
+    try {
+        const platform = (post.platform || "Instagram").toLowerCase();
+        const isVideo = platform.includes("reel") || platform.includes("short") || platform.includes("video");
+        const contentDoc = await Content_1.Content.create({
+            businessId: businessId || undefined,
+            title: post.hook || post.title || "Untitled Post",
+            body: post.caption || post.voiceoverScript || "",
+            type: isVideo ? "video" : "post",
+            platform: platform.includes("youtube") ? "youtube" : platform.includes("linkedin") ? "linkedin" : "instagram",
+            status: "scheduled",
+            scheduledFor: new Date(date),
+            aiGenerated: true,
+            meta: {
+                hook: post.hook,
+                hookAlternatives: post.hookAlternatives,
+                caption: post.caption,
+                hashtags: post.hashtags,
+                cta: post.cta,
+                bestTime: post.bestTime || post.best_time,
+                visualPrompt: post.visualPrompt || post.visual_prompt,
+                imageUrl: post.imageUrl,
+                storyboard: post.storyboard,
+                voiceoverScript: post.voiceoverScript,
+                youtubeTitles: post.youtubeTitles,
+                youtubeDescription: post.youtubeDescription,
+                thumbnailPrompt: post.thumbnailPrompt,
+                thumbnailText: post.thumbnailText,
+                linkedinTakeaways: post.linkedinTakeaways,
+                discussionQuestion: post.discussionQuestion,
+                strategyType: type || post.strategyType || "viral",
+                scheduledDate: date
+            }
+        });
+        const savedPost = {
+            ...post,
+            id: contentDoc._id.toString(),
+            savedAt: contentDoc.createdAt.toISOString(),
+            scheduledDate: date,
+            strategyType: type || "viral",
+            status: "scheduled"
+        };
+        savedPostsStore.unshift(savedPost);
+        console.log(`✅ [Content Studio] Post saved to MongoDB Content collection: ${contentDoc._id}`);
+        return res.status(200).json({
+            success: true,
+            message: "Post saved to Content Board",
+            post: savedPost
+        });
+    }
+    catch (error) {
+        console.error("Error in savePost controller:", error);
+        return res.status(500).json({ error: "Failed to save post", details: error.message });
+    }
 };
 exports.savePost = savePost;
 /**
- * Gets all saved posts for the calendar.
+ * Gets all saved posts for the Content Board from MongoDB
  */
-const getPosts = async (_req, res) => {
-    // In a real app, filter by user/brand ID
-    return res.status(200).json({
-        posts: savedPostsStore
-    });
+const getPosts = async (req, res) => {
+    const businessId = req.user?.businessId;
+    try {
+        let mongoPosts = [];
+        if (businessId) {
+            mongoPosts = await Content_1.Content.find({ businessId })
+                .sort({ scheduledFor: -1, createdAt: -1 })
+                .lean();
+        }
+        else {
+            mongoPosts = await Content_1.Content.find()
+                .sort({ scheduledFor: -1, createdAt: -1 })
+                .limit(50)
+                .lean();
+        }
+        const formattedPosts = mongoPosts.map(p => ({
+            id: p._id.toString(),
+            title: p.title || p.meta?.hook || "Untitled Post",
+            hook: p.meta?.hook || p.title,
+            caption: p.body || p.meta?.caption || "",
+            hashtags: p.meta?.hashtags || [],
+            visual_prompt: p.meta?.visualPrompt,
+            imageUrl: p.meta?.imageUrl,
+            best_time: p.meta?.bestTime,
+            scheduledDate: p.scheduledFor ? new Date(p.scheduledFor).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+            date: p.scheduledFor ? new Date(p.scheduledFor).toISOString() : new Date().toISOString(),
+            status: p.status || "scheduled",
+            platform: p.platform || "instagram",
+            strategyType: p.meta?.strategyType || "viral",
+            storyboard: p.meta?.storyboard,
+            voiceoverScript: p.meta?.voiceoverScript,
+            youtubeTitles: p.meta?.youtubeTitles,
+            youtubeDescription: p.meta?.youtubeDescription,
+            thumbnailPrompt: p.meta?.thumbnailPrompt,
+            thumbnailText: p.meta?.thumbnailText,
+            linkedinTakeaways: p.meta?.linkedinTakeaways,
+            discussionQuestion: p.meta?.discussionQuestion,
+        }));
+        return res.status(200).json({
+            posts: formattedPosts.length > 0 ? formattedPosts : savedPostsStore
+        });
+    }
+    catch (error) {
+        console.error("Error in getPosts controller:", error);
+        return res.status(500).json({ error: "Failed to fetch posts", details: error.message });
+    }
 };
 exports.getPosts = getPosts;
 /**
- * Updates the status of a specific post (e.g., mark as completed/posted).
+ * Updates the status of a specific post (e.g., mark as completed/posted)
  */
 const updatePostStatus = async (req, res) => {
     const { postId, status } = req.body;
+    const businessId = req.user?.businessId;
     if (!postId || !status) {
         return res.status(400).json({ error: "Post ID and status are required." });
     }
-    const postIndex = savedPostsStore.findIndex(p => p.id === postId);
-    if (postIndex === -1) {
-        return res.status(404).json({ error: "Post not found." });
+    try {
+        if (postId.match(/^[0-9a-fA-F]{24}$/)) {
+            const query = { _id: postId };
+            if (businessId)
+                query.businessId = businessId;
+            await Content_1.Content.findOneAndUpdate(query, { status });
+        }
+        const postIndex = savedPostsStore.findIndex(p => p.id === postId);
+        if (postIndex !== -1) {
+            savedPostsStore[postIndex].status = status;
+        }
+        return res.status(200).json({
+            success: true,
+            message: "Post status updated",
+            status
+        });
     }
-    // Update status
-    const post = savedPostsStore[postIndex];
-    post.status = status;
-    // Update store
-    savedPostsStore[postIndex] = post;
-    return res.status(200).json({
-        success: true,
-        message: "Post status updated",
-        post
-    });
+    catch (error) {
+        console.error("Error updating post status:", error);
+        return res.status(500).json({ error: "Failed to update status", details: error.message });
+    }
 };
 exports.updatePostStatus = updatePostStatus;
 const getCalendarStats = () => {
@@ -192,9 +278,7 @@ const getCalendarStats = () => {
 };
 exports.getCalendarStats = getCalendarStats;
 const getRecentPosts = () => {
-    return savedPostsStore
-        .sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime())
-        .slice(0, 5);
+    return savedPostsStore.slice(0, 5);
 };
 exports.getRecentPosts = getRecentPosts;
 //# sourceMappingURL=aiCalendarController.js.map

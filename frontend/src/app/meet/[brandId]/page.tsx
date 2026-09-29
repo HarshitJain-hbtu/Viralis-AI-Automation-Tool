@@ -63,37 +63,15 @@ export default async function MeetPage({ params }: { params: Promise<{ brandId: 
   const resolvedParams = await params;
   const brand = await getBrandData(resolvedParams.brandId);
 
-  if (!brand) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-slate-300 p-6 text-center">
-        <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl">
-          <div className="w-12 h-12 rounded-full bg-purple-500/10 text-purple-400 flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
-            !
-          </div>
-          <h1 className="text-2xl font-bold text-white mb-2">Connecting to Voice Agent</h1>
-          <p className="text-slate-400 text-sm mb-6 leading-relaxed">
-            The server may be waking up from sleep mode, or the business link might be initializing.
-          </p>
-          <div className="flex flex-col gap-3">
-            <a
-              href={`/meet/${resolvedParams.brandId}`}
-              className="w-full py-3 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-medium text-sm transition-all shadow-lg shadow-purple-600/20"
-            >
-              Retry Connection
-            </a>
-            <a
-              href="/dashboard/settings/ai-brain"
-              className="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium text-sm transition-all"
-            >
-              Back to Voice Lab
-            </a>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Fallback brand metadata if backend is in cold-start during SSR
+  const activeBrand = brand || {
+    name: 'AI Voice Receptionist',
+    businessHours: 'Business Hours',
+    location: { city: 'Local Office' },
+    knowledgeBase: {}
+  };
 
   return (
-    <VoiceInterface brand={brand} brandId={resolvedParams.brandId} />
+    <VoiceInterface brand={activeBrand} brandId={resolvedParams.brandId} />
   );
 }

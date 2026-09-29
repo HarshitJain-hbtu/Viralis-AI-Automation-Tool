@@ -2,121 +2,538 @@
 
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/lib/store/authStore";
-import { useForm, SubmitHandler, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { DayPost } from "@/lib/types/aiContent";
+import { DayPost, PostVariations, SupportedPlatform, SceneItem } from "@/lib/types/aiContent";
 import api from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { RocketIcon, AlertCircle, Sparkles, Calendar as CalendarIcon, Save, Copy, BarChart3, Zap, Target } from "lucide-react";
+import {
+  RocketIcon,
+  AlertCircle,
+  Sparkles,
+  Calendar as CalendarIcon,
+  Save,
+  Copy,
+  BarChart3,
+  Zap,
+  Target,
+  RefreshCw,
+  Download,
+  Edit3,
+  Check,
+  Film,
+  Video,
+  Instagram,
+  Youtube,
+  Linkedin,
+  Facebook,
+  ExternalLink,
+  Clock,
+  Hash,
+  Type,
+  FileText,
+  HelpCircle,
+  Layers
+} from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import Image from "next/image";
 
-// Schema for form validation
-const formSchema = z.object({
-  niche: z.string().min(3, "Niche is required"),
-  city: z.string().min(2, "City is required"),
-  platform: z.enum(["Instagram", "Instagram Reels", "Facebook", "LinkedIn"]),
-  brandName: z.string().optional(),
-  description: z.string().optional(),
-  date: z.date({
-    message: "A date is required.",
-  }),
-});
+const PLATFORMS: { value: SupportedPlatform; label: string; icon: any; color: string }[] = [
+  { value: "Instagram Post", label: "Instagram Post", icon: Instagram, color: "text-pink-600" },
+  { value: "Instagram Reel", label: "Instagram Reel", icon: Film, color: "text-purple-600" },
+  { value: "Facebook", label: "Facebook", icon: Facebook, color: "text-blue-600" },
+  { value: "YouTube Video", label: "YouTube Video", icon: Youtube, color: "text-red-600" },
+  { value: "YouTube Shorts", label: "YouTube Shorts", icon: Video, color: "text-red-500" },
+  { value: "LinkedIn", label: "LinkedIn", icon: Linkedin, color: "text-sky-700" },
+];
 
-type FormValues = z.infer<typeof formSchema>;
-
-interface PostVariations {
-  viral: DayPost;
-  reach: DayPost;
-  niche: DayPost;
+interface PostCardProps {
+  post: DayPost;
+  type: 'viral' | 'reach' | 'niche';
+  platform: SupportedPlatform;
+  onSave: (updatedPost: DayPost) => void;
+  isSaving: boolean;
 }
 
-// --- Components ---
+function PostCard({ post, type, platform, onSave, isSaving }: PostCardProps) {
+  const [currentPost, setCurrentPost] = useState<DayPost>(post);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedHook, setEditedHook] = useState(post.hook);
+  const [editedCaption, setEditedCaption] = useState(post.caption);
+  const [editedCta, setEditedCta] = useState(post.cta);
+  const [isRegeneratingImage, setIsRegeneratingImage] = useState(false);
 
-function PostCard({ post, type, onSave, isSaving }: { post: DayPost; type: 'viral' | 'reach' | 'niche'; onSave: () => void; isSaving: boolean }) {
-  const copyToClipboard = (text: string) => {
+  useEffect(() => {
+    setCurrentPost(post);
+    setEditedHook(post.hook);
+    setEditedCaption(post.caption);
+    setEditedCta(post.cta);
+    setIsEditing(false);
+  }, [post]);
+
+  const copyToClipboard = (text: string, label = "Copied to clipboard!") => {
     navigator.clipboard.writeText(text);
-    toast.success("Copied to clipboard!");
+    toast.success(label);
   };
 
   const handleCopyFullPost = () => {
-    const fullPost = `${post.hook}\n\n${post.caption}\n\n${post.hashtags.map(h => `#${h}`).join(' ')}`;
-    copyToClipboard(fullPost);
+    let fullText = `HOOK:\n${editedHook}\n\n`;
+
+    if (currentPost.voiceoverScript) {
+      fullText += `VOICEOVER SCRIPT:\n${currentPost.voiceoverScript}\n\n`;
+    }
+
+    if (currentPost.storyboard && currentPost.storyboard.length > 0) {
+      fullText += `SCENE BREAKDOWN:\n` +
+        currentPost.storyboard.map((s, i) =>
+          `[Scene ${i + 1} (${s.time}) - ${s.type}]\nSpoken: "${s.text}"\nOn-Screen: ${s.onScreenText}\nVisual: ${s.visual}`
+        ).join('\n\n') + '\n\n';
+    }
+
+    if (currentPost.youtubeTitles && currentPost.youtubeTitles.length > 0) {
+      fullText += `TITLE OPTIONS:\n` + currentPost.youtubeTitles.map((t, i) => `${i + 1}. ${t}`).join('\n') + '\n\n';
+    }
+
+    fullText += `CAPTION:\n${editedCaption}\n\n`;
+    fullText += `CALL TO ACTION:\n${editedCta}\n\n`;
+
+    if (currentPost.hashtags && currentPost.hashtags.length > 0) {
+      fullText += `HASHTAGS:\n${currentPost.hashtags.map(h => h.startsWith('#') ? h : `#${h}`).join(' ')}\n\n`;
+    }
+
+    if (currentPost.bestTime || currentPost.best_time) {
+      fullText += `BEST POSTING TIME: ${currentPost.bestTime || currentPost.best_time}`;
+    }
+
+    copyToClipboard(fullText, "Complete publication-ready content copied!");
+  };
+
+  const handleDownloadImage = async () => {
+    if (!currentPost.imageUrl) return;
+    try {
+      toast.info("Preparing image download...");
+      const response = await fetch(currentPost.imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const cleanPlatform = platform.toLowerCase().replace(/\s+/g, '-');
+      a.download = `viralis-${cleanPlatform}-${type}-${Date.now()}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      toast.success("Image downloaded successfully!");
+    } catch (e) {
+      console.error("Download error:", e);
+      // Fallback: Open in new tab
+      window.open(currentPost.imageUrl, '_blank');
+    }
+  };
+
+  const handleRegenerateImage = async () => {
+    setIsRegeneratingImage(true);
+    try {
+      const res = await api.post('/ai/regenerate-image', {
+        prompt: currentPost.visualPrompt || currentPost.visual_prompt || currentPost.hook,
+        platform,
+        seed: Math.floor(Math.random() * 1000000)
+      });
+
+      if (res.data?.imageUrl) {
+        setCurrentPost(prev => ({
+          ...prev,
+          imageUrl: res.data.imageUrl
+        }));
+        toast.success("New AI visual generated!");
+      }
+    } catch (e) {
+      console.error("Failed to regenerate image", e);
+      toast.error("Failed to regenerate visual. Please try again.");
+    } finally {
+      setIsRegeneratingImage(false);
+    }
+  };
+
+  const handleSaveEdits = () => {
+    setCurrentPost(prev => ({
+      ...prev,
+      hook: editedHook,
+      caption: editedCaption,
+      cta: editedCta
+    }));
+    setIsEditing(false);
+    toast.success("Edits saved locally.");
+  };
+
+  const handleSaveToBoard = () => {
+    const updated = {
+      ...currentPost,
+      hook: editedHook,
+      caption: editedCaption,
+      cta: editedCta,
+      platform
+    };
+    onSave(updated);
   };
 
   const typeConfig = {
-    viral: { icon: Zap, color: "text-amber-600", bg: "bg-amber-50/50", border: "border-amber-100", label: "Viral Factor", button: "hover:bg-amber-50 text-amber-700" },
-    reach: { icon: BarChart3, color: "text-blue-600", bg: "bg-blue-50/50", border: "border-blue-100", label: "Most Reach", button: "hover:bg-blue-50 text-blue-700" },
-    niche: { icon: Target, color: "text-purple-600", bg: "bg-purple-50/50", border: "border-purple-100", label: "Niche Special", button: "hover:bg-purple-50 text-purple-700" },
+    viral: { icon: Zap, color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-200", label: "Viral Factor", btn: "bg-amber-600 hover:bg-amber-700" },
+    reach: { icon: BarChart3, color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-200", label: "Most Reach", btn: "bg-blue-600 hover:bg-blue-700" },
+    niche: { icon: Target, color: "text-purple-600", bg: "bg-purple-50", border: "border-purple-200", label: "Niche Special", btn: "bg-purple-600 hover:bg-purple-700" },
   };
 
   const config = typeConfig[type];
   const Icon = config.icon;
 
+  // Determine image aspect ratio container
+  const isVerticalVideo = platform === 'Instagram Reel' || platform === 'YouTube Shorts';
+  const isLandscapeVideo = platform === 'YouTube Video';
+
   return (
-    <Card className="flex flex-col h-full bg-white border border-gray-100 shadow-sm transition-all duration-200">
-      <CardHeader className="pb-3 border-b border-gray-50">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <div className={`p-1.5 rounded-full ${config.bg} ${config.color}`}>
+    <Card className="flex flex-col bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden transition-all duration-200">
+      {/* Header */}
+      <CardHeader className="pb-4 border-b border-gray-100 bg-gray-50/50">
+        <div className="flex flex-wrap justify-between items-center gap-2">
+          <div className="flex items-center gap-2.5">
+            <div className={`p-2 rounded-xl ${config.bg} ${config.color} border ${config.border}`}>
               <Icon className="w-4 h-4" />
             </div>
-            <span className={`text-sm font-semibold ${config.color}`}>{config.label}</span>
+            <div>
+              <span className={`text-sm font-bold ${config.color}`}>{config.label}</span>
+              <p className="text-xs text-gray-500 font-medium">{platform}</p>
+            </div>
           </div>
-          <Badge variant="secondary" className="bg-gray-50 text-gray-500 font-normal border-0">
-            {post.post_type}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="bg-white text-gray-600 border-gray-200 text-xs px-2.5 py-1">
+              Best Time: {currentPost.bestTime || currentPost.best_time || '18:00'}
+            </Badge>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsEditing(!isEditing)}
+              className="h-8 text-xs text-gray-600 hover:text-gray-900 gap-1.5"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              {isEditing ? "Cancel" : "Edit"}
+            </Button>
+          </div>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4 pt-4 flex-1">
-        <div>
-          <h3 className="font-bold text-gray-900 text-lg leading-snug mb-3">"{post.hook}"</h3>
-          <p className="text-sm text-gray-600 whitespace-pre-line leading-relaxed">
-            {post.caption}
-          </p>
+      <CardContent className="p-6 space-y-6 flex-1">
+        {/* Visual Preview Banner & Controls */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-purple-500" />
+              AI Generated Visual ({isVerticalVideo ? '9:16 Vertical' : isLandscapeVideo ? '16:9 Thumbnail' : '1:1 Square'})
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRegenerateImage}
+                disabled={isRegeneratingImage}
+                className="h-7 text-xs px-2.5 border-gray-200 text-gray-700 hover:bg-gray-100 gap-1.5"
+              >
+                <RefreshCw className={cn("w-3 h-3", isRegeneratingImage && "animate-spin")} />
+                Regenerate Image
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDownloadImage}
+                className="h-7 text-xs px-2.5 border-gray-200 text-gray-700 hover:bg-gray-100 gap-1.5"
+              >
+                <Download className="w-3 h-3" />
+                Download
+              </Button>
+            </div>
+          </div>
+
+          {currentPost.imageUrl && (
+            <div className={cn(
+              "relative rounded-xl overflow-hidden border border-gray-200/80 bg-slate-950 shadow-inner group",
+              isVerticalVideo ? "w-full max-w-[280px] mx-auto aspect-[9/16] max-h-[440px]" :
+                isLandscapeVideo ? "w-full aspect-[16/9] max-h-[360px]" :
+                  "w-full max-w-[420px] mx-auto aspect-square"
+            )}>
+              <img
+                src={currentPost.imageUrl}
+                alt="AI Generated Visual"
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+                <p className="text-xs text-white/90 line-clamp-2 italic">
+                  {currentPost.visualPrompt || currentPost.visual_prompt}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
-        <div className="bg-gray-50 rounded-lg p-3 border border-gray-100/50">
-          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1.5">Visual Prompt</span>
-          <p className="text-xs text-gray-600 italic leading-relaxed">
-            {post.visual_prompt}
-          </p>
+        {/* Primary Hook */}
+        <div className="space-y-2">
+          <Label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+            Scroll-Stopping Hook
+          </Label>
+          {isEditing ? (
+            <Input
+              value={editedHook}
+              onChange={(e) => setEditedHook(e.target.value)}
+              className="text-base font-bold text-gray-900 border-purple-200 focus:border-purple-500"
+            />
+          ) : (
+            <div className="p-4 rounded-xl bg-purple-50/40 border border-purple-100">
+              <h3 className="font-extrabold text-gray-900 text-lg leading-snug">
+                "{editedHook}"
+              </h3>
+            </div>
+          )}
         </div>
 
-        <div className="flex flex-wrap gap-1.5 pt-1">
-          {post.hashtags.map(tag => (
-            <span key={tag} className="text-xs text-blue-600/80 bg-blue-50 px-2 py-1 rounded-md">#{tag}</span>
-          ))}
+        {/* Hook Alternatives (If applicable) */}
+        {currentPost.hookAlternatives && currentPost.hookAlternatives.length > 0 && (
+          <div className="space-y-2">
+            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+              Alternate Hooks to Test
+            </span>
+            <div className="grid grid-cols-1 gap-2">
+              {currentPost.hookAlternatives.map((alt, idx) => (
+                <div
+                  key={idx}
+                  onClick={() => { setEditedHook(alt); toast.success("Hook selected!"); }}
+                  className="p-2.5 rounded-lg bg-gray-50 hover:bg-purple-50/60 border border-gray-100 hover:border-purple-200 text-xs text-gray-700 cursor-pointer transition-colors flex items-center justify-between group"
+                >
+                  <span className="font-medium">"{alt}"</span>
+                  <span className="text-[10px] text-purple-600 opacity-0 group-hover:opacity-100 font-semibold uppercase">Use This</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* YouTube Video Title Variations */}
+        {currentPost.youtubeTitles && currentPost.youtubeTitles.length > 0 && (
+          <div className="space-y-2">
+            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+              <Youtube className="w-3.5 h-3.5 text-red-600" />
+              High-CTR YouTube Title Options
+            </span>
+            <div className="space-y-1.5">
+              {currentPost.youtubeTitles.map((t, idx) => (
+                <div
+                  key={idx}
+                  onClick={() => copyToClipboard(t, "Title copied!")}
+                  className="p-2.5 rounded-lg bg-red-50/40 border border-red-100 text-xs font-bold text-gray-900 cursor-pointer hover:bg-red-50 transition-colors flex justify-between items-center"
+                >
+                  <span>{idx + 1}. {t}</span>
+                  <Copy className="w-3 h-3 text-red-500 opacity-60" />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Reel / Shorts Storyboard Breakdown */}
+        {currentPost.storyboard && currentPost.storyboard.length > 0 && (
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+                <Film className="w-3.5 h-3.5 text-purple-600" />
+                Scene-by-Scene Video Storyboard
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 text-[11px] text-purple-600 hover:text-purple-700 p-0"
+                onClick={() => {
+                  const sbText = currentPost.storyboard!.map((s, i) =>
+                    `Scene ${i + 1} (${s.time}) - ${s.type}\nDialogue: "${s.text}"\nOn-Screen: ${s.onScreenText}\nVisual: ${s.visual}`
+                  ).join('\n\n');
+                  copyToClipboard(sbText, "Storyboard copied!");
+                }}
+              >
+                Copy Storyboard
+              </Button>
+            </div>
+
+            <div className="space-y-2.5 max-h-[320px] overflow-y-auto pr-1">
+              {currentPost.storyboard.map((scene, idx) => (
+                <div key={idx} className="p-3.5 rounded-xl border border-gray-100 bg-gray-50/70 hover:bg-white hover:border-purple-200 transition-all space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Badge variant="outline" className="text-[10px] font-mono bg-white text-purple-700 border-purple-200">
+                      {scene.time}
+                    </Badge>
+                    <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-100 text-[10px] font-semibold">
+                      {scene.type}
+                    </Badge>
+                  </div>
+                  <p className="text-xs font-semibold text-gray-900 leading-relaxed">
+                    "{scene.text}"
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] pt-1 border-t border-gray-100">
+                    <div className="text-gray-600">
+                      <span className="font-bold text-gray-400 uppercase text-[9px] block">On-Screen Text</span>
+                      {scene.onScreenText}
+                    </div>
+                    <div className="text-gray-600">
+                      <span className="font-bold text-gray-400 uppercase text-[9px] block">Visual Direction</span>
+                      {scene.visual}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Voiceover Script */}
+        {currentPost.voiceoverScript && (
+          <div className="space-y-2 pt-1">
+            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center justify-between">
+              <span>Full Voiceover Script</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-5 text-[11px] text-gray-500 hover:text-gray-900 p-0"
+                onClick={() => copyToClipboard(currentPost.voiceoverScript!, "Voiceover script copied!")}
+              >
+                Copy Script
+              </Button>
+            </span>
+            <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-100 text-xs text-gray-700 leading-relaxed font-mono">
+              "{currentPost.voiceoverScript}"
+            </div>
+          </div>
+        )}
+
+        {/* YouTube Video SEO Description */}
+        {currentPost.youtubeDescription && (
+          <div className="space-y-2">
+            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+              YouTube Video Description & Timestamps
+            </span>
+            <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-100 text-xs text-gray-700 whitespace-pre-line leading-relaxed font-mono">
+              {currentPost.youtubeDescription}
+            </div>
+          </div>
+        )}
+
+        {/* LinkedIn Takeaways */}
+        {currentPost.linkedinTakeaways && currentPost.linkedinTakeaways.length > 0 && (
+          <div className="space-y-2">
+            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+              <Linkedin className="w-3.5 h-3.5 text-sky-700" />
+              Strategic Business Takeaways
+            </span>
+            <ul className="space-y-1.5 list-disc list-inside text-xs text-gray-700 bg-sky-50/40 p-3.5 rounded-xl border border-sky-100">
+              {currentPost.linkedinTakeaways.map((point, idx) => (
+                <li key={idx} className="leading-relaxed font-medium">{point}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Caption */}
+        <div className="space-y-2">
+          <Label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+            Caption & Body Copy
+          </Label>
+          {isEditing ? (
+            <Textarea
+              value={editedCaption}
+              onChange={(e) => setEditedCaption(e.target.value)}
+              className="text-xs leading-relaxed text-gray-900 min-h-[140px] font-sans border-purple-200"
+            />
+          ) : (
+            <div className="bg-gray-50/80 p-4 rounded-xl border border-gray-100 text-xs text-gray-800 whitespace-pre-line leading-relaxed">
+              {editedCaption}
+            </div>
+          )}
         </div>
 
-        <div className="text-xs text-gray-400 font-medium">
-          Best Time: <span className="text-gray-600">{post.best_time}</span>
+        {/* Call to Action */}
+        <div className="space-y-1.5">
+          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Call to Action (CTA)</span>
+          {isEditing ? (
+            <Input
+              value={editedCta}
+              onChange={(e) => setEditedCta(e.target.value)}
+              className="text-xs text-gray-900 font-semibold"
+            />
+          ) : (
+            <div className="text-xs font-bold text-purple-700 bg-purple-50/60 p-2.5 rounded-lg border border-purple-100">
+              👉 {editedCta}
+            </div>
+          )}
         </div>
+
+        {/* Hashtags */}
+        {currentPost.hashtags && currentPost.hashtags.length > 0 && (
+          <div className="space-y-2 pt-1">
+            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Hashtags</span>
+            <div className="flex flex-wrap gap-1.5">
+              {currentPost.hashtags.map((tag) => {
+                const formatted = tag.startsWith('#') ? tag : `#${tag}`;
+                return (
+                  <span
+                    key={tag}
+                    onClick={() => copyToClipboard(formatted, `Copied ${formatted}`)}
+                    className="text-xs text-blue-600 bg-blue-50/80 hover:bg-blue-100 px-2.5 py-1 rounded-md font-medium cursor-pointer transition-colors"
+                  >
+                    {formatted}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {isEditing && (
+          <Button onClick={handleSaveEdits} className="w-full bg-green-600 hover:bg-green-700 text-white font-medium text-xs h-9 gap-1.5">
+            <Check className="w-3.5 h-3.5" />
+            Apply Changes
+          </Button>
+        )}
       </CardContent>
 
-      <CardFooter className="pt-3 pb-4 border-t border-gray-50 flex gap-3 justify-between">
-        <Button variant="ghost" size="sm" onClick={handleCopyFullPost} className="text-gray-500 hover:text-gray-900 h-9">
-          <Copy className="w-3.5 h-3.5 mr-2" />
-          Copy
+      <CardFooter className="pt-4 pb-5 px-6 border-t border-gray-100 bg-gray-50/50 flex flex-wrap gap-3 justify-between items-center">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleCopyFullPost}
+          className="text-gray-700 bg-white border-gray-200 hover:bg-gray-50 h-10 px-4 font-semibold shadow-sm"
+        >
+          <Copy className="w-4 h-4 mr-2 text-gray-500" />
+          Copy Full Content
         </Button>
-        <Button onClick={onSave} disabled={isSaving} size="sm" className={cn("text-white shadow-none transition-all h-9 font-medium px-4", isSaving ? "opacity-70" : "opacity-100", type === 'viral' ? "bg-amber-600 hover:bg-amber-700" : type === 'reach' ? "bg-blue-600 hover:bg-blue-700" : "bg-purple-600 hover:bg-purple-700")}>
-          {isSaving ? "Saving..." : (
+        <Button
+          onClick={handleSaveToBoard}
+          disabled={isSaving}
+          size="sm"
+          className={cn("text-white shadow-md transition-all h-10 font-bold px-6 rounded-xl", config.btn)}
+        >
+          {isSaving ? (
+            <span className="flex items-center gap-2">
+              <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Saving...
+            </span>
+          ) : (
             <>
-              <Save className="w-3.5 h-3.5 mr-2" />
-              Save to Board
+              <Save className="w-4 h-4 mr-2" />
+              Save to Content Board
             </>
           )}
         </Button>
@@ -127,201 +544,283 @@ function PostCard({ post, type, onSave, isSaving }: { post: DayPost; type: 'vira
 
 function EmptyState() {
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center text-center p-12 bg-white rounded-xl border border-gray-100/50 shadow-sm min-h-[500px]">
-      <div className="bg-gray-50 p-4 rounded-full mb-6">
-        <RocketIcon className="h-8 w-8 text-gray-400" />
+    <div className="w-full h-full flex flex-col items-center justify-center text-center p-12 bg-white rounded-2xl border border-gray-100 shadow-sm min-h-[520px]">
+      <div className="bg-purple-50 p-5 rounded-2xl mb-6 border border-purple-100">
+        <Sparkles className="h-10 w-10 text-purple-600" />
       </div>
-      <h3 className="text-lg font-semibold text-gray-900">Ready to Create?</h3>
-      <p className="mt-2 text-gray-500 max-w-xs mx-auto text-sm leading-relaxed">
-        Configure your strategy on the left and generate 3 unique content variations.
+      <h3 className="text-xl font-bold text-gray-900 mb-2">Ready to Create Viral Content?</h3>
+      <p className="text-gray-500 max-w-sm mx-auto text-sm leading-relaxed mb-6">
+        Select your platform and target date on the left. Viralis AI will craft 3 complete, publication-ready strategies with customized visual art.
       </p>
+      <div className="flex flex-wrap items-center justify-center gap-2 max-w-md">
+        {PLATFORMS.map(p => (
+          <span key={p.value} className="text-xs bg-gray-50 border border-gray-200 px-2.5 py-1 rounded-full text-gray-600 font-medium">
+            {p.label}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
-
 
 export default function AiCalendarPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [variations, setVariations] = useState<PostVariations | null>(null);
-  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [platform, setPlatform] = useState<SupportedPlatform>("Instagram Post");
+  const [niche, setNiche] = useState("");
+  const [city, setCity] = useState("");
+  const [brandName, setBrandName] = useState("");
+  const [context, setContext] = useState("");
+  const [tone, setTone] = useState("Professional");
 
   const { user } = useAuthStore();
 
-  const { register, handleSubmit, formState: { errors }, control, setValue } = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      platform: "Instagram",
-      date: new Date()
-    }
-  });
-
+  // Load business profile information
   useEffect(() => {
-    if (user && typeof user.businessId === 'object' && user.businessId?.industryMode) {
-      if (user.businessId.industryMode.toLowerCase() !== 'other') {
-        setValue("niche", user.businessId.industryMode);
+    const loadBusinessProfile = async () => {
+      try {
+        const res = await api.get('/business/profile');
+        if (res.data) {
+          const b = res.data;
+          if (b.name) setBrandName(b.name);
+          if (b.industryMode && b.industryMode.toLowerCase() !== 'other') {
+            setNiche(b.industryMode);
+          }
+          if (b.location?.city) {
+            setCity(b.location.city);
+          }
+          if (b.brandVoice?.tone) {
+            setTone(b.brandVoice.tone);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load business profile:", err);
       }
-    }
-  }, [user, setValue]);
+    };
 
-  const onSubmit: SubmitHandler<FormValues> = async (data) => {
+    loadBusinessProfile();
+  }, [user]);
+
+  const handleGenerate = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!niche.trim()) {
+      toast.error("Please enter a business niche or industry.");
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setVariations(null);
 
-    const formattedDate = format(data.date, "yyyy-MM-dd");
-    setSelectedDate(formattedDate);
+    const formattedDate = format(selectedDate, "yyyy-MM-dd");
 
     try {
-      // Use api client which handles base URL and auth tokens automatically
       const response = await api.post("/ai/generate-daily", {
-        ...data,
+        niche: niche.trim(),
+        platform,
+        city: city.trim(),
+        brandName: brandName.trim(),
+        description: context.trim(),
         date: formattedDate,
       });
 
-      // Axios returns data directly in response.data, but our api client interceptor might return the response object
-      // Let's assume standard axios behavior or the client wrapper behavior.
-      // If api.post returns the response object (which it usually does in axios unless intercepted to return data),
-      // then response.data is what we want.
-
-      // Based on typical usage of the `api` client in this project (implied), let's check response structure.
-      // Usually axios response has .data.
-      const result = response.data;
-      setVariations(result.variations);
-
+      if (response.data && response.data.variations) {
+        setVariations(response.data.variations);
+        toast.success(`Generated 3 ${platform} strategies!`);
+      } else {
+        throw new Error("No content variations returned by AI.");
+      }
     } catch (err: any) {
       console.error(err);
-      setError(err.response?.data?.message || err.message || "An unexpected error occurred.");
+      setError(err.response?.data?.details || err.response?.data?.error || err.message || "An error occurred during generation.");
+      toast.error("Generation failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  /* Refactored to use api client */
-  const handleSavePost = async (post: DayPost, type: "viral" | "reach" | "niche") => {
+  const handleSavePost = async (post: DayPost) => {
     setIsSaving(true);
+    const formattedDate = format(selectedDate, "yyyy-MM-dd");
+
     try {
-      // Use api client which handles base URL and auth tokens automatically
       await api.post("/ai/save-post", {
         post,
-        date: selectedDate,
-        type,
+        date: formattedDate,
+        type: post.strategyType || "viral",
       });
 
-      toast.success("Saved to Content Board");
+      toast.success("Saved to Content Board! View it in your calendar.");
     } catch (err) {
       console.error("Failed to save post", err);
-      toast.error("Failed to save post");
+      toast.error("Failed to save post to Content Board.");
     } finally {
       setIsSaving(false);
     }
   };
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-white">
-      {/* Sidebar - Controls */}
-      <aside className="w-full lg:w-[400px] border-b lg:border-b-0 lg:border-r border-gray-100 bg-white p-4 sm:p-6 lg:p-8">
-        <div className="mb-8">
-          <h1 className="text-xl font-bold text-gray-900">Content Studio</h1>
-          <p className="text-sm text-gray-500 mt-1">AI-powered content generation.</p>
+    <div className="flex flex-col lg:flex-row min-h-screen bg-[#FBFBFC]">
+      {/* Sidebar Controls */}
+      <aside className="w-full lg:w-[420px] border-b lg:border-b-0 lg:border-r border-gray-200/80 bg-white p-6 sm:p-8 space-y-6">
+        <div>
+          <div className="flex items-center gap-2 mb-1 text-purple-600">
+            <Sparkles className="w-4 h-4" />
+            <span className="text-xs font-bold uppercase tracking-wider">AI Content Studio</span>
+          </div>
+          <h1 className="text-2xl font-black text-gray-900 tracking-tight">Content Studio</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Generate publication-ready posts, video scripts, and custom AI images.
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleGenerate} className="space-y-5">
+          {/* Target Platform */}
           <div className="space-y-2">
-            <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</Label>
-            <Controller
-              name="date"
-              control={control}
-              render={({ field }) => (
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full justify-start text-left font-normal h-11 !bg-white border-gray-200 hover:!bg-gray-50 transition-colors rounded-lg !text-gray-900",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4 text-gray-400" />
-                      {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              )}
-            />
-            {errors.date && <p className="text-red-500 text-xs">{errors.date.message}</p>}
+            <Label className="text-xs font-bold text-gray-600 uppercase tracking-wider">
+              Target Platform
+            </Label>
+            <Select value={platform} onValueChange={(val) => setPlatform(val as SupportedPlatform)}>
+              <SelectTrigger className="w-full h-11 bg-white border-gray-200 text-gray-900 font-semibold rounded-xl">
+                <SelectValue placeholder="Select platform" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border-gray-200">
+                {PLATFORMS.map(p => {
+                  const Icon = p.icon;
+                  return (
+                    <SelectItem key={p.value} value={p.value} className="cursor-pointer py-2.5">
+                      <div className="flex items-center gap-2.5">
+                        <Icon className={cn("w-4 h-4", p.color)} />
+                        <span className="font-medium text-gray-900">{p.label}</span>
+                      </div>
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          {/* Date Picker */}
+          <div className="space-y-2">
+            <Label className="text-xs font-bold text-gray-600 uppercase tracking-wider">
+              Publication Date
+            </Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left font-medium h-11 bg-white border-gray-200 hover:bg-gray-50 rounded-xl text-gray-900"
+                >
+                  <CalendarIcon className="mr-2.5 h-4 w-4 text-purple-600" />
+                  {format(selectedDate, "PPP")}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 bg-white" align="start">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(date) => date && setSelectedDate(date)}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Business Name & Niche */}
+          <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="niche" className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Niche</Label>
-              <Input id="niche" {...register("niche")} placeholder="SaaS, Fitness..." className="!bg-white border-gray-200 h-11 rounded-lg !text-gray-900" />
-              {errors.niche && <p className="text-red-500 text-xs">{errors.niche.message}</p>}
+              <Label className="text-xs font-bold text-gray-600 uppercase tracking-wider">Business Name</Label>
+              <Input
+                value={brandName}
+                onChange={(e) => setBrandName(e.target.value)}
+                placeholder="Business Name"
+                className="bg-white border-gray-200 h-11 rounded-xl text-gray-900 text-sm font-medium"
+              />
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="city" className="text-xs font-semibold text-gray-500 uppercase tracking-wider">City</Label>
-              <Input id="city" {...register("city")} placeholder="New York..." className="!bg-white border-gray-200 h-11 rounded-lg !text-gray-900" />
-              {errors.city && <p className="text-red-500 text-xs">{errors.city.message}</p>}
+              <Label className="text-xs font-bold text-gray-600 uppercase tracking-wider">Niche / Industry</Label>
+              <Input
+                value={niche}
+                onChange={(e) => setNiche(e.target.value)}
+                placeholder="Gym, Dental, SaaS..."
+                className="bg-white border-gray-200 h-11 rounded-xl text-gray-900 text-sm font-medium"
+                required
+              />
             </div>
           </div>
 
+          {/* Location & Tone */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label className="text-xs font-bold text-gray-600 uppercase tracking-wider">Location / City</Label>
+              <Input
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="City (e.g. Kanpur)"
+                className="bg-white border-gray-200 h-11 rounded-xl text-gray-900 text-sm font-medium"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs font-bold text-gray-600 uppercase tracking-wider">Brand Tone</Label>
+              <Select value={tone} onValueChange={setTone}>
+                <SelectTrigger className="w-full h-11 bg-white border-gray-200 text-gray-900 font-medium rounded-xl">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-gray-200">
+                  <SelectItem value="Professional">Professional</SelectItem>
+                  <SelectItem value="Friendly">Friendly & Warm</SelectItem>
+                  <SelectItem value="Viral">Viral & Bold</SelectItem>
+                  <SelectItem value="Educational">Educational</SelectItem>
+                  <SelectItem value="High-Energy">High Energy</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Specific Context */}
           <div className="space-y-2">
-            <Label htmlFor="platform" className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Platform</Label>
-            <Controller
-              name="platform"
-              control={control}
-              render={({ field }) => (
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <SelectTrigger className="!bg-white border-gray-200 !text-gray-900 h-11 rounded-lg"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Instagram">Instagram</SelectItem>
-                    <SelectItem value="Instagram Reels">Instagram Reels</SelectItem>
-                    <SelectItem value="Facebook">Facebook</SelectItem>
-                    <SelectItem value="LinkedIn">LinkedIn</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
+            <Label className="text-xs font-bold text-gray-600 uppercase tracking-wider">
+              Campaign Focus / Offer (Optional)
+            </Label>
+            <Textarea
+              value={context}
+              onChange={(e) => setContext(e.target.value)}
+              placeholder="e.g. 20% off summer membership, new personal trainer announcement, customer results breakdown..."
+              className="bg-white border-gray-200 min-h-[90px] resize-none rounded-xl p-3 text-gray-900 text-xs leading-relaxed"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description" className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Context (Optional)</Label>
-            <Textarea id="description" {...register("description")} placeholder="Specific topic or focus..." className="!bg-white border-gray-200 min-h-[100px] resize-none rounded-lg p-3 !text-gray-900" />
-          </div>
-
-          <Button type="submit" disabled={isLoading} className="w-full bg-slate-900 text-white hover:bg-slate-800 h-12 shadow-sm transition-all font-medium rounded-lg text-sm mt-2">
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-gray-900 hover:bg-black text-white h-12 shadow-lg transition-all font-bold rounded-xl text-sm gap-2"
+          >
             {isLoading ? (
               <span className="flex items-center gap-2">
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Thinking...
+                Crafting {platform} Content...
               </span>
             ) : (
               <>
-                <Sparkles className="w-4 h-4 mr-2" />
-                Generate Content
+                <Sparkles className="w-4 h-4 text-purple-400" />
+                Generate Strategy & Visuals
               </>
             )}
           </Button>
         </form>
       </aside>
 
-      {/* Main Content - Results */}
-      <main className="flex-1 bg-gray-50/30 p-4 sm:p-6 lg:p-10">
-        <div className="max-w-4xl mx-auto">
+      {/* Main Results View */}
+      <main className="flex-1 p-6 sm:p-8 lg:p-10 overflow-y-auto">
+        <div className="max-w-4xl mx-auto space-y-6">
           {error && (
-            <Alert variant="destructive" className="mb-6">
+            <Alert variant="destructive" className="rounded-2xl border-red-200">
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Error</AlertTitle>
+              <AlertTitle>Generation Error</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
@@ -329,46 +828,88 @@ export default function AiCalendarPage() {
           {!variations && !isLoading && <EmptyState />}
 
           {isLoading && (
-            <div className="w-full h-full flex flex-col items-center justify-center text-center p-12 ">
-              <div className="w-16 h-16 border-4 border-gray-100 border-t-blue-500 rounded-full animate-spin mb-6" />
-              <h3 className="text-lg font-medium text-gray-900">Crafting Strategy</h3>
-              <p className="mt-2 text-gray-500 text-sm">Our AI is analyzing your niche trends...</p>
+            <div className="w-full flex flex-col items-center justify-center text-center p-16 bg-white rounded-2xl border border-gray-100 shadow-sm min-h-[480px]">
+              <div className="relative mb-6">
+                <div className="w-16 h-16 border-4 border-purple-100 border-t-purple-600 rounded-full animate-spin" />
+                <Sparkles className="w-6 h-6 text-purple-600 absolute inset-0 m-auto animate-pulse" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">Crafting Publication-Ready Content</h3>
+              <p className="mt-2 text-gray-500 text-sm max-w-sm mx-auto leading-relaxed">
+                Gemini is formulating hooks, captions, and platform storyboards while generating custom commercial visual art...
+              </p>
             </div>
           )}
 
           {variations && (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
-              <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl font-bold text-gray-900">Generated Strategy</h2>
-                <Badge variant="outline" className="text-gray-500 border-gray-200 px-3 py-1 text-sm font-normal">
-                  {selectedDate}
-                </Badge>
+            <div className="space-y-6 animate-in fade-in duration-300">
+              <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-gray-200/80">
+                <div>
+                  <h2 className="text-2xl font-black text-gray-900 tracking-tight">
+                    {platform} Content Strategy
+                  </h2>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Target Date: <span className="font-semibold text-gray-800">{format(selectedDate, "PPPP")}</span>
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="bg-white border-purple-200 text-purple-700 px-3 py-1 font-semibold text-xs">
+                    3 AI Variations Ready
+                  </Badge>
+                </div>
               </div>
 
               <Tabs defaultValue="viral" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 p-1 bg-gray-100/50 rounded-xl mb-8">
-                  <TabsTrigger value="viral" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm py-2.5 text-sm font-medium text-gray-500 data-[state=active]:text-gray-900">
+                <TabsList className="grid w-full grid-cols-3 p-1.5 bg-gray-100 rounded-2xl mb-6">
+                  <TabsTrigger
+                    value="viral"
+                    className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm py-2.5 text-xs sm:text-sm font-bold text-gray-600 data-[state=active]:text-amber-700 gap-2"
+                  >
+                    <Zap className="w-4 h-4 text-amber-500" />
                     Viral Factor
                   </TabsTrigger>
-                  <TabsTrigger value="reach" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm py-2.5 text-sm font-medium text-gray-500 data-[state=active]:text-gray-900">
+                  <TabsTrigger
+                    value="reach"
+                    className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm py-2.5 text-xs sm:text-sm font-bold text-gray-600 data-[state=active]:text-blue-700 gap-2"
+                  >
+                    <BarChart3 className="w-4 h-4 text-blue-500" />
                     Most Reach
                   </TabsTrigger>
-                  <TabsTrigger value="niche" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm py-2.5 text-sm font-medium text-gray-500 data-[state=active]:text-gray-900">
+                  <TabsTrigger
+                    value="niche"
+                    className="rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm py-2.5 text-xs sm:text-sm font-bold text-gray-600 data-[state=active]:text-purple-700 gap-2"
+                  >
+                    <Target className="w-4 h-4 text-purple-500" />
                     Niche Special
                   </TabsTrigger>
                 </TabsList>
 
-                <div className="mt-6">
-                  <TabsContent value="viral" className="mt-0 focus-visible:outline-none">
-                    <PostCard post={variations.viral} type="viral" onSave={() => handleSavePost(variations.viral, 'viral')} isSaving={isSaving} />
-                  </TabsContent>
-                  <TabsContent value="reach" className="mt-0 focus-visible:outline-none">
-                    <PostCard post={variations.reach} type="reach" onSave={() => handleSavePost(variations.reach, 'reach')} isSaving={isSaving} />
-                  </TabsContent>
-                  <TabsContent value="niche" className="mt-0 focus-visible:outline-none">
-                    <PostCard post={variations.niche} type="niche" onSave={() => handleSavePost(variations.niche, 'niche')} isSaving={isSaving} />
-                  </TabsContent>
-                </div>
+                <TabsContent value="viral" className="mt-0 focus-visible:outline-none">
+                  <PostCard
+                    post={variations.viral}
+                    type="viral"
+                    platform={platform}
+                    onSave={handleSavePost}
+                    isSaving={isSaving}
+                  />
+                </TabsContent>
+                <TabsContent value="reach" className="mt-0 focus-visible:outline-none">
+                  <PostCard
+                    post={variations.reach}
+                    type="reach"
+                    platform={platform}
+                    onSave={handleSavePost}
+                    isSaving={isSaving}
+                  />
+                </TabsContent>
+                <TabsContent value="niche" className="mt-0 focus-visible:outline-none">
+                  <PostCard
+                    post={variations.niche}
+                    type="niche"
+                    platform={platform}
+                    onSave={handleSavePost}
+                    isSaving={isSaving}
+                  />
+                </TabsContent>
               </Tabs>
             </div>
           )}

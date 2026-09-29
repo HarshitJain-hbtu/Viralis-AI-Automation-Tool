@@ -201,24 +201,27 @@ export const handleWebConnection = async (ws: WebSocket, req: Request) => {
     const greetingText = brand.voiceAgent?.greeting ||
         `Hello! Thank you for calling ${brand.name}. How can I assist you today?`;
 
-    // 3. Setup Gemini
-    const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash-lite' });
-    const chat = model.startChat({
-        history: [
-            {
-                role: 'user',
-                parts: [{ text: systemPrompt }]
-            },
-            {
-                role: 'model',
-                parts: [{ text: `Understood. I am acting as the receptionist. My opening line is: "${greetingText}"` }]
-            }
-        ]
+    // 3. Setup Gemini with systemInstruction for accurate persona grounding
+    const model = genAI.getGenerativeModel({
+        model: 'gemini-3.5-flash-lite',
+        systemInstruction: systemPrompt
     });
+    const chat = model.startChat();
 
     conversationLog.push(`AI: ${greetingText}`);
 
-    // Helper function to synthesize and send TTS audio
+    // Helper: Safely send JSON payload to client
+    const sendJsonSafe = (payload: any) => {
+        if (ws.readyState === WebSocket.OPEN) {
+            try {
+                ws.send(JSON.stringify(payload));
+            } catch (e) {
+                console.error('Failed to send JSON over WebSocket:', e);
+            }
+        }
+    };
+
+    // Helper: Synthesize and send TTS audio
     const sendTTSResponse = async (text: string) => {
         try {
             console.log(`🗣️ Requesting TTS from Deepgram for: "${text}"`);
@@ -250,19 +253,126 @@ export const handleWebConnection = async (ws: WebSocket, req: Request) => {
             } else {
                 console.error('❌ No stream in TTS response');
             }
-        } catch (ttsErr) {
-            console.error('❌ Error generating TTS:', ttsErr);
+        } catch (ttsErr: any) {
+            console.error('❌ Error generating TTS:', ttsErr?.message || ttsErr);
+            sendJsonSafe({
+                type: 'error',
+                message: 'Voice synthesis temporarily unavailable, but message was processed.'
+            });
         }
     };
 
-    // Send spoken greeting to client after connection establishes
-    setTimeout(() => {
-        if (ws.readyState === WebSocket.OPEN) {
-            sendTTSResponse(greetingText);
-        }
-    }, 600);
+    // Concurrency lock for AI processing
+    let isProcessing = false;
 
-    // 4. Setup Deepgram STT (Listen)
+    // Core handler: Process user input (from Voice STT or Manual Text Input)
+    const processUserMessage = async (userInput: string, source: 'voice' | 'text') => {
+        const trimmed = userInput?.trim();
+        if (!trimmed) return;
+
+        if (isProcessing) {
+            console.log(`⏳ Busy processing another message. Skipping duplicate: "${trimmed}"`);
+            return;
+        }
+
+        isProcessing = true;
+
+        // Clear any pending auto-disconnect
+        if (disconnectTimer) {
+            clearTimeout(disconnectTimer);
+            disconnectTimer = null;
+            console.log('🔄 User active, cancelled auto-disconnect.');
+        }
+
+        console.log(`🗣️ [${source.toUpperCase()}] User: ${trimmed}`);
+        conversationLog.push(`User: ${trimmed}`);
+
+        // 1. Emit user transcript and processing state to frontend
+        sendJsonSafe({
+            type: 'transcript',
+            sender: 'user',
+            text: trimmed,
+            timestamp: Date.now()
+        });
+        sendJsonSafe({ type: 'state', state: 'processing' });
+
+        try {
+            // 2. Query Gemini chat
+            console.log(`➡️ Sending to Gemini: "${trimmed}"`);
+            const result = await chat.sendMessage(trimmed);
+            const responseText = result.response.text()?.trim() ||
+                `Thank you for reaching out to ${brand.name}. How else can I assist you?`;
+
+            console.log(`🤖 AI Response: "${responseText}"`);
+            conversationLog.push(`AI: ${responseText}`);
+
+            // 3. Emit AI transcript to frontend chat
+            sendJsonSafe({
+                type: 'transcript',
+                sender: 'ai',
+                text: responseText,
+                timestamp: Date.now()
+            });
+
+            // 4. Check for customer interest / lead conversion trigger
+            const isClosing = userInterested && CLOSING_PHRASES.some(p => responseText.toLowerCase().includes(p));
+            const isNewInterest = detectInterest(responseText) || detectInterest(trimmed);
+
+            if (isNewInterest || isClosing) {
+                if (isNewInterest) {
+                    userInterested = true;
+                    console.log('✅ Lead intent detected! Opening lead modal.');
+                }
+
+                sendJsonSafe({ type: 'interest_detected', interested: true });
+
+                if (!disconnectTimer) {
+                    console.log('⏳ Scheduling auto-disconnect in 15s for lead capture...');
+                    disconnectTimer = setTimeout(() => {
+                        if (ws.readyState === WebSocket.OPEN) {
+                            console.log('🤖 Auto-disconnecting call to prioritize lead form...');
+                            ws.close(1000, 'Lead Intent Reached');
+                        }
+                    }, 15000);
+                }
+            }
+
+            // 5. Emit speaking state and synthesize voice audio
+            sendJsonSafe({ type: 'state', state: 'speaking' });
+            await sendTTSResponse(responseText);
+
+        } catch (err: any) {
+            console.error('❌ Error in AI conversational pipeline:', err?.message || err);
+            const fallbackText = "I'm having a brief connection issue. Could you please repeat that or send a message?";
+            sendJsonSafe({
+                type: 'transcript',
+                sender: 'ai',
+                text: fallbackText,
+                timestamp: Date.now()
+            });
+            await sendTTSResponse(fallbackText);
+        } finally {
+            isProcessing = false;
+            sendJsonSafe({ type: 'state', state: 'listening' });
+        }
+    };
+
+    // Send initial spoken greeting and chat bubble when client connects
+    setTimeout(async () => {
+        if (ws.readyState === WebSocket.OPEN) {
+            sendJsonSafe({
+                type: 'transcript',
+                sender: 'ai',
+                text: greetingText,
+                timestamp: Date.now()
+            });
+            sendJsonSafe({ type: 'state', state: 'speaking' });
+            await sendTTSResponse(greetingText);
+            sendJsonSafe({ type: 'state', state: 'listening' });
+        }
+    }, 500);
+
+    // 4. Setup Deepgram STT (Live Transcription)
     const live = deepgram.listen.live({
         model: 'nova-2',
         language: 'en-US',
@@ -273,92 +383,66 @@ export const handleWebConnection = async (ws: WebSocket, req: Request) => {
         interim_results: false,
     });
 
-    // Event: Deepgram Connection Open
-    live.on('open', () => {
-        console.log('🎤 Deepgram STT Connected');
+    live.on(LiveTranscriptionEvents.Open, () => {
+        console.log('🎤 Deepgram STT Connected and Listening');
+        sendJsonSafe({ type: 'stt_ready' });
+    });
 
-        // Listen for Transcript
-        live.on(LiveTranscriptionEvents.Transcript, async (data) => {
-            const transcript = data.channel?.alternatives?.[0]?.transcript?.trim();
-            const isFinal = data.is_final || data.speech_final;
+    live.on(LiveTranscriptionEvents.Transcript, async (data) => {
+        const transcript = data.channel?.alternatives?.[0]?.transcript?.trim();
+        const isFinal = data.is_final || data.speech_final;
 
-            if (transcript && isFinal) {
-                // Clear any pending disconnect if user speaks again
-                if (disconnectTimer) {
-                    clearTimeout(disconnectTimer);
-                    disconnectTimer = null;
-                    console.log('🔄 User spoke, cancelled auto-disconnect.');
+        if (transcript && isFinal) {
+            console.log(`🎙️ Deepgram recognized speech: "${transcript}"`);
+            await processUserMessage(transcript, 'voice');
+        }
+    });
+
+    live.on(LiveTranscriptionEvents.Error, (err) => {
+        console.error('Deepgram STT Error:', err);
+        sendJsonSafe({ type: 'error', message: 'Speech recognition error. You can still type below.' });
+    });
+
+    live.on(LiveTranscriptionEvents.Close, () => {
+        console.log('Deepgram STT closed');
+    });
+
+    // 5. Handle Incoming Messages from Client (Audio PCM Chunks OR JSON Controls)
+    ws.on('message', async (data, isBinary) => {
+        try {
+            // Case A: Binary PCM audio chunk from microphone
+            if (isBinary || Buffer.isBuffer(data) && !data.toString('utf-8').trim().startsWith('{')) {
+                const buf = Buffer.isBuffer(data) ? data : Buffer.from(data as any);
+                if (live.getReadyState() === 1) { // OPEN
+                    live.send(buf as any);
                 }
+                return;
+            }
 
-                console.log(`🗣️ User: ${transcript}`);
-                conversationLog.push(`User: ${transcript}`);
-
-                // 5. Send to Gemini
+            // Case B: Text or JSON message
+            const textContent = (typeof data === 'string' ? data : Buffer.from(data as any).toString('utf-8')).trim();
+            if (textContent.startsWith('{')) {
                 try {
-                    console.log(`➡️ Sending to Gemini: "${transcript}"`);
-                    const result = await chat.sendMessage(transcript);
-                    const responseText = result.response.text();
-                    console.log(`🤖 AI Response: "${responseText}"`);
-                    conversationLog.push(`AI: ${responseText}`);
-
-                    if (!responseText) {
-                        console.warn('⚠️ Gemini returned empty response');
-                        return;
+                    const parsed = JSON.parse(textContent);
+                    if (parsed.type === 'user_message' && parsed.text) {
+                        await processUserMessage(parsed.text, 'text');
+                    } else if (parsed.type === 'interrupt') {
+                        console.log('🛑 Client interrupted audio playback');
+                        sendJsonSafe({ type: 'state', state: 'listening' });
+                    } else if (parsed.type === 'ping') {
+                        sendJsonSafe({ type: 'pong' });
                     }
-
-                    // === INTEREST DETECTION ===
-                    const isClosing = userInterested && CLOSING_PHRASES.some(p => responseText.toLowerCase().includes(p));
-                    const isNewInterest = detectInterest(responseText);
-
-                    if (isNewInterest || isClosing) {
-                        if (isNewInterest) {
-                            userInterested = true;
-                            console.log('✅ Interest detected! User wants to connect.');
-                        }
-
-                        // Send signal to client
-                        if (ws.readyState === WebSocket.OPEN) {
-                            if (isNewInterest) {
-                                ws.send(JSON.stringify({ type: 'interest_detected', interested: true }));
-                            }
-
-                            // Auto-disconnect after 10 seconds to allow TTS to finish
-                            if (!disconnectTimer) {
-                                console.log('⏳ Scheduling auto-disconnect in 10s...');
-                                disconnectTimer = setTimeout(() => {
-                                    if (ws.readyState === WebSocket.OPEN) {
-                                        console.log('🤖 Auto-disconnecting call to show lead form...');
-                                        ws.close(1000, 'Goal Reached');
-                                    }
-                                }, 10000);
-                            }
-                        }
-                    }
-
-                    // 6. Generate and send TTS Audio back to client
-                    await sendTTSResponse(responseText);
-
-                } catch (err) {
-                    console.error('❌ Error in AI processing pipeline:', err);
+                    return;
+                } catch {
+                    // Not valid JSON, treat as raw text
                 }
             }
-        });
-    });
 
-    // Event: Error
-    live.on('error', (err) => {
-        console.error('Deepgram STT Error:', err);
-    });
-
-    // 7. Pipe Client Audio -> Deepgram
-    ws.on('message', (data) => {
-        try {
-            const buf = Buffer.isBuffer(data) ? data : Buffer.from(data as any);
-            if (live.getReadyState() === 1) { // OPEN
-                live.send(buf as any);
+            if (textContent.length > 0) {
+                await processUserMessage(textContent, 'text');
             }
         } catch (err) {
-            console.error('Error forwarding audio to Deepgram:', err);
+            console.error('Error handling WebSocket incoming message:', err);
         }
     });
 

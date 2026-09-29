@@ -19,10 +19,11 @@ interface ContentItem {
     caption?: string;
     hashtags?: string[];
     visual_prompt?: string;
+    imageUrl?: string;
     best_time?: string;
     date: Date;
     status: 'posted' | 'scheduled' | 'draft';
-    platform: 'instagram' | 'youtube' | 'twitter' | 'tiktok';
+    platform: string;
     strategyType?: 'viral' | 'reach' | 'niche';
 }
 
@@ -39,17 +40,17 @@ export function ContentCalendar() {
             try {
                 // Use api client
                 const response = await api.get("/ai/get-posts");
-                // Axios response.data contains the body
                 const data = response.data;
 
                 if (data && data.posts) {
                     const formattedPosts = data.posts.map((post: any) => ({
-                        id: post.id || Math.random().toString(),
-                        title: post.hook || "Untitled Post",
+                        id: post.id || post._id || Math.random().toString(),
+                        title: post.title || post.hook || "Untitled Post",
                         caption: post.caption,
                         hashtags: post.hashtags || [],
-                        visual_prompt: post.visual_prompt,
-                        best_time: post.best_time,
+                        visual_prompt: post.visual_prompt || post.visualPrompt,
+                        imageUrl: post.imageUrl || post.meta?.imageUrl,
+                        best_time: post.best_time || post.bestTime,
                         date: new Date(post.scheduledDate || post.date || new Date()),
                         status: post.status || 'scheduled',
                         platform: post.platform ? post.platform.toLowerCase() : 'instagram',
@@ -289,6 +290,32 @@ export function ContentCalendar() {
                                         <Copy className="h-3 w-3 mr-1.5" /> Copy Caption
                                     </Button>
                                 </div>
+
+                                {viewingPost.imageUrl && (
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-widest flex items-center gap-1.5">
+                                                <ImageIcon className="h-3 w-3" /> Visual Asset
+                                            </h4>
+                                            <a
+                                                href={viewingPost.imageUrl}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                download={`content-post-${viewingPost.id}.jpg`}
+                                                className="text-xs text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1"
+                                            >
+                                                Download Image
+                                            </a>
+                                        </div>
+                                        <div className="rounded-xl overflow-hidden border border-gray-200 bg-gray-50 relative flex items-center justify-center p-2">
+                                            <img
+                                                src={viewingPost.imageUrl}
+                                                alt="AI Generated Visual"
+                                                className="w-full max-h-[300px] object-contain rounded-lg shadow-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
 
                                 {viewingPost.visual_prompt && (
                                     <div className="space-y-3">
