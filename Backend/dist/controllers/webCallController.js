@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.handleWebConnection = void 0;
+exports.handleVoiceChatMessage = exports.handleWebConnection = void 0;
 const ws_1 = require("ws");
 const sdk_1 = require("@deepgram/sdk");
 const generative_ai_1 = require("@google/generative-ai");
@@ -335,39 +335,51 @@ const handleWebConnection = async (ws, req) => {
         console.log('Deepgram STT closed');
     });
     // 5. Handle Incoming Messages from Client (Audio PCM Chunks OR JSON Controls)
-    ws.on('message', async (data, isBinary) => {
+    ws.on('message', async (data) => {
         try {
-            // Case A: Binary PCM audio chunk from microphone
-            if (isBinary || Buffer.isBuffer(data) && !data.toString('utf-8').trim().startsWith('{')) {
-                const buf = Buffer.isBuffer(data) ? data : Buffer.from(data);
-                if (live.getReadyState() === 1) { // OPEN
-                    live.send(buf);
-                }
-                return;
+            // Check if incoming payload is a JSON command or text message
+            let textCandidate = null;
+            if (typeof data === 'string') {
+                textCandidate = data.trim();
             }
-            // Case B: Text or JSON message
-            const textContent = (typeof data === 'string' ? data : Buffer.from(data).toString('utf-8')).trim();
-            if (textContent.startsWith('{')) {
+            else if (Buffer.isBuffer(data)) {
+                // If it starts with ASCII for '{' (123) or '[' (91)
+                const firstByte = data[0];
+                if (firstByte === 123 || firstByte === 91) {
+                    try {
+                        textCandidate = data.toString('utf-8').trim();
+                    }
+                    catch {
+                        textCandidate = null;
+                    }
+                }
+            }
+            if (textCandidate && (textCandidate.startsWith('{') || textCandidate.startsWith('['))) {
                 try {
-                    const parsed = JSON.parse(textContent);
+                    const parsed = JSON.parse(textCandidate);
                     if (parsed.type === 'user_message' && parsed.text) {
+                        console.log(`📩 [WS] Received manual user query: "${parsed.text}"`);
                         await processUserMessage(parsed.text, 'text');
+                        return;
                     }
                     else if (parsed.type === 'interrupt') {
                         console.log('🛑 Client interrupted audio playback');
                         sendJsonSafe({ type: 'state', state: 'listening' });
+                        return;
                     }
                     else if (parsed.type === 'ping') {
                         sendJsonSafe({ type: 'pong' });
+                        return;
                     }
-                    return;
                 }
                 catch {
-                    // Not valid JSON, treat as raw text
+                    // Not valid JSON, continue to audio forwarding
                 }
             }
-            if (textContent.length > 0) {
-                await processUserMessage(textContent, 'text');
+            // Case B: Binary PCM audio chunk from microphone
+            const buf = Buffer.isBuffer(data) ? data : Buffer.from(data);
+            if (live.getReadyState() === 1) { // OPEN
+                live.send(buf);
             }
         }
         catch (err) {
@@ -425,4 +437,77 @@ const handleWebConnection = async (ws, req) => {
     });
 };
 exports.handleWebConnection = handleWebConnection;
+/**
+ * REST Endpoint for Voice Receptionist Chat Messages
+ * Provides an instant fallback if WebSockets are blocked by proxies or browser policies
+ */
+const handleVoiceChatMessage = async (req, res) => {
+    try {
+        const { brandId, message, conversationHistory } = req.body;
+        if (!brandId || !message) {
+            return res.status(400).json({ error: "brandId and message are required." });
+        }
+        const brand = await fetchBrandData(brandId);
+        if (!brand) {
+            return res.status(404).json({ error: "Brand profile not found." });
+        }
+        const systemPrompt = createSystemPrompt(brand);
+        const model = genAI.getGenerativeModel({
+            model: 'gemini-3.5-flash-lite',
+            systemInstruction: systemPrompt
+        });
+        // Format history starting from user role
+        const history = [];
+        if (Array.isArray(conversationHistory) && conversationHistory.length > 0) {
+            for (const item of conversationHistory) {
+                if (item.text && item.sender) {
+                    history.push({
+                        role: item.sender === 'user' ? 'user' : 'model',
+                        parts: [{ text: item.text }]
+                    });
+                }
+            }
+        }
+        // Validate that first item is from 'user'
+        const validHistory = history.length > 0 && history[0].role === 'user' ? history : [];
+        const chat = model.startChat({ history: validHistory });
+        const result = await chat.sendMessage(message);
+        const responseText = result.response.text()?.trim() ||
+            `Thank you for contacting ${brand.name}. How else can I help you today?`;
+        // Synthesize TTS audio if Deepgram is configured
+        let audioBase64 = null;
+        if (deepgram) {
+            try {
+                const ttsResponse = await deepgram.speak.request({ text: responseText }, { model: 'aura-asteria-en' });
+                const stream = await ttsResponse.getStream();
+                if (stream) {
+                    const reader = stream.getReader();
+                    const chunks = [];
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done)
+                            break;
+                        if (value)
+                            chunks.push(value);
+                    }
+                    audioBase64 = Buffer.concat(chunks).toString('base64');
+                }
+            }
+            catch (ttsErr) {
+                console.warn("REST TTS generation warning:", ttsErr?.message || ttsErr);
+            }
+        }
+        return res.status(200).json({
+            sender: 'ai',
+            text: responseText,
+            audioBase64,
+            timestamp: Date.now()
+        });
+    }
+    catch (err) {
+        console.error("Error in handleVoiceChatMessage:", err);
+        return res.status(500).json({ error: "Failed to process chat message", details: err.message });
+    }
+};
+exports.handleVoiceChatMessage = handleVoiceChatMessage;
 //# sourceMappingURL=webCallController.js.map

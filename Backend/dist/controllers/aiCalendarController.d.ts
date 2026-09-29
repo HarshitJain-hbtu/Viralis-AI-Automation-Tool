@@ -16,6 +16,10 @@ export declare const generateDayContent: (req: Request, res: Response) => Promis
  */
 export declare const regenerateImage: (req: Request, res: Response) => Promise<Response<any, Record<string, any>>>;
 /**
+ * Proxies image downloads to bypass CORS restrictions in browser
+ */
+export declare const downloadImageProxy: (req: Request, res: Response) => Promise<void | Response<any, Record<string, any>>>;
+/**
  * Saves a selected post to the Content Board in MongoDB
  */
 export declare const savePost: (req: Request, res: Response) => Promise<Response<any, Record<string, any>>>;

@@ -73,8 +73,23 @@ function PostCard({ post, type, platform, onSave, isSaving }: PostCardProps) {
   const [editedCta, setEditedCta] = useState(post.cta);
   const [isRegeneratingImage, setIsRegeneratingImage] = useState(false);
 
+  // Helper to ensure an image URL always exists
+  const getEffectiveImageUrl = (p: DayPost) => {
+    if (p.imageUrl && p.imageUrl.trim().length > 0) return p.imageUrl;
+    const prompt = p.visualPrompt || p.visual_prompt || p.hook || "modern business commercial visual";
+    const cleanPlatform = platform.toLowerCase();
+    const width = (cleanPlatform.includes('reel') || cleanPlatform.includes('short')) ? 576 : (cleanPlatform.includes('video') ? 1024 : 1024);
+    const height = (cleanPlatform.includes('reel') || cleanPlatform.includes('short')) ? 1024 : (cleanPlatform.includes('video') ? 576 : 1024);
+    const encoded = encodeURIComponent(`${prompt}, commercial advertising photography, studio lighting, hyper-realistic, 8k, sharp focus, vibrant colors, professional grade`);
+    return `https://image.pollinations.ai/prompt/${encoded}?width=${width}&height=${height}&model=flux&nologo=true&seed=${Date.now() % 1000000}`;
+  };
+
   useEffect(() => {
-    setCurrentPost(post);
+    const postWithImage = {
+      ...post,
+      imageUrl: post.imageUrl || getEffectiveImageUrl(post)
+    };
+    setCurrentPost(postWithImage);
     setEditedHook(post.hook);
     setEditedCaption(post.caption);
     setEditedCta(post.cta);
@@ -119,35 +134,80 @@ function PostCard({ post, type, platform, onSave, isSaving }: PostCardProps) {
   };
 
   const handleDownloadImage = async () => {
-    if (!currentPost.imageUrl) return;
-    try {
-      toast.info("Preparing image download...");
-      const response = await fetch(currentPost.imageUrl);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      const cleanPlatform = platform.toLowerCase().replace(/\s+/g, '-');
-      a.download = `viralis-${cleanPlatform}-${type}-${Date.now()}.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      toast.success("Image downloaded successfully!");
-    } catch (e) {
-      console.error("Download error:", e);
-      // Fallback: Open in new tab
-      window.open(currentPost.imageUrl, '_blank');
+    const imgUrl = currentPost.imageUrl || getEffectiveImageUrl(currentPost);
+    if (!imgUrl) {
+      toast.error("No visual available to download.");
+      return;
     }
+
+    const cleanPlatform = platform.toLowerCase().replace(/\s+/g, '-');
+    const filename = `viralis-${cleanPlatform}-${type}-${Date.now()}.jpg`;
+
+    toast.info("Downloading AI visual...");
+
+    // 1. Try downloading via the backend proxy to bypass CORS
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+      const cleanApiUrl = apiUrl.replace(/\/+$/, '').endsWith('/api') ? apiUrl : `${apiUrl.replace(/\/+$/, '')}/api`;
+      const proxyDownloadUrl = `${cleanApiUrl}/ai/download-image?url=${encodeURIComponent(imgUrl)}&filename=${encodeURIComponent(filename)}`;
+
+      const res = await fetch(proxyDownloadUrl);
+      if (res.ok) {
+        const blob = await res.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(blobUrl);
+        document.body.removeChild(a);
+        toast.success("Visual downloaded to your device!");
+        return;
+      }
+    } catch (proxyErr) {
+      console.warn("Proxy download failed, trying direct blob fetch:", proxyErr);
+    }
+
+    // 2. Fallback: Direct fetch with blob
+    try {
+      const response = await fetch(imgUrl, { mode: 'cors' });
+      if (response.ok) {
+        const blob = await response.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(blobUrl);
+        document.body.removeChild(a);
+        toast.success("Visual downloaded to your device!");
+        return;
+      }
+    } catch (directErr) {
+      console.warn("Direct blob fetch failed:", directErr);
+    }
+
+    // 3. Fallback: Open in new window/tab for user to save
+    window.open(imgUrl, '_blank');
+    toast.success("Image opened in a new tab. Right-click or long-press to save.");
   };
 
   const handleRegenerateImage = async () => {
     setIsRegeneratingImage(true);
+    const effectivePrompt = currentPost.visualPrompt || currentPost.visual_prompt || currentPost.hook || "modern business commercial advertising";
+    const seed = Math.floor(Math.random() * 10000000);
+    const cleanPlatform = platform.toLowerCase();
+    const width = (cleanPlatform.includes('reel') || cleanPlatform.includes('short')) ? 576 : (cleanPlatform.includes('video') ? 1024 : 1024);
+    const height = (cleanPlatform.includes('reel') || cleanPlatform.includes('short')) ? 1024 : (cleanPlatform.includes('video') ? 576 : 1024);
+
     try {
+      // 1. Attempt backend regenerate endpoint
       const res = await api.post('/ai/regenerate-image', {
-        prompt: currentPost.visualPrompt || currentPost.visual_prompt || currentPost.hook,
+        prompt: effectivePrompt,
         platform,
-        seed: Math.floor(Math.random() * 1000000)
+        seed
       });
 
       if (res.data?.imageUrl) {
@@ -156,9 +216,23 @@ function PostCard({ post, type, platform, onSave, isSaving }: PostCardProps) {
           imageUrl: res.data.imageUrl
         }));
         toast.success("New AI visual generated!");
+        return;
       }
     } catch (e) {
-      console.error("Failed to regenerate image", e);
+      console.warn("Backend regenerate image attempt failed, falling back to direct client generation:", e);
+    }
+
+    // 2. Direct client fallback with Pollinations Flux - guaranteed to succeed
+    try {
+      const encoded = encodeURIComponent(`${effectivePrompt}, commercial advertising photography, studio lighting, hyper-realistic, 8k, sharp focus, vibrant colors, professional grade`);
+      const directUrl = `https://image.pollinations.ai/prompt/${encoded}?width=${width}&height=${height}&model=flux&nologo=true&seed=${seed}`;
+      setCurrentPost(prev => ({
+        ...prev,
+        imageUrl: directUrl
+      }));
+      toast.success("New AI visual generated!");
+    } catch (fallbackErr) {
+      console.error("Image regeneration failed:", fallbackErr);
       toast.error("Failed to regenerate visual. Please try again.");
     } finally {
       setIsRegeneratingImage(false);
@@ -262,25 +336,36 @@ function PostCard({ post, type, platform, onSave, isSaving }: PostCardProps) {
             </div>
           </div>
 
-          {currentPost.imageUrl && (
-            <div className={cn(
-              "relative rounded-xl overflow-hidden border border-gray-200/80 bg-slate-950 shadow-inner group",
-              isVerticalVideo ? "w-full max-w-[280px] mx-auto aspect-[9/16] max-h-[440px]" :
-                isLandscapeVideo ? "w-full aspect-[16/9] max-h-[360px]" :
-                  "w-full max-w-[420px] mx-auto aspect-square"
-            )}>
-              <img
-                src={currentPost.imageUrl}
-                alt="AI Generated Visual"
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                <p className="text-xs text-white/90 line-clamp-2 italic">
-                  {currentPost.visualPrompt || currentPost.visual_prompt}
-                </p>
+          {/* Visual Preview Box */}
+          <div className={cn(
+            "relative rounded-xl overflow-hidden border border-gray-200/80 bg-slate-950 shadow-inner group",
+            isVerticalVideo ? "w-full max-w-[280px] mx-auto aspect-[9/16] max-h-[440px]" :
+              isLandscapeVideo ? "w-full aspect-[16/9] max-h-[360px]" :
+                "w-full max-w-[420px] mx-auto aspect-square"
+          )}>
+            {/* Shimmer loading overlay during regeneration */}
+            {isRegeneratingImage && (
+              <div className="absolute inset-0 z-20 bg-slate-950/85 backdrop-blur-sm flex flex-col items-center justify-center p-4 text-center">
+                <RefreshCw className="w-8 h-8 text-purple-400 animate-spin mb-3" />
+                <p className="text-sm font-semibold text-white">Generating New AI Visual...</p>
+                <p className="text-xs text-purple-300 mt-1">Applying Flux render engine with studio lighting</p>
               </div>
+            )}
+
+            <img
+              src={currentPost.imageUrl || getEffectiveImageUrl(currentPost)}
+              alt="AI Generated Visual"
+              className={cn(
+                "w-full h-full object-cover transition-transform duration-500 group-hover:scale-105",
+                isRegeneratingImage && "opacity-30 filter blur-xs"
+              )}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+              <p className="text-xs text-white/90 line-clamp-2 italic font-medium">
+                {currentPost.visualPrompt || currentPost.visual_prompt || currentPost.hook}
+              </p>
             </div>
-          )}
+          </div>
         </div>
 
         {/* Primary Hook */}

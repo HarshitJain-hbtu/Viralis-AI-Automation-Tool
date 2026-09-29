@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRecentPosts = exports.getCalendarStats = exports.updatePostStatus = exports.getPosts = exports.savePost = exports.regenerateImage = exports.generateDayContent = exports.getCalendar = exports.generateCalendar = void 0;
+exports.getRecentPosts = exports.getCalendarStats = exports.updatePostStatus = exports.getPosts = exports.savePost = exports.downloadImageProxy = exports.regenerateImage = exports.generateDayContent = exports.getCalendar = exports.generateCalendar = void 0;
 const uuid_1 = require("uuid");
 const aiContentService_1 = require("../utils/aiContentService");
 // In-memory store for this prototype. In production, use a database like Redis or a persistent DB.
@@ -103,15 +103,16 @@ exports.generateDayContent = generateDayContent;
  */
 const regenerateImage = async (req, res) => {
     try {
-        const { prompt, platform, seed } = req.body;
-        if (!prompt) {
-            return res.status(400).json({ error: "Image prompt is required." });
-        }
+        const { prompt, platform, seed, niche, businessName } = req.body;
+        const effectivePrompt = (typeof prompt === 'string' && prompt.trim().length > 0)
+            ? prompt.trim()
+            : `${platform || "Instagram Post"} high-end commercial advertising photography for ${businessName || "modern business"} ${niche ? `in ${niche}` : ""}, studio lighting, professional 8k`;
         const imageUrl = (0, imageService_1.generateImageUrl)({
-            prompt,
+            prompt: effectivePrompt,
             platform: platform || "Instagram Post",
-            seed: seed || Math.floor(Math.random() * 1000000)
+            seed: seed || Math.floor(Math.random() * 10000000)
         });
+        console.log(`🖼️ Regenerated image for ${platform}: ${imageUrl.slice(0, 90)}...`);
         return res.status(200).json({
             success: true,
             imageUrl
@@ -123,6 +124,40 @@ const regenerateImage = async (req, res) => {
     }
 };
 exports.regenerateImage = regenerateImage;
+/**
+ * Proxies image downloads to bypass CORS restrictions in browser
+ */
+const downloadImageProxy = async (req, res) => {
+    try {
+        const imageUrl = req.query.url;
+        const filename = req.query.filename || `viralis-visual-${Date.now()}.jpg`;
+        if (!imageUrl) {
+            return res.status(400).json({ error: "Image URL parameter is required." });
+        }
+        console.log(`📥 Downloading image via proxy: ${imageUrl.slice(0, 80)}...`);
+        const upstreamRes = await fetch(imageUrl);
+        if (!upstreamRes.ok) {
+            console.warn(`Upstream image returned status ${upstreamRes.status}, redirecting directly`);
+            return res.redirect(imageUrl);
+        }
+        const arrayBuffer = await upstreamRes.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Content-Type', upstreamRes.headers.get('content-type') || 'image/jpeg');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.setHeader('Content-Length', buffer.length.toString());
+        return res.end(buffer);
+    }
+    catch (error) {
+        console.error("Error in downloadImageProxy:", error);
+        const fallbackUrl = req.query.url;
+        if (fallbackUrl) {
+            return res.redirect(fallbackUrl);
+        }
+        return res.status(500).json({ error: "Failed to proxy image download", details: error.message });
+    }
+};
+exports.downloadImageProxy = downloadImageProxy;
 /**
  * Saves a selected post to the Content Board in MongoDB
  */

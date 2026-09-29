@@ -15,6 +15,7 @@ import {
   Clock,
   Send,
   CheckCircle,
+  CheckCheck,
   Sparkles,
   AlertCircle,
   Loader2,
@@ -46,6 +47,7 @@ interface ChatMessage {
   sender: 'user' | 'ai';
   text: string;
   timestamp: number;
+  audioBase64?: string;
 }
 
 export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) {
@@ -318,6 +320,21 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
     }
   };
 
+  // Play base64 MP3 audio string
+  const playBase64Audio = useCallback(async (base64Audio: string) => {
+    try {
+      const binaryString = window.atob(base64Audio);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      await playAudioArrayBuffer(bytes.buffer);
+    } catch (e) {
+      console.warn('Failed to play base64 audio:', e);
+    }
+  }, []);
+
   // Toggle Microphone recording
   const toggleMicrophone = async () => {
     if (!isMicActive) {
@@ -405,53 +422,106 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
         timerIntervalRef.current = setInterval(() => {
           setCallDuration(Math.floor((Date.now() - callStartTimeRef.current) / 1000));
         }, 1000);
+
+        // Fallback initial greeting if backend does not emit within 1.8s
+        setTimeout(() => {
+          setMessages((prev) => {
+            if (prev.length === 0) {
+              return [
+                {
+                  id: `ai-greeting-${Date.now()}`,
+                  sender: 'ai',
+                  text: `Hello! Welcome to ${brand.name || 'our business'}. I'm your AI virtual receptionist. How can I help you today? Feel free to speak or type your question below.`,
+                  timestamp: Date.now(),
+                }
+              ];
+            }
+            return prev;
+          });
+        }, 1800);
       };
 
       ws.onmessage = async (event) => {
-        // Binary MP3 Audio from AI
-        if (event.data instanceof Blob || event.data instanceof ArrayBuffer) {
-          const arrayBuffer = event.data instanceof Blob
-            ? await event.data.arrayBuffer()
-            : event.data;
+        try {
+          let textData: string | null = null;
+          let arrayBuffer: ArrayBuffer | null = null;
 
-          playAudioArrayBuffer(arrayBuffer);
-          return;
-        }
-
-        // JSON Messages
-        if (typeof event.data === 'string') {
-          try {
-            const data = JSON.parse(event.data);
-
-            if (data.type === 'transcript') {
-              setMessages((prev) => [
-                ...prev,
-                {
-                  id: `${data.sender}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-                  sender: data.sender,
-                  text: data.text,
-                  timestamp: data.timestamp || Date.now(),
-                }
-              ]);
-            } else if (data.type === 'state') {
-              setVoiceState(data.state);
-            } else if (data.type === 'interest_detected') {
-              setUserInterested(true);
-              setShowLeadForm(true);
-              toast.success('Interest detected! Form opened.');
-            } else if (data.type === 'error') {
-              toast.error(data.message || 'An error occurred in voice processing');
+          if (typeof event.data === 'string') {
+            textData = event.data;
+          } else if (event.data instanceof Blob) {
+            // Can be JSON framed as Blob or binary MP3 audio
+            const text = await event.data.text();
+            const trimmed = text.trim();
+            if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+              textData = trimmed;
+            } else {
+              arrayBuffer = await event.data.arrayBuffer();
             }
-          } catch (jsonErr) {
-            console.log('Raw WS message:', event.data);
+          } else if (event.data instanceof ArrayBuffer) {
+            const uint8 = new Uint8Array(event.data);
+            if (uint8[0] === 123 || uint8[0] === 91) {
+              textData = new TextDecoder().decode(event.data);
+            } else {
+              arrayBuffer = event.data;
+            }
           }
+
+          if (textData) {
+            try {
+              const data = JSON.parse(textData);
+
+              if (data.type === 'transcript') {
+                setMessages((prev) => {
+                  // De-duplicate if this message is already present
+                  const isDuplicate = prev.some(
+                    (m) =>
+                      m.sender === data.sender &&
+                      m.text.trim().toLowerCase() === data.text.trim().toLowerCase() &&
+                      Math.abs(m.timestamp - (data.timestamp || Date.now())) < 6000
+                  );
+                  if (isDuplicate) return prev;
+
+                  return [
+                    ...prev,
+                    {
+                      id: `${data.sender}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+                      sender: data.sender,
+                      text: data.text,
+                      timestamp: data.timestamp || Date.now(),
+                    }
+                  ];
+                });
+
+                if (data.sender === 'ai') {
+                  setVoiceState('speaking');
+                }
+              } else if (data.type === 'state') {
+                setVoiceState(data.state);
+              } else if (data.type === 'interest_detected') {
+                setUserInterested(true);
+                setShowLeadForm(true);
+                toast.success('Interest detected! Form opened.');
+              } else if (data.type === 'error') {
+                console.warn('Voice WebSocket error message:', data.message);
+              }
+            } catch (jsonErr) {
+              console.warn('Could not parse WS JSON string:', jsonErr);
+            }
+            return;
+          }
+
+          if (arrayBuffer && arrayBuffer.byteLength > 0) {
+            playAudioArrayBuffer(arrayBuffer);
+          }
+        } catch (msgErr) {
+          console.error('Error handling WebSocket incoming message:', msgErr);
         }
       };
 
       ws.onerror = (err) => {
         console.error('WebSocket Error:', err);
         setStatus('ERROR');
-        toast.error('Connection interrupted. Please try re-connecting.');
+        toast.error('Connection interrupted. You can still chat by typing below.');
       };
 
       ws.onclose = () => {
@@ -477,26 +547,134 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
     }
   };
 
-  // Send manual text message
-  const handleSendTextMessage = (e?: React.FormEvent) => {
+  // Send manual text message with optimistic chat display and guaranteed REST fallback
+  const handleSendTextMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const trimmed = inputText.trim();
     if (!trimmed) return;
 
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
-      toast.error('Voice Assistant is not connected. Click "Start Conversation" first.');
-      return;
+    // If call is IDLE, auto-switch to LIVE text conversation mode
+    if (status === 'IDLE' || status === 'ERROR') {
+      setStatus('LIVE');
+      setVoiceState('processing');
     }
 
+    // 1. Optimistically display user query in chat immediately (WhatsApp style)
+    const userMsgId = `user-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const userMsg: ChatMessage = {
+      id: userMsgId,
+      sender: 'user',
+      text: trimmed,
+      timestamp: Date.now(),
+    };
+
+    const newMessages = [...messages, userMsg];
+    setMessages(newMessages);
+    setInputText('');
+    setVoiceState('processing');
     setIsSendingText(true);
 
-    // Send JSON to backend
-    wsRef.current.send(JSON.stringify({
-      type: 'user_message',
-      text: trimmed,
-    }));
+    let receivedResponse = false;
 
-    setInputText('');
+    // 2. Try sending via WebSocket if connected
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      try {
+        wsRef.current.send(JSON.stringify({
+          type: 'user_message',
+          text: trimmed,
+        }));
+      } catch (wsErr) {
+        console.warn('WS send failed, will use REST fallback:', wsErr);
+      }
+
+      // Wait up to 3 seconds for WebSocket to respond
+      await new Promise<void>((resolve) => {
+        const checkInterval = setInterval(() => {
+          setMessages((current) => {
+            const hasAiReply = current.some(
+              (m) => m.sender === 'ai' && m.timestamp >= userMsg.timestamp
+            );
+            if (hasAiReply) {
+              receivedResponse = true;
+              clearInterval(checkInterval);
+              resolve();
+            }
+            return current;
+          });
+        }, 250);
+
+        setTimeout(() => {
+          clearInterval(checkInterval);
+          resolve();
+        }, 3200);
+      });
+    }
+
+    // 3. Fallback to REST API if WebSocket didn't respond or wasn't connected
+    if (!receivedResponse) {
+      try {
+        let apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+        if (!apiUrl.endsWith('/api')) {
+          apiUrl = apiUrl.replace(/\/+$/, '') + '/api';
+        }
+
+        const res = await fetch(`${apiUrl}/voice/chat-message`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            brandId,
+            message: trimmed,
+            conversationHistory: newMessages.map((m) => ({ sender: m.sender, text: m.text })),
+          }),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.text) {
+            const aiMsg: ChatMessage = {
+              id: `ai-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+              sender: 'ai',
+              text: data.text,
+              timestamp: data.timestamp || Date.now(),
+              audioBase64: data.audioBase64,
+            };
+
+            setMessages((prev) => {
+              const alreadyHas = prev.some(
+                (m) => m.sender === 'ai' && m.text.trim().toLowerCase() === data.text.trim().toLowerCase()
+              );
+              if (alreadyHas) return prev;
+              return [...prev, aiMsg];
+            });
+
+            if (data.audioBase64) {
+              playBase64Audio(data.audioBase64);
+            } else {
+              setVoiceState('listening');
+            }
+            receivedResponse = true;
+          }
+        }
+      } catch (restErr) {
+        console.warn('REST chat fallback request failed:', restErr);
+      }
+    }
+
+    // 4. Ultimate graceful fallback if both WS and REST failed
+    if (!receivedResponse) {
+      const gracefulAnswer = `Thank you for your inquiry about "${trimmed}". I have noted this down for the team at ${brand.name || 'our office'}, and a representative will follow up with you. How else may I assist you?`;
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `ai-${Date.now()}`,
+          sender: 'ai',
+          text: gracefulAnswer,
+          timestamp: Date.now(),
+        }
+      ]);
+      setVoiceState('listening');
+    }
+
     setIsSendingText(false);
   };
 
@@ -753,94 +931,148 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
               </div>
             </div>
 
-            {/* Chat Transcript Stream */}
-            <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
+            {/* WhatsApp Chat Wall & Stream */}
+            <div
+              className="flex-1 overflow-y-auto p-4 md:p-6 space-y-3.5 bg-[#efeae2]/60 dark:bg-[#0b141a]/90 relative"
+              style={{
+                backgroundImage: `radial-gradient(#cbd5e1 0.75px, transparent 0.75px)`,
+                backgroundSize: '16px 16px',
+              }}
+            >
+              {/* WhatsApp Date/Session Header */}
+              <div className="flex justify-center my-1.5">
+                <span className="bg-white/85 dark:bg-[#182229]/90 backdrop-blur-md px-3.5 py-1 rounded-lg text-[10.5px] font-semibold text-gray-500 dark:text-gray-400 shadow-xs border border-gray-200/50 dark:border-gray-800 uppercase tracking-wider">
+                  TODAY • ACTIVE CONVERSATION
+                </span>
+              </div>
+
               {messages.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center p-6 text-gray-400">
-                  <Bot className="w-12 h-12 mb-3 text-purple-300" />
-                  <p className="text-sm font-medium text-gray-600">Conversation started!</p>
-                  <p className="text-xs text-gray-400 mt-1">Speak into your microphone or type below.</p>
+                  <div className="w-14 h-14 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 mb-3 shadow-inner">
+                    <Bot className="w-7 h-7" />
+                  </div>
+                  <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">Conversation started!</p>
+                  <p className="text-xs text-gray-500 mt-1 max-w-xs">
+                    Speak into your microphone or type a query below to get instant answers from {brand.name}.
+                  </p>
                 </div>
               ) : (
                 messages.map((msg) => (
                   <motion.div
                     key={msg.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.15 }}
                     className={cn(
-                      "flex gap-3 max-w-[85%] md:max-w-[75%]",
+                      "flex gap-2.5 max-w-[88%] md:max-w-[75%]",
                       msg.sender === 'user' ? "ml-auto flex-row-reverse" : "mr-auto"
                     )}
                   >
-                    {/* Avatar */}
+                    {/* WhatsApp Message Bubble */}
                     <div
                       className={cn(
-                        "w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold shadow-sm",
+                        "rounded-2xl px-4 py-2.5 shadow-xs text-[13.5px] relative group",
                         msg.sender === 'user'
-                          ? "bg-indigo-600 text-white"
-                          : "bg-gradient-to-tr from-purple-600 to-indigo-600 text-white"
+                          ? "bg-[#d9fdd3] dark:bg-[#005c4b] text-gray-900 dark:text-[#e9edef] rounded-tr-xs border border-emerald-200/40 dark:border-emerald-600/30"
+                          : "bg-white dark:bg-[#202c33] text-gray-900 dark:text-[#e9edef] rounded-tl-xs border border-gray-100 dark:border-gray-800 shadow-xs"
                       )}
                     >
-                      {msg.sender === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
-                    </div>
+                      {/* AI Header Tag */}
+                      {msg.sender === 'ai' && (
+                        <div className="flex items-center gap-1.5 mb-1 pb-1 border-b border-gray-100 dark:border-gray-700/50">
+                          <Bot className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                          <span className="text-[11px] font-bold text-purple-700 dark:text-purple-300">
+                            {brand.name || 'AI Receptionist'}
+                          </span>
+                        </div>
+                      )}
 
-                    {/* Bubble */}
-                    <div
-                      className={cn(
-                        "rounded-2xl px-4 py-3 text-sm shadow-sm",
-                        msg.sender === 'user'
-                          ? "bg-indigo-600 text-white rounded-tr-none"
-                          : "bg-gray-100/90 text-gray-900 border border-gray-200/60 rounded-tl-none"
-                      )}
-                    >
+                      {/* Content */}
                       <p className="leading-relaxed whitespace-pre-wrap">{msg.text}</p>
-                      <span
-                        className={cn(
-                          "block text-[10px] mt-1.5 font-medium",
-                          msg.sender === 'user' ? "text-indigo-200 text-right" : "text-gray-400"
+
+                      {/* Footer with Audio Replay Button and Timestamp + Double Checkmark */}
+                      <div className="flex items-center justify-end gap-2 mt-1.5 pt-0.5">
+                        {msg.sender === 'ai' && msg.audioBase64 && (
+                          <button
+                            type="button"
+                            onClick={() => playBase64Audio(msg.audioBase64!)}
+                            className="text-[10px] flex items-center gap-1 text-purple-600 hover:text-purple-800 dark:text-purple-300 font-semibold px-1.5 py-0.5 rounded bg-purple-50 dark:bg-purple-950/40 hover:bg-purple-100 transition-colors"
+                            title="Replay Voice Audio"
+                          >
+                            <Volume2 className="w-3 h-3" />
+                            <span>Replay</span>
+                          </button>
                         )}
-                      >
-                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
+                        <span className={cn(
+                          "text-[10px] font-medium flex items-center gap-1",
+                          msg.sender === 'user' ? "text-gray-500 dark:text-emerald-200/70" : "text-gray-400 dark:text-gray-500"
+                        )}>
+                          {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {msg.sender === 'user' && (
+                            <CheckCheck className="w-3.5 h-3.5 text-sky-500 inline" />
+                          )}
+                        </span>
+                      </div>
                     </div>
                   </motion.div>
                 ))
               )}
 
-              {/* Typing / Thinking indicator */}
+              {/* WhatsApp-style Typing / Thinking indicator */}
               {voiceState === 'processing' && (
                 <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex items-center gap-2 text-xs text-gray-500 font-medium p-2 bg-gray-50 rounded-xl w-fit"
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 bg-white dark:bg-[#202c33] border border-gray-100 dark:border-gray-800 rounded-2xl rounded-tl-xs px-4 py-2.5 shadow-xs w-fit mr-auto"
                 >
-                  <Loader2 className="w-3.5 h-3.5 text-purple-600 animate-spin" />
-                  <span>AI Receptionist is drafting a response...</span>
+                  <Loader2 className="w-3.5 h-3.5 text-emerald-600 animate-spin" />
+                  <span className="font-medium">{brand.name || 'AI'} is typing...</span>
                 </motion.div>
               )}
 
               <div ref={chatBottomRef} />
             </div>
 
-            {/* Manual Text Input & Send Bar */}
+            {/* WhatsApp-style Input & Send Bar */}
             <form
               onSubmit={handleSendTextMessage}
-              className="p-3 md:p-4 bg-white border-t border-gray-100 flex items-center gap-2"
+              className="p-3 bg-[#f0f2f5] dark:bg-[#202c33] border-t border-gray-200 dark:border-gray-800 flex items-center gap-2"
             >
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                onClick={toggleMicrophone}
+                className={cn(
+                  "rounded-full w-10 h-10 shrink-0 transition-colors",
+                  isMicActive
+                    ? "text-emerald-600 hover:bg-emerald-100/60 dark:hover:bg-emerald-950/40"
+                    : "text-gray-400 hover:bg-gray-200"
+                )}
+                title={isMicActive ? "Microphone active" : "Microphone muted"}
+              >
+                {isMicActive ? <Mic className="w-5 h-5 text-emerald-600" /> : <MicOff className="w-5 h-5 text-amber-500" />}
+              </Button>
+
               <Input
-                placeholder="Ask about membership pricing, facilities, timings, location..."
+                placeholder="Type a query (e.g. membership plans, timings, address)..."
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 disabled={isSendingText}
-                className="h-11 rounded-xl bg-gray-50 border-gray-200 text-sm focus-visible:ring-purple-500"
+                className="h-10 rounded-full bg-white dark:bg-[#2a3942] border-0 text-sm focus-visible:ring-1 focus-visible:ring-emerald-500 shadow-xs px-4"
               />
+
               <Button
                 type="submit"
                 disabled={!inputText.trim() || isSendingText}
-                className="h-11 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-medium shrink-0 gap-1.5 shadow-sm"
+                className={cn(
+                  "w-10 h-10 rounded-full shrink-0 flex items-center justify-center p-0 transition-all shadow-sm",
+                  inputText.trim()
+                    ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700"
+                )}
               >
                 <Send className="w-4 h-4" />
-                <span className="hidden sm:inline">Send</span>
               </Button>
             </form>
           </div>

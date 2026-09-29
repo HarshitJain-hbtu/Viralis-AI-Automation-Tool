@@ -32,3 +32,15 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
     next();
     return;
 }
+
+export function optionalAuth(req: Request, _res: Response, next: NextFunction) {
+    const authHeader = req.headers.authorization;
+    if (authHeader?.startsWith('Bearer ')) {
+        const token = authHeader.split(' ')[1];
+        const decoded = verifyToken(token);
+        if (decoded) {
+            req.user = decoded;
+        }
+    }
+    next();
+}
