@@ -39,10 +39,37 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
   const wsRef = useRef<WebSocket | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const isAiSpeakingRef = useRef<boolean>(false);
+  const currentAudioSourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const currentHtmlAudioRef = useRef<HTMLAudioElement | null>(null);
   const callStartTimeRef = useRef<number>(0);
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  const stopCurrentAudio = () => {
+    try {
+      if (currentAudioSourceRef.current) {
+        currentAudioSourceRef.current.stop();
+        currentAudioSourceRef.current.disconnect();
+        currentAudioSourceRef.current = null;
+      }
+    } catch (e) {
+      // ignore
+    }
+    try {
+      if (currentHtmlAudioRef.current) {
+        currentHtmlAudioRef.current.pause();
+        currentHtmlAudioRef.current.currentTime = 0;
+        currentHtmlAudioRef.current = null;
+      }
+    } catch (e) {
+      // ignore
+    }
+    isAiSpeakingRef.current = false;
+    setIsTalking(false);
+  };
+
   const endCall = () => {
+    stopCurrentAudio();
     wsRef.current?.close();
     mediaStreamRef.current?.getTracks().forEach(track => track.stop());
     audioContextRef.current?.close();
@@ -67,21 +94,24 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
     setCallDuration(0);
 
     try {
-      // 1. Get Mic Permission
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // 1. Get Mic Permission with Acoustic Echo Cancellation
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          channelCount: 1,
+        }
+      });
       mediaStreamRef.current = stream;
       setMicPermission(true);
 
-      // 2. Connect WebSocket
       // 2. Connect WebSocket
       let voiceUrl = process.env.NEXT_PUBLIC_VOICE_URL;
 
       // Smart Fallback: Derive WS URL from API URL if explicit Voice URL is missing
       if (!voiceUrl) {
-        // Default to localhost if neither is set
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-        // transform https://.../api -> wss://...
-        // transform http://.../api -> ws://...
         voiceUrl = apiUrl
           .replace(/^http/, 'ws')       // http->ws, https->wss
           .replace(/\/api\/?$/, '');    // remove '/api' suffix
@@ -104,11 +134,13 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
       };
 
       ws.onmessage = async (event) => {
-        if (event.data instanceof Blob) {
-          // Received Audio Blob from AI
-          playAudioBlob(event.data);
-          setIsTalking(true);
-          setTimeout(() => setIsTalking(false), 2000);
+        if (event.data instanceof Blob || event.data instanceof ArrayBuffer) {
+          // Received Binary Audio from AI
+          const arrayBuffer = event.data instanceof Blob
+            ? await event.data.arrayBuffer()
+            : event.data;
+
+          playAudioArrayBuffer(arrayBuffer);
         } else if (typeof event.data === 'string') {
           // Check for JSON signals
           try {
@@ -116,7 +148,6 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
             if (msg.type === 'interest_detected' && msg.interested) {
               console.log('📩 Interest signal received from server');
               setUserInterested(true);
-              // Show form immediately so user doesn't have to wait for call to end
               if (!showLeadForm) {
                 setShowLeadForm(true);
                 toast.success('Interest detected! Form opened.');
@@ -139,7 +170,6 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
           clearInterval(timerIntervalRef.current);
         }
         if (status === 'LIVE') {
-          // Show lead form if user was interested
           if (userInterested) {
             setShowLeadForm(true);
             toast.success('Thank you for connecting! Please leave your details.');
@@ -161,16 +191,28 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     audioContextRef.current = audioContext;
 
-    await audioContext.resume();
+    if (audioContext.state === 'suspended') {
+      await audioContext.resume();
+    }
     console.log(`🎤 Native Sample Rate: ${audioContext.sampleRate}`);
 
     const source = audioContext.createMediaStreamSource(stream);
     const processor = audioContext.createScriptProcessor(4096, 1, 1);
 
+    // Muted Gain node to prevent microphone from outputting to user's speakers
+    const muteGain = audioContext.createGain();
+    muteGain.gain.value = 0;
+
     source.connect(processor);
-    processor.connect(audioContext.destination);
+    processor.connect(muteGain);
+    muteGain.connect(audioContext.destination);
 
     processor.onaudioprocess = (e) => {
+      // Don't send mic input while AI is speaking (prevents acoustic self-loop)
+      if (isAiSpeakingRef.current) {
+        return;
+      }
+
       if (wsRef.current?.readyState === WebSocket.OPEN) {
         const inputData = e.inputBuffer.getChannelData(0);
         const downsampled = downsampleBuffer(inputData, audioContext.sampleRate, 16000);
@@ -212,18 +254,67 @@ export default function VoiceInterface({ brand, brandId }: VoiceInterfaceProps) 
     return buf.buffer;
   };
 
-  const playAudioBlob = async (blob: Blob) => {
-    try {
-      const arrayBuffer = await blob.arrayBuffer();
-      if (!audioContextRef.current) return;
+  const playAudioArrayBuffer = async (arrayBuffer: ArrayBuffer) => {
+    stopCurrentAudio();
 
-      const audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer);
-      const source = audioContextRef.current.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(audioContextRef.current.destination);
-      source.start(0);
+    // 1. Try Web Audio API
+    try {
+      if (audioContextRef.current) {
+        if (audioContextRef.current.state === 'suspended') {
+          await audioContextRef.current.resume();
+        }
+
+        const audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer.slice(0));
+        const source = audioContextRef.current.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(audioContextRef.current.destination);
+
+        currentAudioSourceRef.current = source;
+        setIsTalking(true);
+        isAiSpeakingRef.current = true;
+
+        source.onended = () => {
+          setIsTalking(false);
+          isAiSpeakingRef.current = false;
+          currentAudioSourceRef.current = null;
+        };
+
+        source.start(0);
+        return;
+      }
     } catch (e) {
-      console.error('Audio Playback Error', e);
+      console.warn('Web Audio decode failed, falling back to HTML5 Audio:', e);
+    }
+
+    // 2. Fallback: HTML5 Audio
+    try {
+      const blob = new Blob([arrayBuffer], { type: 'audio/mp3' });
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      currentHtmlAudioRef.current = audio;
+
+      setIsTalking(true);
+      isAiSpeakingRef.current = true;
+
+      audio.onended = () => {
+        setIsTalking(false);
+        isAiSpeakingRef.current = false;
+        currentHtmlAudioRef.current = null;
+        URL.revokeObjectURL(url);
+      };
+
+      audio.onerror = () => {
+        setIsTalking(false);
+        isAiSpeakingRef.current = false;
+        currentHtmlAudioRef.current = null;
+        URL.revokeObjectURL(url);
+      };
+
+      await audio.play();
+    } catch (fallbackErr) {
+      console.error('All audio playback methods failed:', fallbackErr);
+      setIsTalking(false);
+      isAiSpeakingRef.current = false;
     }
   };
 

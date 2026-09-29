@@ -121,10 +121,22 @@ export default function AIBrainPage() {
   };
 
   const copySuperLink = () => {
-    const url = `${window.location.origin}/meet/${businessId}`;
+    if (!businessId) {
+      toast.error('Business ID not loaded yet. Please wait...');
+      return;
+    }
+    const url = typeof window !== 'undefined'
+      ? `${window.location.origin}/meet/${businessId}`
+      : `https://viralis-ai-automation-tool.vercel.app/meet/${businessId}`;
     navigator.clipboard.writeText(url);
-    toast.success('Super Link copied into clipboard!');
+    toast.success('Super Link copied to clipboard!');
   };
+
+  const superLinkUrl = typeof window !== 'undefined' && businessId
+    ? `${window.location.origin}/meet/${businessId}`
+    : businessId
+    ? `https://viralis-ai-automation-tool.vercel.app/meet/${businessId}`
+    : '';
 
   if (loading) {
     return (
@@ -156,16 +168,44 @@ export default function AIBrainPage() {
           <CardDescription className="text-gray-600">Share this link with your customers to let them talk to your AI agent instantly.</CardDescription>
         </CardHeader>
         <CardContent className="pt-6 relative z-10">
-          <div className="flex items-center gap-4 bg-white border border-blue-100 p-4 rounded-xl shadow-sm">
-            <div className="flex-1 font-mono text-sm text-gray-600 truncate bg-gray-50 px-3 py-1.5 rounded-md">
-              {typeof window !== 'undefined' ? `${window.location.origin}/meet/${businessId}` : `.../meet/${businessId}`}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-white border border-blue-100 p-4 rounded-xl shadow-sm">
+            <div
+              onClick={copySuperLink}
+              title="Click to copy Super Link"
+              className="flex-1 font-mono text-sm text-gray-700 truncate bg-gray-50 hover:bg-gray-100 border border-gray-200/60 px-3.5 py-2.5 rounded-lg cursor-pointer transition-colors select-all"
+            >
+              {superLinkUrl || 'Loading Super Link...'}
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="!bg-white !border-gray-200 hover:!bg-gray-50 !text-gray-900 font-medium" onClick={() => window.open(`/meet/${businessId}`, '_blank')}>
-                <ExternalLink className="w-4 h-4 mr-2" />
-                Test
+              <Button
+                variant="outline"
+                size="sm"
+                className="!bg-white !border-gray-200 hover:!bg-gray-50 !text-gray-900 font-medium h-10 px-4"
+                asChild
+                disabled={!businessId}
+              >
+                <a
+                  href={businessId ? `/meet/${businessId}` : '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center"
+                  onClick={(e) => {
+                    if (!businessId) {
+                      e.preventDefault();
+                      toast.error('Business ID loading. Please wait a moment.');
+                    }
+                  }}
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Test
+                </a>
               </Button>
-              <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-md hover:shadow-lg transition-all" onClick={copySuperLink}>
+              <Button
+                size="sm"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-md hover:shadow-lg transition-all h-10 px-4"
+                onClick={copySuperLink}
+                disabled={!businessId}
+              >
                 <Copy className="w-4 h-4 mr-2" />
                 Copy Link
               </Button>

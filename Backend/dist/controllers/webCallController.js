@@ -5,22 +5,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleWebConnection = void 0;
 const ws_1 = require("ws");
-const axios_1 = __importDefault(require("axios"));
 const sdk_1 = require("@deepgram/sdk");
 const generative_ai_1 = require("@google/generative-ai");
 const dotenv_1 = __importDefault(require("dotenv"));
 const path_1 = __importDefault(require("path"));
+const Business_1 = require("../models/Business");
+const Lead_1 = require("../models/Lead");
+const Transcript_1 = require("../models/Transcript");
 // Explicitly load .env from Backend root (src/controllers/../..)
 dotenv_1.default.config({ path: path_1.default.resolve(__dirname, '../../.env') });
 // Configuration
 const DEEPGRAM_API_KEY = process.env.DEEPGRAM_API_KEY;
-// Use existing env config or fallback to process.env
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-// Since we are now IN the backend, we don't need an external URL for self-calls usually, 
-// but for the public API fetch we might still use it or refactor to internal calls.
-// For simplicity of migration, we'll keep the http fetch but point to localhost:PORT if not defined.
-const PORT = process.env.PORT || 8080;
-const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${PORT}`;
 if (!DEEPGRAM_API_KEY || !GEMINI_API_KEY) {
     console.warn('❌ Missing API Keys for Voice Service');
 }
@@ -52,23 +48,31 @@ const CLOSING_PHRASES = [
     "have a great day",
     "wonderful day"
 ];
-// Helper: Fetch Brand Data from Public Backend API
+// Helper: Fetch Brand Data directly from MongoDB (eliminates HTTP loopback failure)
 async function fetchBrandData(brandId) {
     try {
-        // Optimization: Could we call the controller directly? 
-        // For now, HTTP loopback is safer to ensure all middleware runs.
-        const response = await axios_1.default.get(`${BACKEND_URL}/api/public/brand/${brandId}`);
-        return response.data;
+        if (!brandId || !brandId.match(/^[0-9a-fA-F]{24}$/)) {
+            console.error(`❌ Invalid brandId format: ${brandId}`);
+            return null;
+        }
+        const business = await Business_1.Business.findById(brandId)
+            .select('name businessHours knowledgeBase location industry industryMode brandVoice description voiceAgent')
+            .lean();
+        if (!business) {
+            console.warn(`❌ Brand not found in DB: ${brandId}`);
+            return null;
+        }
+        return business;
     }
     catch (error) {
-        console.error(`Error fetching brand ${brandId}:`, error);
+        console.error(`❌ Error fetching brand ${brandId} from database:`, error);
         return null;
     }
 }
 // Helper: Construct System Prompt
 function createSystemPrompt(brand) {
     const kb = brand.knowledgeBase || {};
-    const servicesList = kb.services
+    const servicesList = kb.services && kb.services.length > 0
         ? kb.services.map(s => `- ${s.name}: ${s.price}`).join('\n')
         : 'No specific services listed.';
     const toneInstruction = brand.brandVoice?.tone
@@ -81,12 +85,12 @@ function createSystemPrompt(brand) {
         ? `About Business: ${brand.description}`
         : '';
     return `
-Role: You are the AI Receptionist for ${brand.name}.
+Role: You are the AI Voice Receptionist for ${brand.name}.
 ${industryContext}
 ${businessDesc}
 ${toneInstruction}
 
-Context: ${kb.customInstructions || 'Be polite and helpful.'}
+Context: ${kb.customInstructions || 'Be polite, friendly, and helpful.'}
 
 Facts:
 - Business Hours: ${kb.businessHours || brand.businessHours || 'Not specified'}
@@ -97,11 +101,11 @@ Services & Pricing:
 ${servicesList}
 
 Guardrails:
-- Keep responses brief (1-2 sentences).
+- Keep responses brief (1-2 sentences at most). Speak naturally as if on a phone call.
 - Never invent prices. Only quote from the list above.
 - If the user wants to **BUY**, **PURCHASE**, **CONNECT**, or **SCHEDULE**, you MUST say: "Great! Please fill out the form so we can assist you with that." or "Please provide your details in the form."
-- If you don't know, offer to take a message.
-- If the user is NOT interested, just say goodbye politely. Do NOT ask for the form.
+- If you don't know the answer, politely offer to take a message or have someone follow up.
+- If the user is concluding the call or says goodbye, say goodbye warmly.
     `.trim();
 }
 // Helper: Check if response indicates interest
@@ -119,14 +123,19 @@ const handleWebConnection = async (ws, req) => {
     let brandId = null;
     let disconnectTimer = null;
     // 1. Parse Params
-    const url = new URL(req.url, `http://${req.headers.host}`);
-    brandId = url.searchParams.get('brandId');
+    try {
+        const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+        brandId = url.searchParams.get('brandId');
+    }
+    catch (e) {
+        console.error('Failed to parse URL:', e);
+    }
     if (!brandId) {
         console.error('❌ Missing brandId');
         ws.close(1008, 'Missing brandId');
         return;
     }
-    // 2. Fetch Data
+    // 2. Fetch Brand Data directly from MongoDB
     const brand = await fetchBrandData(brandId);
     // Check if services are available
     if (!deepgram || !genAI) {
@@ -135,14 +144,15 @@ const handleWebConnection = async (ws, req) => {
         return;
     }
     if (!brand) {
-        console.error('❌ Brand not found or API error');
+        console.error('❌ Brand not found in DB');
         ws.close(1011, 'Brand Data Unavailable');
         return;
     }
     console.log(`✅ Loaded Persona: ${brand.name}`);
-    console.log('🔍 Debug KnowledgeBase:', JSON.stringify(brand.knowledgeBase, null, 2));
     const systemPrompt = createSystemPrompt(brand);
-    console.log('📝 System Prompt:', systemPrompt);
+    // Initial greeting
+    const greetingText = brand.voiceAgent?.greeting ||
+        `Hello! Thank you for calling ${brand.name}. How can I assist you today?`;
     // 3. Setup Gemini
     const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash-lite' });
     const chat = model.startChat({
@@ -153,10 +163,51 @@ const handleWebConnection = async (ws, req) => {
             },
             {
                 role: 'model',
-                parts: [{ text: 'Understood. I am ready to act as the receptionist.' }]
+                parts: [{ text: `Understood. I am acting as the receptionist. My opening line is: "${greetingText}"` }]
             }
         ]
     });
+    conversationLog.push(`AI: ${greetingText}`);
+    // Helper function to synthesize and send TTS audio
+    const sendTTSResponse = async (text) => {
+        try {
+            console.log(`🗣️ Requesting TTS from Deepgram for: "${text}"`);
+            const ttsResponse = await deepgram.speak.request({ text }, { model: 'aura-asteria-en' });
+            const stream = await ttsResponse.getStream();
+            if (stream) {
+                const reader = stream.getReader();
+                const chunks = [];
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done)
+                        break;
+                    if (value)
+                        chunks.push(value);
+                }
+                const combinedBuffer = Buffer.concat(chunks);
+                console.log(`🔊 Sending TTS Audio: ${combinedBuffer.length} bytes`);
+                if (ws.readyState === ws_1.WebSocket.OPEN) {
+                    ws.send(combinedBuffer);
+                    console.log('✅ Audio sent to client');
+                }
+                else {
+                    console.warn('⚠️ WebSocket closed before audio could be sent');
+                }
+            }
+            else {
+                console.error('❌ No stream in TTS response');
+            }
+        }
+        catch (ttsErr) {
+            console.error('❌ Error generating TTS:', ttsErr);
+        }
+    };
+    // Send spoken greeting to client after connection establishes
+    setTimeout(() => {
+        if (ws.readyState === ws_1.WebSocket.OPEN) {
+            sendTTSResponse(greetingText);
+        }
+    }, 600);
     // 4. Setup Deepgram STT (Listen)
     const live = deepgram.listen.live({
         model: 'nova-2',
@@ -164,14 +215,17 @@ const handleWebConnection = async (ws, req) => {
         smart_format: true,
         encoding: 'linear16',
         sample_rate: 16000,
+        endpointing: 300,
+        interim_results: false,
     });
     // Event: Deepgram Connection Open
     live.on('open', () => {
         console.log('🎤 Deepgram STT Connected');
         // Listen for Transcript
         live.on(sdk_1.LiveTranscriptionEvents.Transcript, async (data) => {
-            const transcript = data.channel.alternatives[0].transcript;
-            if (transcript && data.is_final) {
+            const transcript = data.channel?.alternatives?.[0]?.transcript?.trim();
+            const isFinal = data.is_final || data.speech_final;
+            if (transcript && isFinal) {
                 // Clear any pending disconnect if user speaks again
                 if (disconnectTimer) {
                     clearTimeout(disconnectTimer);
@@ -192,7 +246,6 @@ const handleWebConnection = async (ws, req) => {
                         return;
                     }
                     // === INTEREST DETECTION ===
-                    // Check if new interest found OR if we should close (because we already have interest and are saying bye)
                     const isClosing = userInterested && CLOSING_PHRASES.some(p => responseText.toLowerCase().includes(p));
                     const isNewInterest = detectInterest(responseText);
                     if (isNewInterest || isClosing) {
@@ -202,51 +255,23 @@ const handleWebConnection = async (ws, req) => {
                         }
                         // Send signal to client
                         if (ws.readyState === ws_1.WebSocket.OPEN) {
-                            // Only send 'interest' event if it's new, but always schedule disconnect
                             if (isNewInterest) {
                                 ws.send(JSON.stringify({ type: 'interest_detected', interested: true }));
                             }
-                            // Auto-disconnect after 10 seconds (allow TTS to finish)
-                            // Only set if not already pending
+                            // Auto-disconnect after 10 seconds to allow TTS to finish
                             if (!disconnectTimer) {
                                 console.log('⏳ Scheduling auto-disconnect in 10s...');
                                 disconnectTimer = setTimeout(() => {
                                     if (ws.readyState === ws_1.WebSocket.OPEN) {
-                                        console.log('🤖 Auto-disconnecting call to show form...');
+                                        console.log('🤖 Auto-disconnecting call to show lead form...');
                                         ws.close(1000, 'Goal Reached');
                                     }
                                 }, 10000);
                             }
                         }
                     }
-                    // 6. Generate TTS (Speak)
-                    console.log('🗣️ Requesting TTS from Deepgram...');
-                    const ttsResponse = await deepgram.speak.request({ text: responseText }, { model: 'aura-asteria-en' });
-                    const stream = await ttsResponse.getStream();
-                    if (stream) {
-                        console.log('🌊 TTS Stream received, buffering...');
-                        const reader = stream.getReader();
-                        const chunks = [];
-                        while (true) {
-                            const { done, value } = await reader.read();
-                            if (done)
-                                break;
-                            chunks.push(value);
-                        }
-                        // Combine chunks into one buffer
-                        const combinedBuffer = Buffer.concat(chunks);
-                        console.log(`🔊 Sending TTS Audio Loop: ${combinedBuffer.length} bytes`);
-                        if (ws.readyState === ws_1.WebSocket.OPEN) {
-                            ws.send(combinedBuffer);
-                            console.log('✅ Audio sent to client');
-                        }
-                        else {
-                            console.warn('⚠️ WebSocket closed before audio could be sent');
-                        }
-                    }
-                    else {
-                        console.error('❌ No stream in TTS response');
-                    }
+                    // 6. Generate and send TTS Audio back to client
+                    await sendTTSResponse(responseText);
                 }
                 catch (err) {
                     console.error('❌ Error in AI processing pipeline:', err);
@@ -256,44 +281,67 @@ const handleWebConnection = async (ws, req) => {
     });
     // Event: Error
     live.on('error', (err) => {
-        console.error('Deepgram Error:', err);
+        console.error('Deepgram STT Error:', err);
     });
     // 7. Pipe Client Audio -> Deepgram
     ws.on('message', (data) => {
-        if (Buffer.isBuffer(data)) {
+        try {
+            const buf = Buffer.isBuffer(data) ? data : Buffer.from(data);
             if (live.getReadyState() === 1) { // OPEN
-                live.send(data);
+                live.send(buf);
             }
         }
-        else {
-            console.log('📩 Received Text/Other:', data);
+        catch (err) {
+            console.error('Error forwarding audio to Deepgram:', err);
         }
     });
-    // === ON CALL CLOSE: POST WEBHOOK ===
+    // === ON CALL CLOSE: SAVE DIRECTLY TO DATABASE ===
     ws.on('close', async () => {
         console.log('📴 Call Ended');
-        live.finish();
+        try {
+            live.finish();
+        }
+        catch (e) {
+            // ignore
+        }
         const callDuration = Math.round((Date.now() - callStartTime) / 1000);
         console.log(`⏱️ Call Duration: ${callDuration} seconds`);
         console.log(`📋 Conversation:\n${conversationLog.join('\n')}`);
         console.log(`💡 User Interested: ${userInterested}`);
-        // POST to Backend Webhook to create Lead/Transcript
-        try {
-            const webhookPayload = {
-                callerNumber: 'web-call',
-                callerName: 'Web Visitor',
-                transcript: conversationLog.join('\n'),
-                duration: callDuration,
-                sentiment: 'neutral', // Could be enhanced with AI analysis
-                status: 'completed',
-                userInterested: userInterested
-            };
-            console.log('📤 Posting to Backend Webhook:', JSON.stringify(webhookPayload, null, 2));
-            await axios_1.default.post(`${BACKEND_URL}/api/voice/webhook`, webhookPayload);
-            console.log('✅ Webhook POST successful');
-        }
-        catch (err) {
-            console.error('❌ Failed to post webhook:', err);
+        if (conversationLog.length > 0 && brandId && brandId.match(/^[0-9a-fA-F]{24}$/)) {
+            try {
+                let lead = await Lead_1.Lead.findOne({ businessId: brandId, phone: 'web-call' });
+                if (!lead) {
+                    lead = await Lead_1.Lead.create({
+                        businessId: brandId,
+                        name: 'Web Caller',
+                        phone: 'web-call',
+                        email: '',
+                        status: userInterested ? 'contacted' : 'new',
+                        source: 'Voice Call',
+                        score: userInterested ? 70 : 30,
+                        notes: 'Call conducted via Web Voice Agent'
+                    });
+                }
+                else {
+                    lead.updatedAt = new Date();
+                    if (userInterested)
+                        lead.status = 'contacted';
+                    await lead.save();
+                }
+                await Transcript_1.Transcript.create({
+                    businessId: brandId,
+                    leadId: lead._id,
+                    text: conversationLog.join('\n'),
+                    durationSeconds: callDuration,
+                    sentiment: userInterested ? 'positive' : 'neutral',
+                    intent: userInterested ? 'Sales/Inquiry' : 'General Question'
+                });
+                console.log('✅ Lead & Transcript saved directly to MongoDB');
+            }
+            catch (err) {
+                console.error('❌ Failed to save lead/transcript:', err);
+            }
         }
     });
 };
