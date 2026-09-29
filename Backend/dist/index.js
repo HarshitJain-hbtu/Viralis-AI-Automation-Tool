@@ -12,6 +12,9 @@ const morgan_1 = __importDefault(require("morgan"));
 const env_1 = require("./config/env");
 const logger_1 = __importDefault(require("./utils/logger"));
 const mongodb_1 = require("./config/mongodb");
+const errorHandler_1 = require("./middleware/errorHandler");
+const rateLimiter_1 = require("./middleware/rateLimiter");
+const mongodb_2 = require("./config/mongodb");
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const business_routes_1 = __importDefault(require("./routes/business.routes"));
 const lead_routes_1 = __importDefault(require("./routes/lead.routes"));
@@ -23,17 +26,34 @@ require("./config/passport"); // Initialize Passport Config
 // Initialize App
 const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
+// Trust the platform proxy (Koyeb/Vercel) so rate limiting & secure cookies see real client IPs.
+app.set('trust proxy', 1);
 // Middleware
 app.use(express_1.default.json({ limit: '10mb' }));
 app.use(express_1.default.urlencoded({ limit: '10mb', extended: true }));
+// CORS — use an explicit allowlist when CORS_ORIGINS is configured,
+// otherwise fall back to allowing all origins (dev/demo convenience).
+const allowedOrigins = env_1.env.CORS_ORIGINS
+    ? env_1.env.CORS_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean)
+    : [];
 app.use((0, cors_1.default)({
-    origin: true, // Allow all origins for Hackathon/Demo purposes
+    origin: allowedOrigins.length
+        ? (origin, callback) => {
+            // Allow same-origin/non-browser requests (no Origin header) and allowlisted origins.
+            if (!origin || allowedOrigins.includes(origin)) {
+                return callback(null, true);
+            }
+            return callback(new Error(`Origin ${origin} not allowed by CORS`));
+        }
+        : true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use((0, helmet_1.default)());
 app.use((0, morgan_1.default)('dev'));
+// Global rate limiting for all API routes.
+app.use('/api', rateLimiter_1.apiLimiter);
 // Database Connections
 (0, mongodb_1.connectMongoDB)();
 // WebSocket Setup
@@ -97,6 +117,10 @@ app.get('/health', (_req, res) => {
 app.get('/', (_req, res) => {
     res.send('🚀 VIRALIS Backend is Running (TypeScript)!');
 });
+// 404 for any unmatched route (must come after all routes).
+app.use(errorHandler_1.notFoundHandler);
+// Centralized error handler (must be the last middleware).
+app.use(errorHandler_1.errorHandler);
 // Start Server
 server.listen(env_1.env.PORT, () => {
     logger_1.default.info(`
@@ -105,4 +129,34 @@ server.listen(env_1.env.PORT, () => {
   ################################################
   `);
 });
+// --- Process-level safety nets ---------------------------------------------
+process.on('unhandledRejection', (reason) => {
+    logger_1.default.error('Unhandled Promise Rejection:', reason);
+});
+process.on('uncaughtException', (error) => {
+    logger_1.default.error('Uncaught Exception:', error);
+    // An uncaught exception leaves the process in an undefined state — exit and
+    // let the platform (Koyeb) restart it cleanly.
+    gracefulShutdown('uncaughtException', 1);
+});
+let shuttingDown = false;
+function gracefulShutdown(signal, exitCode = 0) {
+    if (shuttingDown)
+        return;
+    shuttingDown = true;
+    logger_1.default.info(`Received ${signal}. Shutting down gracefully...`);
+    // Stop accepting new connections, then close DB.
+    server.close(async () => {
+        await (0, mongodb_2.disconnectMongoDB)();
+        logger_1.default.info('Shutdown complete.');
+        process.exit(exitCode);
+    });
+    // Force-exit if graceful shutdown stalls.
+    setTimeout(() => {
+        logger_1.default.error('Forced shutdown after timeout.');
+        process.exit(exitCode || 1);
+    }, 10000).unref();
+}
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 //# sourceMappingURL=index.js.map

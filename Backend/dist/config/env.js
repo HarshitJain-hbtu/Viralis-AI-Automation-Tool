@@ -29,8 +29,17 @@ const envSchema = joi_1.default.object({
     FB_APP_SECRET: joi_1.default.string().optional(),
     // Scheduled Task Time (HH:mm format, e.g., "18:00" for 6 PM)
     ANALYSIS_SCHEDULE_TIME: joi_1.default.string().default('18:00'),
-    // JWT
-    JWT_SECRET: joi_1.default.string().default('dev-secret'),
+    // JWT — required (and must be strong) in production, dev-friendly default otherwise
+    JWT_SECRET: joi_1.default.string()
+        .min(32)
+        .when('NODE_ENV', {
+        is: 'production',
+        then: joi_1.default.required(),
+        otherwise: joi_1.default.string().default('dev-secret-change-me-please-32-characters'),
+    }),
+    // CORS — comma-separated allowlist of origins (e.g. "https://app.com,https://admin.app.com").
+    // When empty, dev falls back to allowing all origins; production should set this explicitly.
+    CORS_ORIGINS: joi_1.default.string().optional().allow('').default(''),
     // Logging
     LOG_LEVEL: joi_1.default.string().default('info'),
 }).unknown(true);

@@ -3,7 +3,7 @@ services:
     name: viralis-backend
     runtime: node
     rootDir: Backend
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --include=dev && npm run build
     startCommand: npm run start
     plan: free
     healthCheckPath: /health
