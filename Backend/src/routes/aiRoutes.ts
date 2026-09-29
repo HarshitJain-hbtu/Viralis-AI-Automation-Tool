@@ -7,6 +7,7 @@ const router = express.Router();
 
 router.post('/generate', authMiddleware, generateContent);
 router.post('/generate-daily', authMiddleware, generateDayContent as any);
+router.post('/day-strategy', authMiddleware, generateDayContent as any);
 router.post('/regenerate-image', authMiddleware, regenerateImage as any);
 
 router.post('/save-post', authMiddleware, savePost as any);
